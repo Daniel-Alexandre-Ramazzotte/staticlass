@@ -1,0 +1,26 @@
+# Python
+env/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+
+# Flask
+instance/
+.env
+
+# Node / React Native
+node_modules/
+npm-debug.log
+yarn-error.log
+.expo/
+dist/
+build/
+
+# SO / Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
