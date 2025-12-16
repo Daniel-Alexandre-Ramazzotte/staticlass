@@ -1,11 +1,9 @@
 from .. import db
 from sqlalchemy import text
-from ..utils.auth_middleware import require_auth
+from ..utils.auth_middleware import require_auth, require_role
 
 ## TODO: Recuperacao de senha,
 ## 
-def get_email(email):
-    pass
 
 
 # get user by email
@@ -36,7 +34,6 @@ def create_user(email, password_hash, name):
     return user_id
 
 # Update user
-# Generic update
 @require_auth
 def update_user(user_id, data):
     fields = ', '.join([f"{k}" for k in data.keys()])
@@ -51,7 +48,7 @@ def update_user(user_id, data):
     
 
 # Delete user
-@require_auth
+@require_role(['admin','professor'])
 def delete_user(user_id):
     try:
         query = text("DELETE FROM users WHERE id = :id")

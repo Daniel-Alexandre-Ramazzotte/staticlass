@@ -49,7 +49,7 @@ const QuizInProgressScreen = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('http://10.0.2.2:5000/g/rand');
+      const response = await fetch('http://10.0.2.2:5000/questions/rand');
       if (!response.ok) {
         throw new Error('Erro na resposta do servidor');
       }

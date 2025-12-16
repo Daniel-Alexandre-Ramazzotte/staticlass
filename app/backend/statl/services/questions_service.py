@@ -1,6 +1,7 @@
-from flask import Blueprint, jsonify, session
-from ..repositories.questions_repository import get_random_question
-
+from flask import Blueprint, jsonify, session, current_app
+from ..repositories.questions_repository import get_random_question, add_question_to_db, update_question
+import os
+from werkzeug.utils import secure_filename
 ## Numero fixo temporario
 NUM_QUESTIONS = 5
 
@@ -9,7 +10,7 @@ bp = Blueprint('gen',__name__, url_prefix='/g')
 # TODO: Sistema de personalizacao de perguntas
 # Por exemplo, selecionar categorias, niveis de dificuldade, etc.
 
-# TODO: mandar questao para o o banco de dados
+
 
 def random_question(amount = NUM_QUESTIONS):   
     result = get_random_question(amount)
@@ -43,4 +44,49 @@ def check_answer(data):
     else:
         return jsonify({'message' : 'incorrect'})
 
+
+
+def add_question_service(data):
+    if not data:
+        return jsonify({"error": "data is incorrect"})
+
+    if not all (k in data for k in ("id", "issue", "answer_a", "answer_b", "answer_c", "answer_d", "answer_e", "correct_answer", "solution")):
+        
+        return jsonify({"error": "missing fields in data"})
+
+
+    add_question_to_db(data)
+
+
+    return jsonify({'message': 'question added successfully'})
+
+
+def update_question_service(data):
+    if not data:
+        return jsonify({"error": "data is incorrect"})
     
+    update_question(data)
+
+    return jsonify({'message': 'question updated successfully'})
+
+def process_upload(file_obj):
+    """
+    Salva o arquivo e retorna o nome do arquivo salvo.
+    Retorna None se não houver arquivo válido.
+    """
+    if not file_obj or file_obj.filename == '':
+        return None
+
+    filename = secure_filename(file_obj.filename)
+    upload_folder = current_app.config['UPLOAD_FOLDER']
+    
+    # Garante que o nome seja único ou apenas salva (depende da sua regra de negócio)
+    caminho_absoluto = os.path.join(upload_folder, filename)
+    print(caminho_absoluto)
+    
+    try:
+        file_obj.save(caminho_absoluto)
+        return filename  # Retornamos apenas o nome para salvar no banco
+    except Exception as e:
+        print(f"Erro ao salvar arquivo: {e}") # Log simples para debug
+        return None

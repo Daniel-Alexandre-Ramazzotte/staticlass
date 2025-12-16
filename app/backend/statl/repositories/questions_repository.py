@@ -1,27 +1,51 @@
 from .. import db
 from sqlalchemy import text
-from ..utils.auth_middleware import require_auth
-
+from ..utils.auth_middleware import require_role
+from werkzeug.utils import secure_filename
+import os
+from flask import current_app as app
 TABLE_NAME = "questions"
 
-# CRUD
-# Create 
-# TODO: Verificar os campos do banco de dados 
-def create_question(data : dict):
-    # Verificar como fazer para colocar a imagem
 
-    query = text(f"""INSERT INTO {TABLE_NAME}(issue, answer_a, answer_b, answer_c, answer_d, answer_e, correct_answer, solution) 
-                 VALUES (:issue, :answer_a, :answer_b, :answer_c, :answer_d, :answer_e, :correct_answer, :solution)""")
+#@require_role(['admin','professor'])
+def add_question_to_db(data : dict):
+    query = text(f"""INSERT INTO {TABLE_NAME}(id, issue, answer_a, answer_b, answer_c, answer_d, answer_e, correct_answer, solution, image_q, image_s) 
+                 VALUES (:id, :issue, :answer_a, :answer_b, :answer_c, :answer_d, :answer_e, :correct_answer, :solution, :image_q, :image_s)""")
+    params = {
+        "id" : data.get('id'),
+        "issue": data.get('issue'),
+        "answer_a": data.get('answer_a'),
+        "answer_b": data.get('answer_b'),
+        "answer_c": data.get('answer_c'),
+        "answer_d": data.get('answer_d'),
+        "answer_e": data.get('answer_e'),
+        "correct_answer": data.get('correct_answer'),
+        "solution": data.get('solution'),
+        "image_q": data.get('image_q'), 
+        "image_s": data.get('image_s')
+    }
+    print(data.get('image_q'))
+    print(data.get('image_s'))
+    try:
+        db.session.execute(query, params)
+        db.session.commit()
+        print("adicionou")
+    except Exception as e:
+        db.session.rollback()
+        print("nao adicionou")
+        raise e
+    
+
+
+@require_role(['admin','professor'])
+def update_question(data : dict):
+    params = ", ".join([f"{key} = :{key}" for key in data.keys() if key != "id"])
+
+    query = text(f"UPDATE {TABLE_NAME} SET {params} WHERE id = :id")
     db.session.execute(query, data)
     db.session.commit()
 
-
-def update_question():
-    ## Generalizar o maximo possivel para poder atualizar qualquer campo de qualquer coluna da tabela
-    # query = text(f"UPDATE questions SET ")
-    pass
-
-@require_auth
+@require_role(['admin','professor'])
 def delete_question(question_id):
     query = text(f"DELETE FROM {TABLE_NAME} WHERE id = :id")
     try:

@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 
 from backend.statl.utils.auth_middleware import require_role
-from ..services.user_service import update_user, delete_user, get_user_by_email_service
+from ..services.user_service import update_user_service, delete_user_service, get_user_by_email_service
 
 bp = Blueprint('users', __name__, url_prefix='/users')
 
@@ -12,20 +12,17 @@ bp = Blueprint('users', __name__, url_prefix='/users')
 @require_role('admin')
 def update_user_route(user_id):
     data = request.json
-    user, error, http_code = update_user(user_id, data)
-
-    if error:
-        return error, http_code
-    return jsonify({"message": "User Updated", "id": user}), http_code
+    
+    return update_user_service(user_id, data)
 
 @bp.route('/delete/<int:user_id>', methods=['DELETE'])
 @require_role('admin')
 def delete_user_route(user_id):
-    error, http_code = delete_user(user_id)
+    return delete_user_service(user_id)
 
-    if error:
-        return error, http_code
-    return jsonify({"message": "User Deleted"}), http_code
+
+
+
 
 # @bp.route('/forgot', methods = ['GET', 'POST'])
 # def forgot_password():

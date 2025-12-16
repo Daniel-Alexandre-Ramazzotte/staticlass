@@ -40,13 +40,18 @@ def require_auth(f):
     return decorated
 
 # Roles = aluno, professor, admin
-def require_role(required_role):
+def require_role(required_roles):
+    if isinstance(required_roles, str):
+        required_roles = [required_roles]
+    
     def decorator(f):
         @wraps(f)
         @require_auth
         def decorated(*args, **kwargs):
-            if g.role != required_role:
-                return jsonify({"error": f"{required_role.capitalize()} privileges required"}), 403
+            if g.role not in required_roles:
+                return jsonify({
+                    "error": "Privileges required: " + ", ".join(required_roles)
+                }), 403
             return f(*args, **kwargs)
         return decorated
     return decorator
