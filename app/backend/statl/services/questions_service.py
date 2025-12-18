@@ -50,15 +50,15 @@ def add_question_service(data):
     if not data:
         return jsonify({"error": "data is incorrect"})
 
-    if not all (k in data for k in ("id", "issue", "answer_a", "answer_b", "answer_c", "answer_d", "answer_e", "correct_answer", "solution")):
+    if not all (k in data for k in ("issue", "answer_a", "answer_b", "answer_c", "answer_d", "answer_e", "correct_answer", "solution")):
         
         return jsonify({"error": "missing fields in data"})
 
 
-    add_question_to_db(data)
+    return add_question_to_db(data)
 
 
-    return jsonify({'message': 'question added successfully'})
+    #return jsonify({'message': 'question added successfully'})
 
 
 def update_question_service(data):

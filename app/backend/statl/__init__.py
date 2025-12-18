@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import os
 from dotenv import load_dotenv
@@ -11,10 +11,11 @@ UPLOAD_FOLDER = os.path.join(BASE_DIR, '..', '..', 'uploads')
 UPLOAD_FOLDER = os.path.normpath(UPLOAD_FOLDER)  
 
 
-
 # Cria a pasta se não existir
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
+
+
 
 def create_app():
     load_dotenv()
@@ -29,6 +30,7 @@ def create_app():
     app.secret_key = os.getenv("SECRET_KEY")
     app.config["JWT_SECRET_KEY"] = os.getenv("SECRET_KEY")
     jwt = JWTManager(app)
+
     db.init_app(app)
     
     from .routes import auth, questions

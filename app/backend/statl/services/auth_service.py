@@ -41,7 +41,7 @@ def login_user(data):
 
     # Entender melhor a logica
     token = create_access_token(
-        identity={"id": user.id},
+        identity=str(user.id),
         additional_claims={"role": user.role}
     )
     return token, None, 200

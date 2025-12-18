@@ -1,6 +1,6 @@
 from .. import db
 from sqlalchemy import text
-from ..utils.auth_middleware import require_auth, require_role
+from ..utils.auth_middleware import  require_role
 
 ## TODO: Recuperacao de senha,
 ## 
@@ -34,7 +34,7 @@ def create_user(email, password_hash, name):
     return user_id
 
 # Update user
-@require_auth
+@require_role('admin')
 def update_user(user_id, data):
     fields = ', '.join([f"{k}" for k in data.keys()])
     params = data.copy()

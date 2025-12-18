@@ -13,13 +13,17 @@ CREATE TABLE questions (
     answer_c VARCHAR(100) NOT NULL,
     answer_d VARCHAR(100) NOT NULL,
     answer_e VARCHAR(100) NOT NULL,
+    -- colocar ID do professor
     
     -- Coluna para indicar a correta
     correct_answer ENUM('A', 'B', 'C', 'D', 'E') NOT NULL,
     solution VARCHAR(500) NOT NULL,
-    image VARCHAR(500) NULL
+    image_q VARCHAR(500) NULL,
+    image_s VARCHAR(100) NULL
 )
 Engine=InnoDB;
+
+-- Criar tabela de imagens que tenha ID_questao e ID_sequencial, este id sequencial deve dizer a ordem que as imagens devem aparecer
 
 -- Tabela de usuarios
 create TABLE users(
@@ -61,7 +65,8 @@ VALUES (UUID(), "teste@email.com", "HASH", "Teste zero");
 
 select * from questions;
 
-select * from users;
+select * from users;	
+
 
 
 INSERT IGNORE INTO questions(id, issue, answer_a, answer_b, answer_c, answer_d, answer_e, correct_answer, solution, image) 

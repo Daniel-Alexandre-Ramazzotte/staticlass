@@ -4,13 +4,19 @@ from ..utils.auth_middleware import require_role
 from werkzeug.utils import secure_filename
 import os
 from flask import current_app as app
+from flask import jsonify
 TABLE_NAME = "questions"
 
 
-#@require_role(['admin','professor'])
+@require_role(['admin','professor'])
 def add_question_to_db(data : dict):
     query = text(f"""INSERT INTO {TABLE_NAME}(id, issue, answer_a, answer_b, answer_c, answer_d, answer_e, correct_answer, solution, image_q, image_s) 
                  VALUES (:id, :issue, :answer_a, :answer_b, :answer_c, :answer_d, :answer_e, :correct_answer, :solution, :image_q, :image_s)""")
+    
+    if data.get("id") is None:
+        max_id = db.session.execute(text(f"SELECT MAX(id) FROM {TABLE_NAME}")).scalar()
+        data["id"] = (max_id or 0) + 1
+        
     params = {
         "id" : data.get('id'),
         "issue": data.get('issue'),
@@ -24,16 +30,17 @@ def add_question_to_db(data : dict):
         "image_q": data.get('image_q'), 
         "image_s": data.get('image_s')
     }
-    print(data.get('image_q'))
-    print(data.get('image_s'))
+
+
+
     try:
         db.session.execute(query, params)
         db.session.commit()
-        print("adicionou")
+        return jsonify({'message': 'question added successfully'})
+
     except Exception as e:
         db.session.rollback()
-        print("nao adicionou")
-        raise e
+        return jsonify({'error': str(e)})
     
 
 
