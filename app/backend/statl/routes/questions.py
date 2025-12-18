@@ -41,5 +41,6 @@ def add_question():
 
     data['image_q'] = path_issue
     data['image_s'] = path_solution
+    print(path_solution, path_issue)
 
     return add_question_service(data)
