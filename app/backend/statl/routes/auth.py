@@ -56,7 +56,7 @@ def debug_token_manual():
         }), 200
         
     except Exception as e:
-        # AQUI ESTÁ O OURO: Vamos saber exatamente qual é o erro do Python
+
         print(f"ERRO PYTHON: {str(e)}")
         return jsonify({
             "status": "FALHA",

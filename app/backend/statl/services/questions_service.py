@@ -82,6 +82,7 @@ def process_upload(file_obj):
     
     # Garante que o nome seja único ou apenas salva (depende da sua regra de negócio)
     caminho_absoluto = os.path.join(upload_folder, filename)
+    print("Caminho absoluto do arquivo salvo:")
     print(caminho_absoluto)
     
     try:

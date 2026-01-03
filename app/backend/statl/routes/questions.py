@@ -11,11 +11,6 @@ def get_question_rand():
     return random_question(NUM_QUESTIONS)
 
 
-# ## Pensa
-# @bp.route("/rand/<int:num>", methods = ["GET"])
-# def get_question_rand_num(num):
-#     return random_question(num)
-
 @bp.route("/update", methods = ["PUT"])
 def update_question_route():
     data = request.get_json()
@@ -34,8 +29,11 @@ def add_question():
     
     file_issue = request.files.get("image_q")
     file_solution = request.files.get("image_s")
+    
+    # ADICIONE ESTES PRINTS DE DEBUG
 
     path_issue = process_upload(file_issue)
+    
     path_solution = process_upload(file_solution)
  
 
