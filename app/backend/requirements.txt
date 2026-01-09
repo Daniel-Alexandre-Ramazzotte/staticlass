@@ -7,3 +7,4 @@ Flask-SQLAlchemy
 PyJWT
 functools
 flask_jwt_extended
+Flask-WTF

@@ -28,6 +28,3 @@ def delete_user_service(user_id):
     delete_user(user_id)
     return jsonify({"message": "User deleted successfully"})
 
-
-def recover_password_service():
-    pass
