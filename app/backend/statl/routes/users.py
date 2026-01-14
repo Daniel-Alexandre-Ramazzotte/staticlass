@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request
 
-from backend.statl.utils.auth_middleware import require_role
+from statl.utils.auth_middleware import require_role
 from ..services.user_service import update_user_service, delete_user_service, get_user_by_email_service
 
 bp = Blueprint('users', __name__, url_prefix='/users')
@@ -19,14 +19,3 @@ def update_user_route(user_id):
 @require_role('admin')
 def delete_user_route(user_id):
     return delete_user_service(user_id)
-
-
-
-
-
-# @bp.route('/forgot', methods = ['GET', 'POST'])
-# def forgot_password():
-#     if request.method == "POST":
-#         email = request.form.get("email")
-
-#         token = 

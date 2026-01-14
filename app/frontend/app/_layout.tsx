@@ -8,26 +8,35 @@ export default function RootLayout() {
   return (
     // O Provider do Paper pode viver aqui para envolver todo o app
     <GestureHandlerRootView style={{ flex: 1 }}>
-    <PaperProvider>
-      <Stack
-        screenOptions={{
-          // Estilos globais para o header, se desejar
-          headerStyle: {
-            backgroundColor: '#6200ee',
-          },
-          headerTintColor: '#ffffff',
-          headerTitleStyle: {
-            fontWeight: 'bold',
-          },
-        }}
-      >
-        {/* Tela 1: O conjunto de abas. O nome "(tabs)" é uma convenção. */}
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        
-        {/* Tela 2: A tela do quiz em tela cheia. */}
-        <Stack.Screen name="quizInProgress" options={{ headerShown: false }} />
-      </Stack>
-    </PaperProvider>
+      <PaperProvider>
+        <Stack
+          screenOptions={{
+            // Estilos globais para o header, se desejar
+            headerStyle: {
+              backgroundColor: '#6200ee',
+            },
+            headerTintColor: '#ffffff',
+            headerTitleStyle: {
+              fontWeight: 'bold',
+            },
+          }}
+        >
+          {/* Tela de login/registro */}
+          <Stack.Screen
+            name="(public)/login"
+            options={{ headerShown: false }}
+          />
+
+          {/* Tela 1: O conjunto de abas. O nome "(tabs)" é uma convenção. */}
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+
+          {/* Tela 2: A tela do quiz em tela cheia. */}
+          <Stack.Screen
+            name="quizInProgress"
+            options={{ headerShown: false }}
+          />
+        </Stack>
+      </PaperProvider>
     </GestureHandlerRootView>
   );
 }
