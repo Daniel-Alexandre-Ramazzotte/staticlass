@@ -1,12 +1,15 @@
-from flask import  Blueprint,jsonify, request, render_template, redirect, url_for, flash, render_template_string
+from flask import  Blueprint,jsonify, request
 from statl.services.auth_service import register_user, login_user, request_password_reset, reset_password
 from flask_jwt_extended import decode_token
 from flask_login import current_user
 from sqlalchemy import select
-from utils.auth_form import ResetPasswordRequestForm
-from services.user_service import get_user_by_email_service
+from statl.utils.auth_form import ResetPasswordRequestForm
+from statl.services.user_service import get_user_by_email_service
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
+
+# Rotas -> Services -> Repositories
+# Portaria -> Regras de Negócio -> Banco de Dados
 
 #create
 @bp.route('/register', methods=['POST'])
@@ -23,16 +26,18 @@ def register():
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     data = request.json
-    
+
     token, error, http_code = login_user(data)
     if error:
         return error, http_code
     return jsonify({"token": token})
+    
 
 
 
 @bp.route("/password-reset", methods=["POST"])
 def request_reset():
+
     ''' Solicita a redefinição de senha para o email fornecido.
     '''
     data = request.get_json()

@@ -2,7 +2,7 @@ from flask import jsonify
 from flask_jwt_extended import create_access_token
 from statl.repositories.user_repository import get_user_by_email, create_user, update_password
 from werkzeug.security import generate_password_hash, check_password_hash
-from security.tokens import generate_reset_token, verify_reset_token
+from statl.security.tokens import generate_reset_token, verify_reset_token
 from statl.services.email_service import send_reset_email
 
 def register_user(data):
@@ -28,7 +28,7 @@ def register_user(data):
 def login_user(data):
     ''' Serviço para autenticar um usuário e gerar um token JWT.
     '''
-    
+
     if not data:
         return None, jsonify({"error": "Requisicao invalida"}), 400
     try:

@@ -25,21 +25,6 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="question"
-        options={{
-          title: 'Questão',
-          headerShown: false,
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons
-              name="comment-question"
-              color={color}
-              size={26}
-            />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
         name="profile"
         options={{
           title: 'Perfil',

@@ -2,8 +2,6 @@ from .. import db
 from sqlalchemy import text
 from ..utils.auth_middleware import  require_role
 
-## TODO: Recuperacao de senha,
-## 
 
 
 # get user by email

@@ -47,9 +47,10 @@ def create_app(testing: bool = False):
     mail.init_app(app)
     db.init_app(app)
     
-    from .routes import auth, questions
+    from .routes import auth, questions, users
     app.register_blueprint(auth.bp)
     app.register_blueprint(questions.bp)
+    #app.register_blueprint(users.bp)
 
 
    
