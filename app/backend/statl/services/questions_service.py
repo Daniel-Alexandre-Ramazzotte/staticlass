@@ -12,8 +12,8 @@ bp = Blueprint('gen',__name__, url_prefix='/g')
 
 
 
-def random_question(amount = NUM_QUESTIONS):   
-    result = get_random_question(amount)
+def random_question(num = NUM_QUESTIONS):   
+    result = get_random_question(num)
 
     random_questions = result.all()
     session['correct_answers'] = [q.correct_answer for q in random_questions]

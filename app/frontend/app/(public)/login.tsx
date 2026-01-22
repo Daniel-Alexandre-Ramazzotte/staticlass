@@ -11,7 +11,7 @@ import styles from 'app/constants/style';
 import { useState } from 'react';
 import CheckLogin from '../services/CheckLogin';
 import RecoverPassword from '../services/RecoverPasswordService';
-const appName = 'staticlass';
+import { appName } from 'app/constants/names';
 /*
 
     Tela de Login/Registro

@@ -6,9 +6,9 @@ NUM_QUESTIONS = 5
 
 bp = Blueprint('questions',__name__, url_prefix='/questions')
 
-@bp.route("/rand", methods = ["GET"])
-def get_question_rand():
-    return random_question(NUM_QUESTIONS)
+@bp.route("/rand/<int:num>", methods = ["GET"])
+def get_question_rand(num = NUM_QUESTIONS):
+    return random_question(num)
 
 
 @bp.route("/update", methods = ["PUT"])

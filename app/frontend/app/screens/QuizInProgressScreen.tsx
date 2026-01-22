@@ -13,7 +13,7 @@ import { BottomNavigation, Text, Provider } from 'react-native-paper';
 import { useFocusEffect } from '@react-navigation/native';
 import { ScrollView } from 'react-native-gesture-handler';
 import CheckAnswer from '../services/CheckAnswer';
-import { useRouter, Stack } from 'expo-router';
+import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
 import styles, { SELECTED, BG, BUTTONS, PRIMARY } from '../constants/style';
 import CustomButton from 'app/components/CustomButton/CustomButton';
 import GradientWrapper from 'app/components/GradientWrapper/GradientWrapper';
@@ -30,6 +30,7 @@ interface QuizQuestions {
 // Fazer funcao para voltar e avancar as questoes
 
 const QuizInProgressScreen = () => {
+  const { qtd } = useLocalSearchParams();
   const altLetters = ['A', 'B', 'C', 'D', 'E'];
   const router = useRouter();
   const [quizQuestions, setQuestions] = useState<QuizQuestions>({
@@ -49,7 +50,9 @@ const QuizInProgressScreen = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('http://10.0.2.2:5000/questions/rand');
+      const response = await fetch(
+        `http://10.0.2.2:5000/questions/rand/${qtd}`
+      );
       if (!response.ok) {
         throw new Error('Erro na resposta do servidor');
       }
@@ -57,7 +60,7 @@ const QuizInProgressScreen = () => {
       console.log(data);
 
       await setQuestions({
-        num_questions: 5,
+        num_questions: Number(qtd),
         counter: 0,
         issues: data.issue,
         answers: data.answers,
@@ -78,14 +81,17 @@ const QuizInProgressScreen = () => {
     }, [])
   );
   const [selected, setSelected] = useState(null);
+
   const scaleAnim = useRef(new Animated.Value(1)).current;
   useEffect(() => {
     setSelected(null);
     scaleAnim.setValue(1);
   }, [counter]);
+
   console.log('answers:', quizQuestions.answers);
   console.log('current index:', counter);
   console.log('answers[counter]:', quizQuestions.answers[counter]);
+
   const renderContent = () => {
     if (loading) {
       return <ActivityIndicator size="large" color="#0000ff" />;

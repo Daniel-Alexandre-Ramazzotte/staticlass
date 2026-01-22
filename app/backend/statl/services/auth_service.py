@@ -12,12 +12,18 @@ def register_user(data):
         return None, jsonify({"error": "Requisicao invalida"}), 400
     if get_user_by_email(data.get("email")) is not None:
         return None, jsonify({"error": "Usuario ja registrado."}), 400
-    try:
-        email = data["email"]
-        password = data["password"]
-        name = data["name"]
-    except KeyError as e:
-        return None, jsonify({"error": f"Campo obrigatório ausente: {e}"}), 400
+
+    if not all (k in data for k in ("email", "password", "confirm_password", "name")):
+        return None, jsonify({"error": "Campos obrigatórios ausentes."}), 400
+
+    if data["password"] != data["confirm_password"]:
+        return None, jsonify({"error": "As senhas nao coincidem."}), 400
+    
+    
+    email = data["email"]
+    password = data["password"]
+    name = data["name"]
+    
         
     user = create_user(email, generate_password_hash(password), name)
     return user, None, 201

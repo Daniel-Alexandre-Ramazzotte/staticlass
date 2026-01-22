@@ -2,6 +2,9 @@ from flask_mail import Message
 from .. import mail
 from flask import current_app
 
+
+# Falta configurar o email e o servidor SMTP
+
 def send_reset_email(to: str, token: str):
     ''' Envia um email de redefinição de senha para o endereço fornecido com o token dado.
     '''
