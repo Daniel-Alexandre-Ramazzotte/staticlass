@@ -4,11 +4,7 @@ const CheckLogin = async (data: { email: string; password: string }) => {
   console.log(data);
   try {
     const response = await api.post('/auth/login', data);
-    if (response.status === 200) {
-      return true;
-    } else {
-      return false;
-    }
+    return response;
   } catch (error) {
     console.error('Error:', error);
   }

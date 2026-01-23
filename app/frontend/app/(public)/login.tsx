@@ -12,6 +12,8 @@ import { useState } from 'react';
 import CheckLogin from '../services/CheckLogin';
 import RecoverPassword from '../services/RecoverPasswordService';
 import { appName } from 'app/constants/names';
+import { useAuth } from '../context/AuthContext';
+
 /*
 
     Tela de Login/Registro
@@ -33,17 +35,29 @@ export default function LoginScreen() {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
+
+  const { signIn } = useAuth();
+
   const handleLogin = async () => {
-    // Realiza a lógica de autenticação aqui
+    // Realiza a lógica de autenticação
     // Após o login bem-sucedido, navega para a tela principal (conjunto de abas)
-
-    if ((await CheckLogin({ email, password })) === true) {
-      console.log('Login bem-sucedido');
-
-      router.replace('/(tabs)/home');
+    if (!email || !password) {
+      setErrorMessage('Por favor, preencha todos os campos.');
     } else {
-      console.log('Falha no login');
-      setErrorMessage('Email ou senha incorretos. Por favor, tente novamente.');
+      setErrorMessage('');
+    }
+
+    try {
+      const response = await CheckLogin({ email, password });
+      if (!response) {
+        setErrorMessage('Falha no login. Verifique suas credenciais.');
+        return;
+      }
+      const token = response?.data.token;
+
+      await signIn(token);
+    } catch (error: any) {
+      console.error('Erro no login:', error);
     }
   };
 
@@ -79,6 +93,7 @@ export default function LoginScreen() {
       </Pressable>
 
       <Text style={styles.errorLoginText}>{errorMessage}</Text>
+
       {/* Botao de recuperacao de senha */}
       <Pressable onPress={() => router.push('/(public)/recover-password')}>
         <Text>Esqueci minha senha</Text>

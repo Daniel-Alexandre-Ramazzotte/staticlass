@@ -1,13 +1,22 @@
 import React, { useState } from 'react';
-import { Image, View, TouchableOpacity, ActivityIndicator } from 'react-native';
+import {
+  Image,
+  View,
+  TouchableOpacity,
+  ActivityIndicator,
+  Pressable,
+} from 'react-native';
 import { Text } from 'react-native-paper';
 import styles from '../constants/style';
 import { useRouter } from 'expo-router';
 import { PersonalizarAccordion } from '../components/CustomAccordion';
+import { useAuth } from '../context/AuthContext';
 
 export default function HomeScreen() {
   const router = useRouter();
   const [qtdQuestoes, setQtdQuestoes] = useState('5');
+  const { signOut, role, email } = useAuth();
+
   const handleStartQuiz = () => {
     router.push({
       pathname: '/screens/QuizInProgressScreen',
@@ -30,6 +39,15 @@ export default function HomeScreen() {
       </TouchableOpacity>
 
       <PersonalizarAccordion num={qtdQuestoes} setNum={setQtdQuestoes} />
+      <Pressable onPress={() => signOut()}>
+        <Text>SAIR</Text>
+      </Pressable>
+
+      {role === 'admin' && (
+        <Pressable onPress={() => router.push('/screens/AdminScreen')}>
+          <Text>Ir para Admin</Text>
+        </Pressable>
+      )}
 
       <View style={styles.footerNote}>
         <Text style={styles.footerText}>UEM • Footer • Patrocinadores</Text>
