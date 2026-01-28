@@ -17,7 +17,7 @@ import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
 import styles, { SELECTED, BG, BUTTONS, PRIMARY } from '../constants/style';
 import CustomButton from 'app/components/CustomButton/CustomButton';
 import GradientWrapper from 'app/components/GradientWrapper/GradientWrapper';
-
+import api from '../services/api';
 interface QuizQuestions {
   num_questions: number;
   counter: number;
@@ -50,9 +50,8 @@ const QuizInProgressScreen = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(
-        `http://10.0.2.2:5000/questions/rand/${qtd}`
-      );
+      const response = await api.get(`/questions/rand/${qtd}`);
+
       if (!response.ok) {
         throw new Error('Erro na resposta do servidor');
       }

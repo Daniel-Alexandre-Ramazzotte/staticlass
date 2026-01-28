@@ -52,7 +52,6 @@ def create_app(testing: bool = False):
     app.register_blueprint(questions.bp)
     #app.register_blueprint(users.bp)
 
-
    
 
     
