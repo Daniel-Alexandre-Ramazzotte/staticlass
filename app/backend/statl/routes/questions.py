@@ -27,6 +27,8 @@ def check_correct_answer():
 def add_question():
     data: Dict[str, Any] = request.form.to_dict()
     
+    print(data)
+
     file_issue = request.files.get("image_q")
     file_solution = request.files.get("image_s")
     
@@ -36,7 +38,7 @@ def add_question():
     
     path_solution = process_upload(file_solution)
  
-
+        
     data['image_q'] = path_issue
     data['image_s'] = path_solution
     print(path_solution, path_issue)

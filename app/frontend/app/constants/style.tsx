@@ -1,4 +1,6 @@
 import { StyleSheet } from 'react-native';
+import { Button, Checkbox, styled, XStack, Label } from 'tamagui';
+import { Check as CheckIcon } from '@tamagui/lucide-icons';
 
 export const palette = {
   primary: '#1E63C3',
@@ -246,6 +248,62 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 20,
   },
+});
+
+// 1. O Botão principal (Container)
+export const CheckButton = styled(Button, {
+  name: 'CheckButton',
+  height: 60,
+  paddingHorizontal: '$4',
+  backgroundColor: '$background',
+  borderWidth: 2,
+  borderColor: '$borderColor',
+  flexDirection: 'row',
+  justifyContent: 'flex-start',
+  alignItems: 'center',
+
+  // Efeito visual quando o botão for pressionado
+  pressStyle: { scale: 0.98 },
+
+  // Variante para mudar o estilo quando selecionado
+  variants: {
+    active: {
+      true: {
+        borderColor: '$blue8',
+        backgroundColor: '$blue1',
+      },
+    },
+  } as const,
+});
+
+// 2. O Quadrado do Checkbox
+export const StyledCheckbox = styled(Checkbox, {
+  name: 'StyledCheckbox',
+  size: '$5',
+  borderWidth: 2,
+  // Garante que o checkbox não herde cores indesejadas
+  backgroundColor: 'transparent',
+});
+
+// 3. O Indicador (Container do Ícone)
+export const StyledIndicator = styled(Checkbox.Indicator, {
+  alignItems: 'center',
+  justifyContent: 'center',
+});
+
+// 4. O Ícone corrigido (Aqui aplicamos a cor com segurança)
+export const StyledCheckIcon = styled(CheckIcon, {
+  color: '$blue10',
+  size: 18,
+});
+
+// 5. O Texto
+export const ButtonText = styled(Label, {
+  color: '$color',
+  fontSize: '$4',
+  fontWeight: 'bold',
+  paddingLeft: '$3',
+  cursor: 'pointer',
 });
 
 export default styles;

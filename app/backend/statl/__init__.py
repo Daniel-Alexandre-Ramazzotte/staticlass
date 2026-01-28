@@ -58,3 +58,7 @@ def create_app(testing: bool = False):
     with app.app_context():
         db.create_all()
     return app
+
+
+
+

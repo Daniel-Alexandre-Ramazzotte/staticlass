@@ -12,9 +12,9 @@ TABLE_NAME = "questions"
 
 @require_role(['admin','professor'])
 def add_question_to_db(data : dict):
-    query = text(f"""INSERT INTO {TABLE_NAME}(id, issue, answer_a, answer_b, answer_c, answer_d, answer_e, correct_answer, solution, image_q, image_s) 
-                 VALUES (:id, :issue, :answer_a, :answer_b, :answer_c, :answer_d, :answer_e, :correct_answer, :solution, :image_q, :image_s)""")
-    
+    query = text(f"""INSERT INTO {TABLE_NAME}(id, issue, answer_a, answer_b, answer_c, answer_d, answer_e, correct_answer, solution, image_q, image_s, id_subject) 
+                 VALUES (:id, :issue, :answer_a, :answer_b, :answer_c, :answer_d, :answer_e, :correct_answer, :solution, :image_q, :image_s, :id_subject)""")
+    print("aq")
     if data.get("id") is None:
         max_id = db.session.execute(text(f"SELECT MAX(id) FROM {TABLE_NAME}")).scalar()
         data["id"] = (max_id or 0) + 1
@@ -30,18 +30,34 @@ def add_question_to_db(data : dict):
         "correct_answer": data.get('correct_answer'),
         "solution": data.get('solution'),
         "image_q": data.get('image_q'), 
-        "image_s": data.get('image_s')
+        "image_s": data.get('image_s'),
+        "id_subject": data.get('id_subject')
     }
-
+    print(params)
     try:
         db.session.execute(query, params)
         db.session.commit()
-        return jsonify({'message': 'question added successfully'})
+        return jsonify({'message': 'question added successfully'}), 201
 
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': str(e)})
     
+
+
+
+def add_subject_to_db(subject_name : str):
+    query = text("INSERT INTO subjects (subject_name) VALUES (:subject_name)")
+    try:
+        db.session.execute(query, {"subject_name": subject_name})
+        
+        new_id = db.session.execute(text("SELECT LAST_INSERT_ID()")).scalar()
+        db.session.commit()
+        print(new_id)
+        return new_id
+    except Exception as e:
+        db.session.rollback()
+        raise e
 
 
 @require_role(['admin','professor'])
@@ -75,3 +91,7 @@ def get_question_by_id(question_id : int):
     return result
 
 
+def search_subject(subject_name : str):
+    query = text("SELECT * FROM subjects WHERE subject_name LIKE :subject_name")
+    result = db.session.execute(query, {"subject_name": f"%{subject_name}%"})
+    return result

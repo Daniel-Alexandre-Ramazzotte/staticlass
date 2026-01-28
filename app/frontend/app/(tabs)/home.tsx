@@ -30,6 +30,8 @@ export default function HomeScreen() {
         style={styles.logo}
       />
       <Text style={styles.title}>Bem-vindo ao app!</Text>
+      <Text style={styles.subtitle}>Usuário: {email}</Text>
+      <Text style={styles.subtitle}>Função: {role}</Text>
       <TouchableOpacity
         style={styles.startButton}
         activeOpacity={0.85}
@@ -44,8 +46,20 @@ export default function HomeScreen() {
       </Pressable>
 
       {role === 'admin' && (
-        <Pressable onPress={() => router.push('/screens/AdminScreen')}>
-          <Text>Ir para Admin</Text>
+          <Pressable onPress={() => router.push('/screens/AdminScreen')}>
+            <Text>Ir para Admin</Text>
+          </Pressable>
+        ) && (
+          <Pressable
+            onPress={() => router.push('/(professor)/QuestionsManager')}
+          >
+            <Text>Gerenciar Questões</Text>
+          </Pressable>
+        )}
+
+      {role === 'professor' && (
+        <Pressable onPress={() => router.push('/(professor)/ProfessorMenu')}>
+          <Text>Gerenciar Questões</Text>
         </Pressable>
       )}
 

@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, session, current_app
-from ..repositories.questions_repository import get_random_question, add_question_to_db, update_question
+from ..repositories.questions_repository import get_random_question, add_question_to_db, update_question, search_subject, add_subject_to_db
 import os
 from werkzeug.utils import secure_filename
 ## Numero fixo temporario
@@ -48,17 +48,29 @@ def check_answer(data):
 
 def add_question_service(data):
     if not data:
+        
         return jsonify({"error": "data is incorrect"})
 
-    if not all (k in data for k in ("issue", "answer_a", "answer_b", "answer_c", "answer_d", "answer_e", "correct_answer", "solution")):
+    if not all (k in data for k in ("subject", "issue", "answer_a", "answer_b", "answer_c", "answer_d", "answer_e", "correct_answer", "solution")):
         
         return jsonify({"error": "missing fields in data"})
 
+    
+    subject_name = data.pop("subject")
+   
+    subject_result = search_subject(subject_name)
+    
+    subject = subject_result.first()
+   
+    if not subject:
+        
+        data['id_subject'] = add_subject_to_db(subject_name)
+    else:
+        data['id_subject'] = subject.id
 
+    
     return add_question_to_db(data)
 
-
-    #return jsonify({'message': 'question added successfully'})
 
 
 def update_question_service(data):
