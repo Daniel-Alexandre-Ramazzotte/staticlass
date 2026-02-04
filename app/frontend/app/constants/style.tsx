@@ -240,6 +240,11 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     width: 200,
   },
+  image: {
+    width: 300,
+    height: 200,
+    resizeMode: 'contain',
+  },
   resultQuestion: { fontSize: 16, fontWeight: '600', color: '#ffffffff' },
   safeArea: { flex: 1, backgroundColor: BG },
   scrollContainer: {
