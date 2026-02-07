@@ -13,6 +13,7 @@ import CheckLogin from '../services/CheckLogin';
 import RecoverPassword from '../services/RecoverPasswordService';
 import { appName } from 'app/constants/names';
 import { useAuth } from '../context/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 /*
 
@@ -54,6 +55,11 @@ export default function LoginScreen() {
         return;
       }
       const token = response?.data.token;
+      await AsyncStorage.setItem('userEmail', email);
+      console.log("Email salvo com sucesso:", email);
+
+      await AsyncStorage.setItem('@auth_session', token); 
+      
 
       await signIn(token);
     } catch (error: any) {

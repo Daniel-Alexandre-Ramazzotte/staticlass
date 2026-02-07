@@ -1,6 +1,7 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons'; // Use um pacote de ícones
+import { User } from '@tamagui/lucide-icons';
 
 export default function TabLayout() {
   return (
@@ -29,7 +30,7 @@ export default function TabLayout() {
         options={{
           title: 'Perfil',
           tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="cog" color={color} size={26} />
+            <User color={color} size={26} />
           ),
         }}
       />

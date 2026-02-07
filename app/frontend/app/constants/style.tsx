@@ -1,6 +1,4 @@
 import { StyleSheet } from 'react-native';
-import { Button, Checkbox, styled, XStack, Label } from 'tamagui';
-import { Check as CheckIcon } from '@tamagui/lucide-icons';
 
 export const palette = {
   primary: '#1E63C3',
@@ -248,62 +246,83 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 20,
   },
-});
-
-// 1. O Botão principal (Container)
-export const CheckButton = styled(Button, {
-  name: 'CheckButton',
-  height: 60,
-  paddingHorizontal: '$4',
-  backgroundColor: '$background',
-  borderWidth: 2,
-  borderColor: '$borderColor',
-  flexDirection: 'row',
-  justifyContent: 'flex-start',
-  alignItems: 'center',
-
-  // Efeito visual quando o botão for pressionado
-  pressStyle: { scale: 0.98 },
-
-  // Variante para mudar o estilo quando selecionado
-  variants: {
-    active: {
-      true: {
-        borderColor: '$blue8',
-        backgroundColor: '$blue1',
-      },
-    },
-  } as const,
-});
-
-// 2. O Quadrado do Checkbox
-export const StyledCheckbox = styled(Checkbox, {
-  name: 'StyledCheckbox',
-  size: '$5',
-  borderWidth: 2,
-  // Garante que o checkbox não herde cores indesejadas
-  backgroundColor: 'transparent',
-});
-
-// 3. O Indicador (Container do Ícone)
-export const StyledIndicator = styled(Checkbox.Indicator, {
-  alignItems: 'center',
-  justifyContent: 'center',
-});
-
-// 4. O Ícone corrigido (Aqui aplicamos a cor com segurança)
-export const StyledCheckIcon = styled(CheckIcon, {
-  color: '$blue10',
-  size: 18,
-});
-
-// 5. O Texto
-export const ButtonText = styled(Label, {
-  color: '$color',
-  fontSize: '$4',
+  profileHeader: {
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  userNameText: {
+  fontSize: 22,
   fontWeight: 'bold',
-  paddingLeft: '$3',
-  cursor: 'pointer',
+  color: '#333', // Cinza escuro/Preto para aparecer no fundo branco
+  marginTop: 10,  
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    width: '80%',
+    backgroundColor: '#FFFFFF', 
+    borderRadius: 15,           
+    paddingVertical: 10,      
+    marginTop: -10,
+    marginBottom: 30,             
+    elevation: 4,           
+  },
+
+  statItem: {
+    flex: 1,                  
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    paddingVertical: 5,
+  },
+
+  statValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#007AFF',
+    marginTop: 2,
+  },
+
+  statLabel: {
+    fontSize: 12,
+    color: '#5a5a5a',
+    fontWeight: '500',
+  },
+ 
 });
+
+// Estilos específicos para componentes Tamagui
+export const tamaguiStyles = {
+  statsButton: {
+    backgroundColor: '#007AFF', // Azul vibrante
+    borderRadius: 12,
+    size: "$5",
+    pressStyle: { scale: 0.97, opacity: 0.9 },
+  },
+  rankingButton: {
+    backgroundColor: '#D1E3F8', // Azul claro/bebê
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#007AFF',
+    color: '#007AFF',
+    size: "$5",
+    pressStyle: { scale: 0.97, opacity: 0.8 },
+  },
+  buttonOutline: {
+    backgroundColor: '#171717', // Off-black como no seu print
+    borderRadius: 12,
+    size: "$5",
+    pressStyle: { scale: 0.97, opacity: 0.9 },
+  },
+  buttonTextLight: {
+    color: '#007AFF',
+    fontWeight: '600',
+  },
+  buttonTextDark: {
+    color: '#ffffff',
+    fontWeight: '600',
+  }
+};
 
 export default styles;
+

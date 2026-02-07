@@ -63,6 +63,7 @@ export default function HomeScreen() {
         </Pressable>
       )}
 
+
       <View style={styles.footerNote}>
         <Text style={styles.footerText}>UEM • Footer • Patrocinadores</Text>
       </View>

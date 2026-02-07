@@ -19,3 +19,14 @@ def update_user_route(user_id):
 @require_role('admin')
 def delete_user_route(user_id):
     return delete_user_service(user_id)
+
+
+@bp.route('/profile/<email>', methods=['GET'])
+def get_profile(email):
+    user = get_user_by_email_service(email) 
+    if user:
+        return jsonify({
+            "name": getattr(user, 'name', getattr(user, 'nome', 'Usuário')),
+            "score": getattr(user, 'score', 0)
+        }), 200
+    return jsonify({"message": "Usuário não encontrado"}), 404
