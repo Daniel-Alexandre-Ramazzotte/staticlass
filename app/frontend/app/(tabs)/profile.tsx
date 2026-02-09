@@ -1,11 +1,11 @@
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import {
   View,
   Text,
   Image,
 } from 'react-native';
 import styles, { tamaguiStyles } from 'app/constants/style';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback  } from 'react';
 import api from '../services/api';
 import { Button, XStack, YStack } from 'tamagui';
 import { Settings, Trophy, Flame, BarChart2, Award, Camera } from '@tamagui/lucide-icons';
@@ -16,56 +16,59 @@ export default function ProfileScreen() {
   const [userName, setUserName] = useState('');
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState("0");
-
-  useEffect(() => {
-    const loadUserData = async () => {
-      try {
-       
-        const savedEmail = await AsyncStorage.getItem('userEmail');
-       
-
-        if (!savedEmail) {
-          console.log("Aviso: Nenhum e-mail encontrado no armazenamento.");
-          return;
-        }
-
-        const response = await api.get(`/users/profile/${savedEmail.trim()}`);
-      
-        const userData = response.data;
-
-       
-        if (userData) {
-          const nameToSet = userData.name || userData.nome || 'Usuário';
-          const scoreToSet = userData.score ?? 0;
-
-          setUserName(nameToSet);
-          setScore(scoreToSet);
-         
-        }
-
-      } catch (err: any) {
  
-        console.dir(err);
-       
-        if (err.response) {
-          // O backend respondeu, mas com erro (Ex: 404, 500)
-          console.log("Status do Backend:", err.response.status);
-          console.log("Resposta do Backend:", err.response.data);
-          alert(`Erro do Servidor: ${err.response.status}`);
-        } else if (err.request) {
-          // O app não conseguiu nem falar com o backend
-          console.log("O servidor não respondeu. O IP da API pode estar errado.");
-          alert("Erro de conexão: Servidor offline ou IP incorreto.");
-        } else {
-          // Erro de código no JavaScript
-          console.log("Erro de código:", err.message);
-          alert(`Erro de código: ${err.message}`);
-        }
-      }
-    };
+  const loadUserData = async () => {
+    try {
+      
+      const savedEmail = await AsyncStorage.getItem('userEmail');
+      
 
-  loadUserData();
-  }, []);
+      if (!savedEmail) {
+        console.log("Aviso: Nenhum e-mail encontrado no armazenamento.");
+        return;
+      }
+
+      const response = await api.get(`/users/profile/${savedEmail.trim()}`);
+    
+      const userData = response.data;
+
+      
+      if (userData) {
+        const nameToSet = userData.name || userData.nome || 'Usuário';
+        const scoreToSet = userData.score ?? 0;
+
+        setUserName(nameToSet);
+        setScore(scoreToSet);
+        
+      }
+
+    } catch (err: any) {
+
+      console.dir(err);
+      
+      if (err.response) {
+        // O backend respondeu, mas com erro (Ex: 404, 500)
+        console.log("Status do Backend:", err.response.status);
+        console.log("Resposta do Backend:", err.response.data);
+        alert(`Erro do Servidor: ${err.response.status}`);
+      } else if (err.request) {
+        // O app não conseguiu nem falar com o backend
+        console.log("O servidor não respondeu. O IP da API pode estar errado.");
+        alert("Erro de conexão: Servidor offline ou IP incorreto.");
+      } else {
+        // Erro de código no JavaScript
+        console.log("Erro de código:", err.message);
+        alert(`Erro de código: ${err.message}`);
+      }
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadUserData(); //Rodar sempre que você voltar para esta tela
+    }, [])
+  );
+
   return (
 
   <View style={styles.mainContainer}>
