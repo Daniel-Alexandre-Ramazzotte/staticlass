@@ -1,13 +1,18 @@
+import { PlaneLanding } from '@tamagui/lucide-icons';
 import { StyleSheet } from 'react-native';
+import { black } from 'react-native-paper/lib/typescript/styles/themes/v2/colors';
 
 export const palette = {
   primary: '#1E63C3',
   accent: '#283cad9f',
   secondary: '#3700ffff',
   background: '#002272ff',
+  backgroundLight: '#0074c3',
   offBlack: '#171717',
   offWhite: '#fcfcfc',
+  white: '#ffffff',
   grey: '#b0b0b0',
+  red: '#f65151',
 };
 
 export const PRIMARY = '#1E63C3';
@@ -181,45 +186,116 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
   },
-
-  // Result Screen
-  resultsWrap: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: BG,
-    padding: 100,
-  },
-  resultTitle: { fontSize: 32, fontWeight: '800', color: '#ffffff' },
-  resultCard: {
-    backgroundColor: BG,
-    padding: 28,
-    borderRadius: 16,
-    alignItems: 'center',
-    position: 'absolute',
-    top: 80,
-    width: 400,
-  },
-  resultScore: { fontSize: 42, fontWeight: '900', color: '#ffffff' },
-  resultMessage: { marginTop: 10, fontSize: 16, color: '#ffffffff' },
   restartButton: {
-    position: 'absolute',
-    bottom: 20,
-    backgroundColor: palette.secondary,
-    padding: 15,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-
+    position: 'absolute', 
+    bottom: 20, 
+    backgroundColor: palette.secondary, 
+    padding: 15, 
+    borderRadius: 12, 
+    alignItems: 'center', 
+    justifyContent: 'center', 
     width: 200,
   },
-  restartText: { color: '#ffffff', fontWeight: 'bold' },
-  errorText: {
-    fontSize: 18,
-    textAlign: 'center',
-    color: 'red',
-    marginBottom: 30,
+  restartText: { color: '#ffffff', fontWeight: 'bold'},
+
+  // Result Screen
+  resultArea: {
+    flex: 1,
+    backgroundColor: '#0f6ea9',
+  },
+  containerResult: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  // Aba vermelha do topo
+  clipboardClip: {
+    position: 'absolute',
+    top: -35,                
+    width: 70,             
+    height: 70,
+    borderRadius: 35,        
+    backgroundColor: '#f65151',
+    alignItems: 'center',   
+    zIndex: -1,             
+  },
+
+  clipboardHole: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#fff',
+    marginTop: 15,            
+  },
+  topBadge: {
+    backgroundColor: '#f65151',
+    paddingVertical: 12,
+    paddingHorizontal: 60,
+    borderRadius: 15,
+    position: 'absolute',
+    alignItems: 'center',
+    overflow: 'visible',
+    top: 80,
+    justifyContent: 'center',
+    zIndex: 10,
+    elevation: 5,
+  },
+
+  resultTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#fff',
+  },
+  resultCard: {
+    backgroundColor: '#f2f2f2',
+    width: '90%',
+    height: '70%',
+    borderRadius: 30,
+    paddingTop: 50,
+    paddingHorizontal: 25,
+    paddingBottom: 30,
+    alignItems: 'center',
+  },
+  resultScore: {
+    fontSize: 60,
+    fontWeight: '900',
+    color: '#000',
+    marginBottom: 20,
+  },
+  resultItem: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 12,
+    width: '100%',
+  },
+  resultQuestion: {
+    fontSize: 16,
     fontWeight: 'bold',
+    marginRight: 8,
+  },
+
+  resolutionText: {
+    color: '#093d60',
+    textDecorationLine: 'underline',
+    fontWeight:'bold',
+    fontSize: 14,
+  },
+  // Botão rodapé
+  restartQuizButton: {
+    backgroundColor: '#f65151',
+    width: '100%',
+    paddingVertical: 25,
+    alignItems: 'center',
+    alignContent: 'center',
+    position: 'absolute',
+    bottom: 0,
+  },
+  restartQuizText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 22,
   },
   errorLoginText: {
     fontSize: 14,
@@ -228,24 +304,13 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     fontWeight: 'bold',
   },
-  resultItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 6,
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    backgroundColor: PRIMARY,
-    borderRadius: 12,
-    width: 200,
-  },
-  resultQuestion: { fontSize: 16, fontWeight: '600', color: '#ffffffff' },
-  safeArea: { flex: 1, backgroundColor: BG },
   scrollContainer: {
-    flexGrow: 1, // permite o conteúdo ocupar o espaço necessário
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 20,
+  flexGrow: 1,
+  alignItems: 'center',
+  justifyContent: 'center',
+  paddingVertical: 20,
   },
+
   profileHeader: {
     alignItems: 'center',
     marginBottom: 30,
@@ -253,7 +318,7 @@ const styles = StyleSheet.create({
   userNameText: {
   fontSize: 22,
   fontWeight: 'bold',
-  color: '#333', // Cinza escuro/Preto para aparecer no fundo branco
+  color: '#333', 
   marginTop: 10,  
   },
   statsContainer: {
@@ -321,7 +386,8 @@ export const tamaguiStyles = {
   buttonTextDark: {
     color: '#ffffff',
     fontWeight: '600',
-  }
+  },
+ 
 };
 
 export default styles;

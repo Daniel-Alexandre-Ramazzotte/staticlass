@@ -25,38 +25,65 @@ const ResultScreen = () => {
   ).length;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.resultsWrap}>
+    <SafeAreaView style={styles.resultArea}>
         <Stack.Screen options={{ headerShown: false }} />
+        <View style={styles.containerResult}>
+        
+        <View style={styles.topBadge}>
+          <View style={styles.clipboardClip}>
+            <View style={styles.clipboardHole} />
+          </View>
+          <Text style={styles.resultTitle}>RESUMO</Text>
+        </View>
+
         <View style={styles.resultCard}>
-          <Text style={styles.resultTitle}>Resultados da Sessão</Text>
           <Text style={styles.resultScore}>
             {score}/{result.length}
           </Text>
-          <Text style={styles.resultMessage}>Excelente!</Text>
 
-          {result &&
-            result.map((answer: any, index: number) => (
-              <View key={index} style={styles.resultItem}>
-                <Text style={styles.resultQuestion}>Pergunta {index + 1}:</Text>
-                {answer.message === 'correct' ? (
-                  <Text style={{ color: 'green' }}> Correta</Text>
-                ) : (
-                  <Text style={{ color: 'red' }}> Incorreta</Text>
-                )}
-              </View>
-            ))}
+        
+
+          <ScrollView showsVerticalScrollIndicator={false}
+                      style= {{ width:'100%'}}
+                      contentContainerStyle = {{ paddingBottom: 20}}
+                      >
+            {result && result.map((answer: any, index: number) => {
+              const statusColor = answer.message === 'correct' ? '#55bf44' : '#f65151';
+
+              return (
+                <View key={index} style={styles.resultItem}>
+                  <Text style={[styles.resultQuestion, { color: statusColor }]}>
+                    Questão {index + 1}: 
+                  </Text>
+
+                  <Pressable
+                    onPress={() => {
+                      router.push({
+                        pathname: '../screens/SolutionScreen',
+                        params: { questionIndex: index },
+                      });
+                    }}
+                  >
+                    <Text style={styles.resolutionText}>Resolução</Text>
+                  </Pressable>
+                </View>
+              );
+            })} 
+          </ScrollView>
         </View>
+       </View>
+      
 
         <Pressable
-          style={styles.restartButton}
+          style={styles.restartQuizButton}
           onPress={() => router.push('../(tabs)/home')}
         >
-          <Text style={styles.restartText}>Voltar</Text>
+          <Text style={styles.restartQuizText}>VOLTAR</Text>
         </Pressable>
-      </View>
     </SafeAreaView>
+  
   );
+
 };
 
 export default ResultScreen;
