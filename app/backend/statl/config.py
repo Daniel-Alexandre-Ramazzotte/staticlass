@@ -6,7 +6,7 @@ class Config:
     MAIL_USE_TLS = True
     MAIL_USE_SSL = False
 
-    MAIL_USERNAME = "seu_email@gmail.com"
-    MAIL_PASSWORD = "SENHA_OU_APP_PASSWORD"
+    MAIL_USERNAME = "vinitokada@gmail.com"
+    MAIL_PASSWORD = "poaw ttgf yfmc mbjl"
 
-    MAIL_DEFAULT_SENDER = ("APP", "seu_email@gmail.com")
+    MAIL_DEFAULT_SENDER = ("APP", "vinitokada@gmail.com")

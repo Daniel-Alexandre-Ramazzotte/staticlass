@@ -31,5 +31,9 @@ def send_reset_email(to: str, token: str):
         recipients=[to],
         body=body
     )
+    print(current_app.config["MAIL_SERVER"])
+    print(current_app.config["MAIL_PORT"])
+    with current_app.app_context():
+        mail.send(msg)
 
-    mail.send(msg)
+
