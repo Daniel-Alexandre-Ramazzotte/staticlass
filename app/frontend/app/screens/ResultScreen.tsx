@@ -60,7 +60,7 @@ const ResultScreen = () => {
                     onPress={() => {
                       router.push({
                         pathname: '../screens/SolutionScreen',
-                        params: { questionIndex: index },
+                        params: { questionData: JSON.stringify(answer) },
                       });
                     }}
                   >

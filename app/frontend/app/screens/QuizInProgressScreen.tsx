@@ -29,6 +29,8 @@ interface QuizQuestions {
   answers: QuizAnswer[]; // Mudou de string[][] para QuizAnswer[]
   correct_answers: string[];
   solutions: string[];
+  image_q?: string[];
+  image_s?: string[];
 }
 
 
@@ -65,7 +67,6 @@ const QuizInProgressScreen = () => {
       // Log para debug: Verifique se 'answers' no terminal é um [] ou {}
       console.log("RESPOSTA API:", data);
       
-      // Dentro do fetchQuestion, substitua o setQuestions por isso:
       setQuestions({
         num_questions: Number(qtd),
         counter: 0,
@@ -76,6 +77,8 @@ const QuizInProgressScreen = () => {
           : Object.values(data.answers || {}), 
         correct_answers: data.correct_answer || [],
         solutions: data.solution || [],
+        image_q: data.image_q || [],
+        image_s: data.image_s || [],
       });
       
     } catch (err: any) {
@@ -105,23 +108,32 @@ const QuizInProgressScreen = () => {
   const handleNextQuestion = async () => {
     if (userAnswer === '') return;
 
-    try {
-      const res = await CheckAnswer(userAnswer, counter);
-      const newResponses = [...userResponses, String(res)];
-      setUserResponses(newResponses);
+    
+    const correct = quizQuestions.correct_answers[counter];
+    
+    const currentQuestionResult = {
+      message: userAnswer === correct ? 'correct' : 'incorrect', 
+      userAnswer: userAnswer,
+      issue: quizQuestions.issues[counter],
+      correct_answer: correct,
+      solution: quizQuestions.solutions[counter],
+      image_q: quizQuestions.image_q?.[counter] || null,
+      image_s: quizQuestions.image_s?.[counter] || null,
+    };
 
-      const nextIndex = counter + 1;
+    const newResponses = [...userResponses, currentQuestionResult];
+    setUserResponses(newResponses as any);
 
-      if (nextIndex >= quizQuestions.num_questions) {
-        router.push({
-          pathname: '../screens/ResultScreen' as any,
-          params: { result: JSON.stringify(newResponses) },
-        });
-      } else {
-        setCounter(nextIndex);
-      }
-    } catch (err) {
-      console.error("Erro ao validar:", err);
+    const nextIndex = counter + 1;
+
+    if (nextIndex >= quizQuestions.num_questions) {
+     
+      router.push({
+        pathname: '../screens/ResultScreen' as any,
+        params: { result: JSON.stringify(newResponses) },
+      });
+    } else {
+      setCounter(nextIndex);
     }
   };
 

@@ -31,7 +31,10 @@ def random_question(num = NUM_QUESTIONS):
         {"id": 'D', "text": [q.answer_d for q in random_questions]},
         {"id": 'E', "text": [q.answer_e for q in random_questions]}
     ],
-    'correct_answer' : [q.correct_answer for q in random_questions]
+    'correct_answer' : [q.correct_answer for q in random_questions],
+    'solution': [q.solution for q in random_questions],
+    'image_q': [q.image_q for q in random_questions],
+    'image_s': [q.image_s for q in random_questions]
     })
     return questions
 
