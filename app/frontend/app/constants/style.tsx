@@ -4,12 +4,17 @@ import { Check as CheckIcon } from '@tamagui/lucide-icons';
 
 export const palette = {
   primary: '#1E63C3',
+  primaryBlue: '#0074c3',
+  primaryGreen: '#55bf44',
+  lightBlue: '#0066b7',
   accent: '#283cad9f',
   secondary: '#3700ffff',
   background: '#002272ff',
   offBlack: '#171717',
   offWhite: '#fcfcfc',
   grey: '#b0b0b0',
+  white: '#ffffff',
+  darkBlue: '#093d60',
 };
 
 export const PRIMARY = '#1E63C3';
@@ -90,27 +95,6 @@ const styles = StyleSheet.create({
   },
   footerText: { color: '#666' },
 
-  barWrap: {
-    flex: 1,
-    alignContent: 'center',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  progressRow: { marginBottom: 12, marginTop: 50, width: 200 },
-  progressText: {
-    color: '#ffffffff',
-    fontSize: 14,
-    marginBottom: 6,
-    textAlign: 'center',
-  },
-  progressBarBackground: {
-    height: 8,
-    backgroundColor: '#0011ffff',
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  progressBarFill: { height: 8, backgroundColor: PRIMARY, borderRadius: 8 },
-
   mainContainer: {
     flex: 1,
     height: '100%',
@@ -174,10 +158,12 @@ const styles = StyleSheet.create({
   reviewAnswer: {
     marginVertical: 5,
   },
-  question: {
+  issueText: {
     fontSize: 16,
-    color: palette.offWhite,
+    color: palette.offBlack,
+    lineHeight: 24,
   },
+
   buttonContainer: {
     justifyContent: 'center',
     alignItems: 'center',
@@ -253,62 +239,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 20,
   },
-});
-
-// 1. O Botão principal (Container)
-export const CheckButton = styled(Button, {
-  name: 'CheckButton',
-  height: 60,
-  paddingHorizontal: '$4',
-  backgroundColor: '$background',
-  borderWidth: 2,
-  borderColor: '$borderColor',
-  flexDirection: 'row',
-  justifyContent: 'flex-start',
-  alignItems: 'center',
-
-  // Efeito visual quando o botão for pressionado
-  pressStyle: { scale: 0.98 },
-
-  // Variante para mudar o estilo quando selecionado
-  variants: {
-    active: {
-      true: {
-        borderColor: '$blue8',
-        backgroundColor: '$blue1',
-      },
-    },
-  } as const,
-});
-
-// 2. O Quadrado do Checkbox
-export const StyledCheckbox = styled(Checkbox, {
-  name: 'StyledCheckbox',
-  size: '$5',
-  borderWidth: 2,
-  // Garante que o checkbox não herde cores indesejadas
-  backgroundColor: 'transparent',
-});
-
-// 3. O Indicador (Container do Ícone)
-export const StyledIndicator = styled(Checkbox.Indicator, {
-  alignItems: 'center',
-  justifyContent: 'center',
-});
-
-// 4. O Ícone corrigido (Aqui aplicamos a cor com segurança)
-export const StyledCheckIcon = styled(CheckIcon, {
-  color: '$blue10',
-  size: 18,
-});
-
-// 5. O Texto
-export const ButtonText = styled(Label, {
-  color: '$color',
-  fontSize: '$4',
-  fontWeight: 'bold',
-  paddingLeft: '$3',
-  cursor: 'pointer',
 });
 
 export default styles;

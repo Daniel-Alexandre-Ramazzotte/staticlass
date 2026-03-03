@@ -1,14 +1,12 @@
-// app/_layout.tsx
-
-import { Stack, SplashScreen, useRouter, useSegments } from 'expo-router'; // <--- Adicione useRouter e useSegments
+import { Stack, SplashScreen, useRouter, useSegments } from 'expo-router';
 import { useFonts } from 'expo-font';
 import React, { useEffect } from 'react';
-import { View, ActivityIndicator } from 'react-native'; // Para o loading
-import { Provider as PaperProvider } from 'react-native-paper';
+import { View, ActivityIndicator } from 'react-native';
+import { Drawer } from 'expo-router/drawer';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { TamaguiProvider } from 'tamagui';
 import { tamaguiConfig } from '../tamagui.config';
-import { AuthProvider, useAuth } from './context/AuthContext'; // Ajuste o caminho se necessário
+import { AuthProvider, useAuth } from './context/AuthContext';
 
 function InitialLayout() {
   const { session, role, isLoading } = useAuth(); //  Pegamos os dados do contexto
@@ -39,7 +37,7 @@ function InitialLayout() {
       }
     } else {
       if (inAuthGroup) {
-        router.replace('/(tabs)/home');
+        router.replace('(tabs)/home');
       }
     }
   }, [session, isLoading, fontsLoaded, segments]);
@@ -56,27 +54,23 @@ function InitialLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <TamaguiProvider config={tamaguiConfig}>
-        <PaperProvider>
-          <Stack
-            screenOptions={{
-              headerStyle: { backgroundColor: '#6200ee' },
-              headerTintColor: '#ffffff',
-              headerTitleStyle: { fontWeight: 'bold' },
-            }}
-          >
-            <Stack.Screen
-              name="(public)/login"
-              options={{ headerShown: false }}
-            />
+        <Stack
+          screenOptions={{
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen
+            name="(public)/login"
+            options={{ headerShown: false }}
+          />
 
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(app)" options={{ headerShown: false }} />
 
-            <Stack.Screen
-              name="quizInProgress"
-              options={{ headerShown: false }}
-            />
-          </Stack>
-        </PaperProvider>
+          <Stack.Screen
+            name="quizInProgress"
+            options={{ headerShown: false }}
+          />
+        </Stack>
       </TamaguiProvider>
     </GestureHandlerRootView>
   );

@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import styles from 'app/constants/style';
 import { useEffect, useState } from 'react';
-import api from '../services/api';
+import api from 'app/services/api';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
