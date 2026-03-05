@@ -32,6 +32,7 @@ def random_question(num = NUM_QUESTIONS):
         {"id": 'E', "text": [q.answer_e for q in random_questions]}
     ],
     'correct_answer' : [q.correct_answer for q in random_questions],
+      'solution' : [q.solution for q in random_questions],
     'image_questions' : [q.image_q for q in random_questions],
     'image_solutions' : [q.image_s for q in random_questions],
 

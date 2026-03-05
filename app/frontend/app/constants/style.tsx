@@ -1,6 +1,6 @@
+import { PlaneLanding } from '@tamagui/lucide-icons';
 import { StyleSheet } from 'react-native';
-import { Button, Checkbox, styled, XStack, Label } from 'tamagui';
-import { Check as CheckIcon } from '@tamagui/lucide-icons';
+import { black } from 'react-native-paper/lib/typescript/styles/themes/v2/colors';
 
 // #0066b7
 export const palette = {
@@ -11,11 +11,12 @@ export const palette = {
   accent: '#283cad9f',
   secondary: '#3700ffff',
   background: '#002272ff',
+  backgroundLight: '#0074c3',
   offBlack: '#171717',
   offWhite: '#fcfcfc',
-  grey: '#b0b0b0',
   white: '#ffffff',
-  darkBlue: '#093d60',
+  grey: '#b0b0b0',
+  red: '#f65151',
 };
 
 export const PRIMARY = '#1E63C3';
@@ -170,46 +171,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
   },
-
-  // Result Screen
-  resultsWrap: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: BG,
-    padding: 100,
-  },
-  resultTitle: { fontSize: 32, fontWeight: '800', color: '#ffffff' },
-  resultCard: {
-    backgroundColor: BG,
-    padding: 28,
-    borderRadius: 16,
-    alignItems: 'center',
-    position: 'absolute',
-    top: 80,
-    width: 400,
-  },
-  resultScore: { fontSize: 42, fontWeight: '900', color: '#ffffff' },
-  resultMessage: { marginTop: 10, fontSize: 16, color: '#ffffffff' },
   restartButton: {
-    position: 'absolute',
-    bottom: 20,
-    backgroundColor: palette.secondary,
-    padding: 15,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-
+    position: 'absolute', 
+    bottom: 20, 
+    backgroundColor: palette.secondary, 
+    padding: 15, 
+    borderRadius: 12, 
+    alignItems: 'center', 
+    justifyContent: 'center', 
     width: 200,
   },
-  restartText: { color: '#ffffff', fontWeight: 'bold' },
-  errorText: {
-    fontSize: 18,
-    textAlign: 'center',
-    color: 'red',
-    marginBottom: 30,
-    fontWeight: 'bold',
-  },
+  restartText: { color: '#ffffff', fontWeight: 'bold'},
+  
   errorLoginText: {
     fontSize: 14,
     textAlign: 'center',
@@ -217,16 +190,26 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     fontWeight: 'bold',
   },
-  resultItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 6,
-    paddingVertical: 14,
-    paddingHorizontal: 12,
-    backgroundColor: PRIMARY,
-    borderRadius: 12,
-    width: 200,
+  scrollContainer: {
+  flexGrow: 1,
+  alignItems: 'center',
+  justifyContent: 'center',
+  paddingVertical: 20,
   },
+
+  profileHeader: {
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  userNameText: {
+  fontSize: 22,
+  fontWeight: 'bold',
+  color: '#333', 
+  marginTop: 10,  
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
   image: {
     width: 300,
     height: 200,
@@ -237,9 +220,72 @@ const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1, // permite o conteúdo ocupar o espaço necessário
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 20,
+    width: '80%',
+    backgroundColor: '#FFFFFF', 
+    borderRadius: 15,           
+    paddingVertical: 10,      
+    marginTop: -10,
+    marginBottom: 30,             
+    elevation: 4,           
   },
+
+  statItem: {
+    flex: 1,                  
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    paddingVertical: 5,
+  },
+
+  statValue: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#007AFF',
+    marginTop: 2,
+  },
+
+  statLabel: {
+    fontSize: 12,
+    color: '#5a5a5a',
+    fontWeight: '500',
+  },
+ 
+});
+
+// Estilos específicos para componentes Tamagui
+export const tamaguiStyles = {
+  statsButton: {
+    backgroundColor: '#007AFF', // Azul vibrante
+    borderRadius: 12,
+    size: "$5",
+    pressStyle: { scale: 0.97, opacity: 0.9 },
+  },
+  rankingButton: {
+    backgroundColor: '#D1E3F8', // Azul claro/bebê
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#007AFF',
+    color: '#007AFF',
+    size: "$5",
+    pressStyle: { scale: 0.97, opacity: 0.8 },
+  },
+  buttonOutline: {
+    backgroundColor: '#171717', // Off-black como no seu print
+    borderRadius: 12,
+    size: "$5",
+    pressStyle: { scale: 0.97, opacity: 0.9 },
+  },
+  buttonTextLight: {
+    color: '#007AFF',
+    fontWeight: '600',
+  },
+  buttonTextDark: {
+    color: '#ffffff',
+    fontWeight: '600',
+  },
+ 
+};
+
 });
 
 export default styles;
+

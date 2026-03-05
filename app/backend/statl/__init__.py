@@ -53,7 +53,7 @@ def create_app(testing: bool = False):
     from .routes import auth, questions, users
     app.register_blueprint(auth.bp)
     app.register_blueprint(questions.bp)
-    #app.register_blueprint(users.bp)
+    app.register_blueprint(users.bp)
 
    
 

@@ -3,7 +3,6 @@ from sqlalchemy import text
 from ..utils.auth_middleware import  require_role
 
 
-
 # get user by email
 def get_user_by_email(email):
     ''' Retorna o usuário com o email fornecido.
@@ -37,11 +36,10 @@ def create_user(email, password_hash, name):
     return user_id
 
 # Update user
-@require_role('admin')
 def update_user(user_id, data):
     ''' Atualiza os dados do usuário com o ID fornecido.
     '''
-    fields = ', '.join([f"{k}" for k in data.keys()])
+    fields = ', '.join([f"{k} = :{k}" for k in data.keys()])
     params = data.copy()
     params["id"] = user_id
     try:
@@ -49,6 +47,7 @@ def update_user(user_id, data):
         db.session.execute(query, params)
         db.session.commit()
     except Exception as e:
+        db.session.rollback()
         raise KeyError(f"Something went wrong {e}")
 
 
@@ -62,8 +61,8 @@ def update_password(user_id, new_password_hash):
     except Exception as e:
         raise KeyError(f"Something went wrong {e}")
 
-# Delete user
-@require_role(['admin','professor'])
+# Delete user - quero deletar um aluno pode manter essa mesma função ?
+# @require_role(['admin','professor']) 
 def delete_user(user_id):
     ''' Deleta o usuário com o ID fornecido.
     '''
@@ -73,5 +72,3 @@ def delete_user(user_id):
         db.session.commit()
     except Exception as e:
         raise KeyError(f"Something went wrong {e}")
-
-

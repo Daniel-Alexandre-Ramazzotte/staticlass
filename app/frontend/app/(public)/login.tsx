@@ -63,6 +63,11 @@ export default function LoginScreen() {
         return;
       }
       const token = response?.data.token;
+      await AsyncStorage.setItem('userEmail', email);
+      console.log("Email salvo com sucesso:", email);
+
+      await AsyncStorage.setItem('@auth_session', token); 
+      
 
       await signIn(token);
     } catch (error: any) {
