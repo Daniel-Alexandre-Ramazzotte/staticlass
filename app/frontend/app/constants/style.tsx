@@ -1,13 +1,21 @@
 import { StyleSheet } from 'react-native';
+import { Button, Checkbox, styled, XStack, Label } from 'tamagui';
+import { Check as CheckIcon } from '@tamagui/lucide-icons';
 
+// #0066b7
 export const palette = {
   primary: '#1E63C3',
+  primaryBlue: '#0074c3',
+  primaryGreen: '#55bf44',
+  lightBlue: '#0089b7',
   accent: '#283cad9f',
   secondary: '#3700ffff',
   background: '#002272ff',
   offBlack: '#171717',
   offWhite: '#fcfcfc',
   grey: '#b0b0b0',
+  white: '#ffffff',
+  darkBlue: '#093d60',
 };
 
 export const PRIMARY = '#1E63C3';
@@ -88,27 +96,6 @@ const styles = StyleSheet.create({
   },
   footerText: { color: '#666' },
 
-  barWrap: {
-    flex: 1,
-    alignContent: 'center',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  progressRow: { marginBottom: 12, marginTop: 50, width: 200 },
-  progressText: {
-    color: '#ffffffff',
-    fontSize: 14,
-    marginBottom: 6,
-    textAlign: 'center',
-  },
-  progressBarBackground: {
-    height: 8,
-    backgroundColor: '#0011ffff',
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  progressBarFill: { height: 8, backgroundColor: PRIMARY, borderRadius: 8 },
-
   mainContainer: {
     flex: 1,
     height: '100%',
@@ -172,10 +159,12 @@ const styles = StyleSheet.create({
   reviewAnswer: {
     marginVertical: 5,
   },
-  question: {
+  issueText: {
     fontSize: 16,
-    color: palette.offWhite,
+    color: palette.offBlack,
+    lineHeight: 24,
   },
+
   buttonContainer: {
     justifyContent: 'center',
     alignItems: 'center',
@@ -237,6 +226,11 @@ const styles = StyleSheet.create({
     backgroundColor: PRIMARY,
     borderRadius: 12,
     width: 200,
+  },
+  image: {
+    width: 300,
+    height: 200,
+    resizeMode: 'contain',
   },
   resultQuestion: { fontSize: 16, fontWeight: '600', color: '#ffffffff' },
   safeArea: { flex: 1, backgroundColor: BG },

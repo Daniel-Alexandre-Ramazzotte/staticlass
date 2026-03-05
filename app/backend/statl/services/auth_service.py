@@ -4,6 +4,15 @@ from statl.repositories.user_repository import get_user_by_email, create_user, u
 from werkzeug.security import generate_password_hash, check_password_hash
 from statl.security.tokens import generate_reset_token, verify_reset_token
 from statl.services.email_service import send_reset_email
+import re
+
+EMAIL_REGEX = re.compile(
+    r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+)
+
+def email_valido(email: str) -> bool:
+    return bool(EMAIL_REGEX.match(email))
+
 
 def register_user(data):
     ''' Serviço para registrar um novo usuário.
@@ -12,12 +21,20 @@ def register_user(data):
         return None, jsonify({"error": "Requisicao invalida"}), 400
     if get_user_by_email(data.get("email")) is not None:
         return None, jsonify({"error": "Usuario ja registrado."}), 400
-    try:
-        email = data["email"]
-        password = data["password"]
-        name = data["name"]
-    except KeyError as e:
-        return None, jsonify({"error": f"Campo obrigatório ausente: {e}"}), 400
+
+    if not all (k in data for k in ("email", "password", "confirm_password", "name")):
+        return None, jsonify({"error": "Campos obrigatórios ausentes."}), 400
+
+    if data["password"] != data["confirm_password"]:
+        return None, jsonify({"error": "As senhas nao coincidem."}), 400
+    
+    
+    email = data["email"]
+    password = data["password"]
+    name = data["name"]
+    
+    if not email_valido(email):
+        return None, jsonify({"error": "Email invalido."}), 400
         
     user = create_user(email, generate_password_hash(password), name)
     return user, None, 201
@@ -45,9 +62,13 @@ def login_user(data):
         return None, jsonify({"error": "Email ou senha incorretos."}), 400
 
     # Entender melhor a logica
+    # Jogar isso em outro lugar /utils/
     token = create_access_token(
         identity=str(user.id),
-        additional_claims={"role": user.role}
+        additional_claims={
+            "role": user.role,
+            "email": user.email
+            }
     )
     return token, None, 200
 

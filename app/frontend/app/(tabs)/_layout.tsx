@@ -1,35 +1,74 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { MaterialCommunityIcons } from '@expo/vector-icons'; // Use um pacote de ícones
+import { Home, Notebook, Trophy, User } from '@tamagui/lucide-icons';
+import { Circle } from 'tamagui';
+import { palette } from '../constants/style';
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#0084ffff',
-        tabBarInactiveTintColor: '#cccccc',
+        tabBarActiveTintColor: 'rgb(255, 255, 255)',
+        tabBarInactiveTintColor: 'rgba(255, 255, 255, 0.7)',
         tabBarStyle: {
-          backgroundColor: '#001147ff',
+          backgroundColor: palette.primaryBlue,
+          height: 75,
+          paddingBottom: 10,
+          paddingTop: 10,
+          borderTopWidth: 0,
+          elevation: 0,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: 'bold',
+          marginTop: 4,
         },
       }}
     >
       <Tabs.Screen
-        name="home" // Corresponde ao arquivo home.tsx
+        name="home"
         options={{
           title: 'Início',
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="home" color={color} size={26} />
+          tabBarIcon: ({ focused }) => (
+            <Circle
+              size={42}
+              backgroundColor={palette.white}
+              opacity={focused ? 1 : 0.7}
+            >
+              <Home color={palette.primaryBlue} size={26} />
+            </Circle>
           ),
         }}
       />
 
       <Tabs.Screen
+        name="questions"
+        options={{
+          title: 'Questões',
+          tabBarIcon: ({ focused }) => (
+            <Circle
+              size={42}
+              backgroundColor={palette.white}
+              opacity={focused ? 1 : 0.7}
+            >
+              <Notebook color={palette.primaryBlue} size={26} />
+            </Circle>
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'Perfil',
-          tabBarIcon: ({ color }) => (
-            <MaterialCommunityIcons name="cog" color={color} size={26} />
+          tabBarIcon: ({ focused }) => (
+            <Circle
+              size={42}
+              backgroundColor={palette.white}
+              opacity={focused ? 1 : 0.7}
+            >
+              <User color={palette.primaryBlue} size={26} />
+            </Circle>
           ),
         }}
       />

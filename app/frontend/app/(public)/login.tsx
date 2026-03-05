@@ -1,17 +1,28 @@
 import { useRouter } from 'expo-router';
 import {
   View,
-  Text,
   Image,
   TextInput,
   Pressable,
   KeyboardAvoidingView,
 } from 'react-native';
-import styles from 'app/constants/style';
+import styles, { palette } from 'app/constants/style';
 import { useState } from 'react';
 import CheckLogin from '../services/CheckLogin';
 import RecoverPassword from '../services/RecoverPasswordService';
-const appName = 'staticlass';
+import { appName } from 'app/constants/names';
+import { useAuth } from '../context/AuthContext';
+import {
+  XStack,
+  YStack,
+  ZStack,
+  Button,
+  Text,
+  SizeTokens,
+  Input,
+  TextArea,
+} from 'tamagui';
+
 /*
 
     Tela de Login/Registro
@@ -33,22 +44,40 @@ export default function LoginScreen() {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
+
+  const { signIn } = useAuth();
+
   const handleLogin = async () => {
-    // Realiza a lógica de autenticação aqui
+    // Realiza a lógica de autenticação
     // Após o login bem-sucedido, navega para a tela principal (conjunto de abas)
-
-    if ((await CheckLogin({ email, password })) === true) {
-      console.log('Login bem-sucedido');
-
-      router.replace('/(tabs)/home');
+    if (!email || !password) {
+      setErrorMessage('Por favor, preencha todos os campos.');
     } else {
-      console.log('Falha no login');
-      setErrorMessage('Email ou senha incorretos. Por favor, tente novamente.');
+      setErrorMessage('');
+    }
+
+    try {
+      const response = await CheckLogin({ email, password });
+      if (!response) {
+        setErrorMessage('Falha no login. Verifique suas credenciais.');
+        return;
+      }
+      const token = response?.data.token;
+
+      await signIn(token);
+    } catch (error: any) {
+      console.error('Erro no login:', error);
     }
   };
 
   return (
-    <View style={styles.mainContainer}>
+    <YStack
+      f={1}
+      jc="center"
+      ai="center"
+      gap="$4"
+      backgroundColor={palette.offWhite}
+    >
       <Image
         source={require('../../assets/images/logo.png')}
         style={styles.logo}
@@ -56,37 +85,81 @@ export default function LoginScreen() {
       <Text style={styles.title}>{appName}</Text>
       {/* Campo de email*/}
 
-      <TextInput
-        style={styles.input}
-        onChangeText={setEmail}
-        // style={styles.input}
-        placeholder="Email"
-      />
+      <YStack
+        jc="center"
+        padding="$4"
+        gap="$4"
+        width={'80%'}
+        backgroundColor={palette.offWhite}
+      >
+        <Text fontSize={16} color={palette.offBlack}>
+          Email:
+        </Text>
+        <Input
+          gap="$4"
+          width={'100%'}
+          onChangeText={setEmail}
+          placeholder="Email"
+          backgroundColor={palette.darkBlue}
+          color={palette.offWhite}
+          placeholderTextColor={palette.grey}
+        />
 
-      {/* Campo de senha */}
+        {/* Campo de senha */}
+        <Text fontSize={16} color={palette.offBlack}>
+          Senha:
+        </Text>
+        <Input
+          gap="$4"
+          width={'100%'}
+          onChangeText={setPassword}
+          placeholder="Senha"
+          secureTextEntry={true}
+          backgroundColor={palette.darkBlue}
+          color={palette.offWhite}
+          placeholderTextColor={palette.grey}
+        />
 
-      <TextInput
-        style={styles.input}
-        onChangeText={setPassword}
-        // style={styles.input}
-        placeholder="Senha"
-        secureTextEntry={true}
-      />
+        {/* Botão de login */}
+        <Button
+          onPress={handleLogin}
+          backgroundColor={palette.primaryBlue}
+          color={palette.offWhite}
+          w={'50%'}
+          alignSelf="center"
+        >
+          <Text color={palette.offWhite} fontWeight={'bold'} fontSize={20}>
+            Entrar
+          </Text>
+        </Button>
 
-      {/* Botao de login */}
-      <Pressable style={styles.loginButton} onPress={handleLogin}>
-        <Text style={styles.startText}>Entrar</Text>
-      </Pressable>
+        {/* Botao de recuperacao de senha */}
+        <Button
+          onPress={() => router.push('/(public)/recover-password')}
+          backgroundColor={palette.offWhite}
+          color={palette.primaryBlue}
+          w={'100%'}
+          alignSelf="center"
+        >
+          <Text color={palette.primaryBlue} fontWeight={'bold'} fontSize={16}>
+            Esqueci minha senha
+          </Text>
+        </Button>
+        {/* Botao de registro */}
+        <Button
+          onPress={() => router.push('/(public)/register')}
+          backgroundColor={palette.offWhite}
+          color={palette.primaryBlue}
+          w={'100%'}
+          alignSelf="center"
+        >
+          <Text color={palette.primaryBlue} fontWeight={'bold'} fontSize={16}>
+            Registrar
+          </Text>
+        </Button>
 
-      <Text style={styles.errorLoginText}>{errorMessage}</Text>
-      {/* Botao de recuperacao de senha */}
-      <Pressable onPress={() => router.push('/(public)/recover-password')}>
-        <Text>Esqueci minha senha</Text>
-      </Pressable>
-      {/* Botao de registro */}
-      <Pressable onPress={() => router.push('/(public)/register')}>
-        <Text>Registrar</Text>
-      </Pressable>
-    </View>
+        <Text style={styles.errorLoginText}>{errorMessage}</Text>
+      </YStack>
+    </YStack>
   );
 }

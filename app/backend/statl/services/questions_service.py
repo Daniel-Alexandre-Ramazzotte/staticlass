@@ -1,19 +1,19 @@
 from flask import Blueprint, jsonify, session, current_app
-from ..repositories.questions_repository import get_random_question, add_question_to_db, update_question
+from ..repositories.questions_repository import get_random_question, add_question_to_db, update_question, search_subject, add_subject_to_db
 import os
 from werkzeug.utils import secure_filename
 ## Numero fixo temporario
 NUM_QUESTIONS = 5
 
-bp = Blueprint('gen',__name__, url_prefix='/g')
 
+FRONT_END_URL = "http://10.0.2.2:5000/"
 # TODO: Sistema de personalizacao de perguntas
 # Por exemplo, selecionar categorias, niveis de dificuldade, etc.
 
 
 
-def random_question(amount = NUM_QUESTIONS):   
-    result = get_random_question(amount)
+def random_question(num = NUM_QUESTIONS):   
+    result = get_random_question(num)
 
     random_questions = result.all()
     session['correct_answers'] = [q.correct_answer for q in random_questions]
@@ -31,7 +31,10 @@ def random_question(amount = NUM_QUESTIONS):
         {"id": 'D', "text": [q.answer_d for q in random_questions]},
         {"id": 'E', "text": [q.answer_e for q in random_questions]}
     ],
-    'correct_answer' : [q.correct_answer for q in random_questions]
+    'correct_answer' : [q.correct_answer for q in random_questions],
+    'image_questions' : [q.image_q for q in random_questions],
+    'image_solutions' : [q.image_s for q in random_questions],
+
     })
     return questions
 
@@ -48,17 +51,29 @@ def check_answer(data):
 
 def add_question_service(data):
     if not data:
+        
         return jsonify({"error": "data is incorrect"})
 
-    if not all (k in data for k in ("issue", "answer_a", "answer_b", "answer_c", "answer_d", "answer_e", "correct_answer", "solution")):
+    if not all (k in data for k in ("subject", "issue", "answer_a", "answer_b", "answer_c", "answer_d", "answer_e", "correct_answer", "solution")):
         
         return jsonify({"error": "missing fields in data"})
 
+    
+    subject_name = data.pop("subject")
+   
+    subject_result = search_subject(subject_name)
+    
+    subject = subject_result.first()
+   
+    if not subject:
+        
+        data['id_subject'] = add_subject_to_db(subject_name)
+    else:
+        data['id_subject'] = subject.id
 
+    
     return add_question_to_db(data)
 
-
-    #return jsonify({'message': 'question added successfully'})
 
 
 def update_question_service(data):
@@ -91,3 +106,13 @@ def process_upload(file_obj):
     except Exception as e:
         print(f"Erro ao salvar arquivo: {e}") # Log simples para debug
         return None
+    
+
+
+
+def get_images():
+    '''
+    Retorna uma imagem enviada.
+    '''
+    upload_folder = current_app.config['UPLOAD_FOLDER']
+    files = os.listdir(upload_folder)

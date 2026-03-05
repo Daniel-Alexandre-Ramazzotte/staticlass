@@ -6,11 +6,13 @@ import {
   TextInput,
   Pressable,
   KeyboardAvoidingView,
+  Alert,
 } from 'react-native';
 import styles from 'app/constants/style';
 import { useState } from 'react';
 import style from 'app/constants/style';
-
+import RegisterNewUserService from 'app/services/RegisterNewUserService';
+import { appName } from 'app/constants/names';
 /*
 
 Tela de registro 
@@ -21,19 +23,35 @@ Verificar
 
 */
 
-const appName = 'Staticlass';
-
 export default function RegisterScreen() {
   const router = useRouter(); // Constante do roteador para navegação
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [confirm_password, setConfirmPassword] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [name, setName] = useState<string>('');
+
   const handleRegister = async () => {
     // Realiza a lógica de registro aqui
     // Após o registro bem-sucedido, navega para a tela principal (conjunto de abas)
-
-    router.push('/(public)/login');
+    const response = await RegisterNewUserService({
+      email,
+      password,
+      confirm_password,
+      name,
+    });
+    if (response?.status !== 201) {
+      setErrorMessage(response?.data.error || 'Erro ao registrar. Tente novamente.');
+    } else {
+      showAlert();
+    }
+  };
+  const showAlert = () => {
+    Alert.alert(
+      'Email cadastrado com sucesso! Faça login para continuar.',
+      '',
+      [{ text: 'OK', onPress: () => router.push('/(public)/login') }]
+    );
   };
   return (
     <View style={styles.mainContainer}>
@@ -42,7 +60,7 @@ export default function RegisterScreen() {
         source={require('../../assets/images/logo.png')}
         style={styles.logo}
       ></Image>
-      <Text style={styles.title}>Cadastre-se!</Text>
+      <Text style={styles.title}>Cadastre-se no {appName}!</Text>
       <TextInput
         style={style.input}
         value={name}
@@ -62,10 +80,16 @@ export default function RegisterScreen() {
         placeholder="Senha"
         secureTextEntry
       />
+      <TextInput
+        style={style.input}
+        value={confirm_password}
+        onChangeText={setConfirmPassword}
+        placeholder="Confirmar Senha"
+        secureTextEntry
+      />
 
-      {errorMessage ? (
-        <Text style={styles.errorText}>{errorMessage}</Text>
-      ) : null}
+      <Text style={styles.errorText}>{errorMessage}</Text>
+
       <Pressable onPress={handleRegister} style={styles.startButton}>
         <Text style={styles.startText}>Registrar</Text>
       </Pressable>

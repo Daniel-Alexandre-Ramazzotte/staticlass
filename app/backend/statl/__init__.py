@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from flask_jwt_extended import JWTManager
 from flask_login import LoginManager
 from flask_mail import Mail
-
+from .config import Config
 db = SQLAlchemy()
 mail = Mail()
 
@@ -24,7 +24,9 @@ login_manager = LoginManager()
 def create_app(testing: bool = False):
     load_dotenv()
     app = Flask(__name__, instance_relative_config = True)
+    app.config.from_object(Config)
 
+    print("MAIL_SERVER no create_app:", app.config.get("MAIL_SERVER"))
     app.config["SQLALCHEMY_DATABASE_URI"] = (
         f"mysql+mysqlconnector://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}"
         f"@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
@@ -44,6 +46,7 @@ def create_app(testing: bool = False):
     
     jwt = JWTManager(app)
     login_manager.init_app(app)
+    
     mail.init_app(app)
     db.init_app(app)
     
@@ -52,10 +55,13 @@ def create_app(testing: bool = False):
     app.register_blueprint(questions.bp)
     #app.register_blueprint(users.bp)
 
-
    
 
     
     with app.app_context():
         db.create_all()
     return app
+
+
+
+
