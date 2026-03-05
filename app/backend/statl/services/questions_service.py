@@ -5,8 +5,8 @@ from werkzeug.utils import secure_filename
 ## Numero fixo temporario
 NUM_QUESTIONS = 5
 
-bp = Blueprint('gen',__name__, url_prefix='/g')
 
+FRONT_END_URL = "http://10.0.2.2:5000/"
 # TODO: Sistema de personalizacao de perguntas
 # Por exemplo, selecionar categorias, niveis de dificuldade, etc.
 
@@ -32,9 +32,10 @@ def random_question(num = NUM_QUESTIONS):
         {"id": 'E', "text": [q.answer_e for q in random_questions]}
     ],
     'correct_answer' : [q.correct_answer for q in random_questions],
-    'solution': [q.solution for q in random_questions],
-    'image_q': [q.image_q for q in random_questions],
-    'image_s': [q.image_s for q in random_questions]
+      'solution' : [q.solution for q in random_questions],
+    'image_questions' : [q.image_q for q in random_questions],
+    'image_solutions' : [q.image_s for q in random_questions],
+
     })
     return questions
 
@@ -106,3 +107,13 @@ def process_upload(file_obj):
     except Exception as e:
         print(f"Erro ao salvar arquivo: {e}") # Log simples para debug
         return None
+    
+
+
+
+def get_images():
+    '''
+    Retorna uma imagem enviada.
+    '''
+    upload_folder = current_app.config['UPLOAD_FOLDER']
+    files = os.listdir(upload_folder)

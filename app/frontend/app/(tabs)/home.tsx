@@ -1,72 +1,73 @@
 import React, { useState } from 'react';
 import {
-  Image,
   View,
   TouchableOpacity,
   ActivityIndicator,
   Pressable,
 } from 'react-native';
-import { Text } from 'react-native-paper';
-import styles from '../constants/style';
+
 import { useRouter } from 'expo-router';
-import { PersonalizarAccordion } from '../components/CustomAccordion';
-import { useAuth } from '../context/AuthContext';
+
+import { useAuth } from 'app/context/AuthContext';
+import { XStack, YStack, ZStack, Button, Image, Text } from 'tamagui';
+import styles, { palette } from 'app/constants/style';
 
 export default function HomeScreen() {
   const router = useRouter();
   const [qtdQuestoes, setQtdQuestoes] = useState('5');
   const { signOut, role, email } = useAuth();
 
-  const handleStartQuiz = () => {
-    router.push({
-      pathname: '/screens/QuizInProgressScreen',
-      params: { qtd: qtdQuestoes },
-    });
-  };
   return (
-    <View style={styles.homeWrap}>
-      <Image
-        source={require('../../assets/images/logo.png')}
-        style={styles.logo}
-      />
-      <Text style={styles.title}>Bem-vindo ao app!</Text>
-      <Text style={styles.subtitle}>Usuário: {email}</Text>
-      <Text style={styles.subtitle}>Função: {role}</Text>
-      <TouchableOpacity
-        style={styles.startButton}
-        activeOpacity={0.85}
-        onPress={handleStartQuiz}
+    <YStack f={1} jc="center">
+      {/*Header*/}
+      <XStack
+        backgroundColor={palette.primaryBlue}
+        pt="$8" // Testar melhor
+        pb="$4"
+        px="$4"
+        ai="center" // Alinhamento vertical
+        jc="space-between" // Espaço entre os itens
+        width={'100%'}
       >
-        <Text style={styles.startText}>Iniciar Quiz</Text>
-      </TouchableOpacity>
+        <Text color="#fff" fontSize="$6" fontWeight="bold">
+          {`Olá Nome do Usuário!`}
+        </Text>
 
-      <PersonalizarAccordion num={qtdQuestoes} setNum={setQtdQuestoes} />
-      <Pressable onPress={() => signOut()}>
-        <Text>SAIR</Text>
-      </Pressable>
+        <Text fontSize="$8">☰</Text>
+      </XStack>
 
-      {role === 'admin' && (
-          <Pressable onPress={() => router.push('/screens/AdminScreen')}>
-            <Text>Ir para Admin</Text>
-          </Pressable>
-        ) && (
-          <Pressable
-            onPress={() => router.push('/(professor)/QuestionsManager')}
-          >
+      <YStack f={1} jc="center" ai="center" gap="$4">
+        <Text style={styles.title} py="$10">
+          Bem-vindo ao app!
+        </Text>
+
+        {/* DEVE SAIR DAQUI, IR PARA UM MENU SANDUICHE, APENAS AQUI PARA DEBUG */}
+        {role === 'admin' && (
+            <Pressable onPress={() => router.push('/screens/AdminScreen')}>
+              <Text>Ir para Admin</Text>
+            </Pressable>
+          ) && (
+            <Pressable
+              onPress={() => router.push('/(professor)/QuestionsManager')}
+            >
+              <Text>Gerenciar Questões</Text>
+            </Pressable>
+          )}
+
+        {role === 'professor' && (
+          <Pressable onPress={() => router.push('/(professor)/ProfessorMenu')}>
             <Text>Gerenciar Questões</Text>
           </Pressable>
         )}
-
-      {role === 'professor' && (
-        <Pressable onPress={() => router.push('/(professor)/ProfessorMenu')}>
-          <Text>Gerenciar Questões</Text>
-        </Pressable>
-      )}
-
-
-      <View style={styles.footerNote}>
-        <Text style={styles.footerText}>UEM • Footer • Patrocinadores</Text>
-      </View>
-    </View>
+        <ZStack>
+          <Image
+            height={300}
+            width={300}
+            mt={'auto'}
+            source={require('../../assets/images/logo.png')}
+          />
+        </ZStack>
+      </YStack>
+    </YStack>
   );
 }

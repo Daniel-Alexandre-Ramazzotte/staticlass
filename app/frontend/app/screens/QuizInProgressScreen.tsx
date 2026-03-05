@@ -1,38 +1,52 @@
 import { useEffect, useCallback, useState, useRef } from 'react';
 import {
-  View,
+  Pressable,
+  StyleSheet,
   ActivityIndicator,
   Animated,
-  Pressable,
+  TouchableOpacity,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Text } from 'react-native-paper';
+import { BottomNavigation, Provider } from 'react-native-paper';
 import { useFocusEffect } from '@react-navigation/native';
-import { ScrollView } from 'react-native-gesture-handler';
-import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
-
 import CheckAnswer from '../services/CheckAnswer';
-import styles from '../constants/style';
+import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
+import styles, {
+  palette,
+  SELECTED,
+  BG,
+  BUTTONS,
+  PRIMARY,
+} from '../constants/style';
 import CustomButton from 'app/components/CustomButton/CustomButton';
 import GradientWrapper from 'app/components/GradientWrapper/GradientWrapper';
 import api from '../services/api';
-
-interface QuizAnswer {
-  id: string;
-  text: string[];
-}
+import { ChevronLeft } from 'lucide-react-native';
+import {
+  ScrollView,
+  XStack,
+  YStack,
+  Text,
+  View,
+  Button,
+  Progress,
+} from 'tamagui';
 
 interface QuizQuestions {
   num_questions: number;
   counter: number;
-  issues: string[];
-  answers: QuizAnswer[]; // Mudou de string[][] para QuizAnswer[]
-  correct_answers: string[];
-  solutions: string[];
-  image_q?: string[];
-  image_s?: string[];
+  issues: [string];
+  answers: string[][];
+  correct_answers: [string];
+  solutions: [string];
+  image_questions: [string];
+  image_solutions: [string];
 }
 
+// OBS: Muitos chamados na API, atualmente a cada questao é feita uma chamada para verificar a resposta, e outra para buscar a imagem (se houver).
+// Talvez seja interessante otimizar isso futuramente, buscando todas as respostas de uma vez
+// Fazer funcao para voltar e avancar as questoes
 
 const QuizInProgressScreen = () => {
   const { qtd } = useLocalSearchParams();
@@ -41,10 +55,12 @@ const QuizInProgressScreen = () => {
   const [quizQuestions, setQuestions] = useState<QuizQuestions>({
     num_questions: 0,
     counter: 0,
-    issues: [],
-    answers: [],
-    correct_answers: [],
-    solutions: [],
+    issues: [''],
+    answers: [['']],
+    correct_answers: [''],
+    solutions: [''],
+    image_questions: [''],
+    image_solutions: [''],
   });
 
   const [loading, setLoading] = useState<boolean>(true);
@@ -52,10 +68,14 @@ const QuizInProgressScreen = () => {
   const [userAnswer, setUserAnswer] = useState<string>('');
   const [counter, setCounter] = useState<number>(0);
   const [userResponses, setUserResponses] = useState<string[]>([]);
-  const [selected, setSelected] = useState<number | null>(null);
-
+  const [currentImageBase64, setCurrentImageBase64] = useState<string | null>(
+    null
+  );
+  const [imageLoading, setImageLoading] = useState(false);
+  const [selected, setSelected] = useState(null);
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
+  // Função para buscar as questões do quiz, chamada ao iniciar a tela
   const fetchQuestion = async () => {
     try {
       setLoading(true);
@@ -64,21 +84,21 @@ const QuizInProgressScreen = () => {
       const response = await api.get(`/questions/rand/${qtd}`);
       const data = response.data;
 
-      // Log para debug: Verifique se 'answers' no terminal é um [] ou {}
-      console.log("RESPOSTA API:", data);
-      
-      setQuestions({
+      if (!response || response.status !== 200) {
+        throw new Error('Erro ao buscar a questão');
+      }
+      const data = await response.data;
+      console.log(data);
+
+      await setQuestions({
         num_questions: Number(qtd),
         counter: 0,
-        issues: data.issue || [],
-        // Forçamos a transformação para garantir que seja uma lista de listas
-        answers: Array.isArray(data.answers) 
-          ? data.answers 
-          : Object.values(data.answers || {}), 
-        correct_answers: data.correct_answer || [],
-        solutions: data.solution || [],
-        image_q: data.image_q || [],
-        image_s: data.image_s || [],
+        issues: data.issue,
+        answers: data.answers,
+        correct_answers: data.correct_answer,
+        solutions: data.solution,
+        image_questions: data.image_questions,
+        image_solutions: data.image_solutions,
       });
       
     } catch (err: any) {
@@ -87,6 +107,61 @@ const QuizInProgressScreen = () => {
       setLoading(false);
     }
   };
+
+  // Função para buscar a imagem associada à questão atual
+  const fetchImage = async (imageName: string) => {
+    if (!imageName || imageName === 'null') {
+      setCurrentImageBase64(null);
+      return;
+    }
+
+    setImageLoading(true);
+    try {
+      // Rota flask para buscar a imagem, passando o nome da imagem como parâmetro
+      const response = await api.get(`questions/${imageName}`, {
+        responseType: 'blob',
+        headers: {
+          'Cache-Control': 'no-cache',
+          Pragma: 'no-cache',
+          Expires: '0',
+        },
+      });
+
+      // Converte o blob recebido para base64 para exibir a imagem
+      const fileReaderInstance = new FileReader();
+      fileReaderInstance.readAsDataURL(response.data);
+      fileReaderInstance.onload = () => {
+        const base64data = fileReaderInstance.result as string;
+        setCurrentImageBase64(base64data);
+        setImageLoading(false);
+      };
+    } catch (err: any) {
+      // Logs
+      console.log('URL tentada:', `/uploads/${imageName}`);
+      if (err.response) {
+        // Resposta recebida do servidor com status de erro
+        console.log('Status:', err.response.status);
+        console.log('Dados do erro:', err.response.data);
+      } else if (err.request) {
+        // A requisição foi feita mas não houve resposta (Erro de Network/IP)
+        console.log('Sem resposta do servidor. Verifique IP e Porta.');
+      } else {
+        console.log('Erro na configuração:', err.message);
+      }
+
+      setCurrentImageBase64(null);
+      setImageLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    const imageName = quizQuestions?.image_questions?.[counter];
+    if (imageName) {
+      fetchImage(imageName);
+    } else {
+      setCurrentImageBase64(null);
+    }
+  }, [counter, quizQuestions]); // Executa quando mudar a pergunta
 
   useFocusEffect(
     useCallback(() => {
@@ -100,94 +175,165 @@ const QuizInProgressScreen = () => {
     setUserAnswer('');
   }, [counter]);
 
-  const handleAltPress = (alt: string, index: number) => {
+  const renderContent = () => {
+    if (loading) {
+      return <ActivityIndicator size="large" color="#0000ff" />;
+    }
+    if (error) {
+      return <Text style={styles.errorText}>Erro: {error}</Text>;
+    }
+    const progressoAtual = (counter / quizQuestions.num_questions) * 100;
+    return (
+      <ScrollView>
+        <Stack.Screen options={{ headerShown: false }} />
+        <YStack f={1} backgroundColor={palette.white}>
+          {/*Header*/}
+          <XStack
+            backgroundColor={palette.primaryBlue}
+            pt="$8" // Testar melhor
+            pb="$4"
+            px="$4"
+            ai="center" // Alinhamento vertical
+            jc="space-between" // Espaço entre os itens
+          >
+            {/*Botão de Voltar*/}
+            <Button
+              size="$3" // Testar tamanhos
+              circular
+              backgroundColor="transparent"
+              pressStyle={{ opacity: 0.7 }}
+              onPress={() => router.back()}
+              icon={<ChevronLeft color={palette.white} size={28} />} // Ícone de seta para esquerda, Testar tamanhos
+            />
+
+            {/*Barra de Progresso*/}
+            <Progress
+              f={1}
+              value={progressoAtual}
+              size="$3"
+              backgroundColor={palette.white}
+            >
+              <Progress.Indicator
+                backgroundColor={palette.primaryGreen}
+                transition={'quicker'}
+              />
+            </Progress>
+          </XStack>
+
+          {/*Conteúdo da Questão*/}
+          <YStack minHeight={400} px="$5" pt="$8" gap="$6">
+            <Text fontSize={22} fontWeight={'900'} color={palette.offBlack}>
+              QUESTÃO {counter + 1}
+            </Text>
+
+            {/*Conteudo da Questão */}
+            <YStack gap="$4" ai="center">
+              <Text style={styles.issueText}>
+                {quizQuestions.issues[counter]}
+              </Text>
+              {/* Verifica se existe uma imagem configurada para a questão atual */}
+              {quizQuestions?.image_questions?.[counter] &&
+                quizQuestions.image_questions[counter] !== 'null' && (
+                  /* Início do Bloco Visual da Imagem */
+                  <View style={styles.image}>
+                    {imageLoading ? (
+                      /* Carregando */
+                      <ActivityIndicator size="large" color="#0000ff" />
+                    ) : (
+                      /* Carregado (Só exibe se o base64 existir) */
+                      currentImageBase64 && (
+                        <Image
+                          source={{ uri: currentImageBase64 }}
+                          style={styles.image}
+                          resizeMode="contain"
+                        />
+                      )
+                    )}
+                  </View>
+                )}
+            </YStack>
+          </YStack>
+
+          {/*Alternativas*/}
+          <YStack
+            backgroundColor={palette.primaryBlue}
+            px="$5"
+            py="$6"
+            gap="$3"
+          >
+            <YStack style={styles.buttonContainer} gap="$3">
+              {quizQuestions.answers.map((answer, index) => (
+                <Button
+                  key={index}
+                  onPress={() => handleAltPress(answer.id)}
+                  borderRadius={25}
+                  pressStyle={{ opacity: 0.8 }}
+                  height="auto"
+                  minHeight={50}
+                  py="$3"
+                  backgroundColor={
+                    userAnswer === answer.id
+                      ? palette.lightBlue
+                      : palette.darkBlue
+                  }
+                >
+                  <XStack f={1} ai="center" w="100%" px="$4">
+                    <Text fontWeight="bold" fontSize={18}>
+                      {String.fromCharCode(65 + index)}
+                      {')  '}
+                      {/* Letras A, B, C... */}
+                    </Text>
+
+                    <Text
+                      color={selected ? palette.darkBlue : palette.offWhite}
+                      fontWeight="bold"
+                      fontSize={18}
+                      width={'100%'}
+                    >
+                      {answer.text[counter]}
+                    </Text>
+                  </XStack>
+                </Button>
+              ))}
+            </YStack>
+          </YStack>
+
+          <Button
+            mt="auto"
+            onPress={handleNextQuestion}
+            backgroundColor={userAnswer ? palette.primaryGreen : palette.grey}
+          >
+            <Text color={palette.offWhite} fontWeight="bold" fontSize={26}>
+              CONFIRMAR
+            </Text>
+          </Button>
+        </YStack>
+      </ScrollView>
+    );
+  };
+
+  const handleAltPress = async (alt: string) => {
     setUserAnswer(alt);
-    setSelected(index);
+    console.log(alt);
   };
 
   const handleNextQuestion = async () => {
-    if (userAnswer === '') return;
-
-    
-    const correct = quizQuestions.correct_answers[counter];
-    
-    const currentQuestionResult = {
-      message: userAnswer === correct ? 'correct' : 'incorrect', 
-      userAnswer: userAnswer,
-      issue: quizQuestions.issues[counter],
-      correct_answer: correct,
-      solution: quizQuestions.solutions[counter],
-      image_q: quizQuestions.image_q?.[counter] || null,
-      image_s: quizQuestions.image_s?.[counter] || null,
-    };
-
-    const newResponses = [...userResponses, currentQuestionResult];
-    setUserResponses(newResponses as any);
-
-    const nextIndex = counter + 1;
-
-    if (nextIndex >= quizQuestions.num_questions) {
-     
+    if (userAnswer === '') {
+      return;
+    }
+    let res = await CheckAnswer(userAnswer, counter);
+    let count = counter + 1;
+    setCounter(count);
+    const newResponses = [...userResponses, res];
+    setUserResponses(newResponses);
+    if (count >= quizQuestions.num_questions) {
       router.push({
-        pathname: '../screens/ResultScreen' as any,
+        pathname: '../screens/ResultScreen',
         params: { result: JSON.stringify(newResponses) },
       });
     } else {
-      setCounter(nextIndex);
+      setUserAnswer('');
     }
-  };
-
-  const renderContent = () => {
-    if (loading) return <ActivityIndicator size="large" color="#0000ff" style={{flex: 1}} />;
-    if (error) return <Text style={{color: 'red', textAlign: 'center', marginTop: 50}}>{error}</Text>;
-
-    // SOLUÇÃO DO ERRO: Garante que currentAnswers seja uma lista antes do .map
-    const rawAnswers = quizQuestions.answers[counter];
-    const currentAnswers = Array.isArray(rawAnswers) ? rawAnswers : [];
-
-    return (
-      <GradientWrapper>
-        <Stack.Screen options={{ headerShown: false }} />
-        <SafeAreaView style={styles.mainContainer}>
-          <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-            <View style={styles.gameContainer}>
-              <Text style={styles.gtitle}>Questão {counter + 1} de {quizQuestions.num_questions}</Text>
-              
-              <Text style={styles.question}>
-                {quizQuestions.issues[counter] || "Questão não encontrada"}
-              </Text>
-
-              <View style={styles.buttonContainer}>
-                {/* quizQuestions.answers é o array com id: A, B, C... */}
-                {quizQuestions.answers.length > 0 ? (
-                  quizQuestions.answers.map((item: any, index: number) => (
-                    <CustomButton
-                      key={index}
-                      // item.id é 'A', 'B'... | item.text[counter] é o texto da questão atual
-                      buttonText={`${item.id}) ${item.text[counter]}`}
-                      onPress={() => handleAltPress(item.id, index)}
-                      type={selected === index ? "secondary" : "primary"}
-                      fullWidth={true} width={undefined} disabled={undefined}                    />
-                  ))
-                ) : (
-                  <Text>Nenhuma alternativa encontrada no banco.</Text>
-                )}
-              </View>
-            </View>
-
-            <Pressable
-              style={[styles.restartButton, { opacity: userAnswer === '' ? 0.5 : 1, marginTop: 30 }]}
-              onPress={handleNextQuestion}
-              disabled={userAnswer === ''}
-            >
-              <Text style={styles.restartText}>
-                {counter + 1 >= quizQuestions.num_questions ? "Ver Resultado" : "Próxima Questão"}
-              </Text>
-            </Pressable>
-          </ScrollView>
-        </SafeAreaView>
-      </GradientWrapper>
-    );
   };
 
   return <>{renderContent()}</>;

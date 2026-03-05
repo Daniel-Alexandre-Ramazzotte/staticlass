@@ -25,7 +25,13 @@ CREATE TABLE questions (
     solution TEXT NOT NULL,
     image_q VARCHAR(100) NULL,
     image_s VARCHAR(100) NULL,
-
+	
+    id_subject INT,
+    
+    CONSTRAINT fk_id_subject
+		FOREIGN KEY (id_subject)
+        REFERENCES subjects(id),
+    
     CONSTRAINT fk_questions_professor
         FOREIGN KEY (id_professor)
         REFERENCES users(id)
@@ -71,15 +77,32 @@ ENGINE=InnoDB
 DEFAULT CHARSET=utf8mb4
 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE subjects (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+    subject_name VARCHAR(100) NOT NULL
+
+);
+
+INSERT IGNORE INTO subjects(subject_name) VALUES ("Estatística Básica"), ("Probabilidade"), ("Inferência Estatística");
+
+
+DESC subjects;
+
+
+UPDATE users
+SET role = 'professor'
+WHERE email = 'professor123@aasa.com';
+
+
 
 
 
 select * from questions;
-
+select * from subjects;
 select * from users;	
 
 -- Questoes com imagem
-INSERT IGNORE INTO questions(id, issue, answer_a, answer_b, answer_c, answer_d, answer_e, correct_answer, solution, image_q, image_s) 
+INSERT IGNORE INTO questions(id, issue, answer_a, answer_b, answer_c, answer_d, answer_e, correct_answer, solution, image_q, image_s, id_subject) 
 VALUES 
     (1,"(Enem PPL 2022 — reaplicação) Até a Copa de 2010, apenas sete jogadores haviam conseguido o feito de marcar 8 ou mais gols em uma mesma edição da Copa do Mundo. O quadro apresenta os anos das edições da Copa nas quais ocorreram esses feitos, quais foram os jogadores que os realizaram e os respectivos números de gols marcados por cada um deles.(IMAGEM)Para facilitar a análise sobre a quantidade de gols marcados por esses artilheiros nas referidas copas, foi calculada a mediana da distribuição dos números de gols marcados por eles nas sete copas especificadas no quadro.A mediana dessa distribuição é igual a", "9", "9.7", "10", "10.2", "13", "A", "Para encontrar a mediana, colocaremos os dados em ordem:8 8 9 9 10 11 13 Sabemos que a mediana é o termo que está posicionado no centro. Como há 7 elementos, a mediana é o 4º valor: 8 8 9 9 10 11 13 Assim, a mediana desse conjunto de dados é 9.", "uploads/q1.png", NULL),
     (2,"(Enem PPL 2010) Em uma corrida de regularidade, a equipe campeã é aquela em que o tempo dos participantes mais se aproxima do tempo fornecido pelos organizadores em cada etapa. Um campeonato foi organizado em 5 etapas, e o tempo médio de prova indicado pelos organizadores foi de 45 minutos por prova. No quadro, estão representados os dados estatísticos das 5 equipes mais bem classificadas. Dados estatísticos das equipes mais bem classificadas (em minutos): (IMAGEM) Utilizando os dados estatísticos do quadro, a campeã foi a equipe", "I", "II", "III", "IV", "V", "C", "Sabemos que quanto menor é o desvio padrão, mais regulares são os dados. Note que todas possuem a mesma média, entretanto a equipe III é a que tem o menor desvio padrão. Logo, essa é a equipe que possui o tempo mais próximo da meta.", "uploads/q2.png", NULL),

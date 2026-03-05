@@ -1,32 +1,26 @@
-import React, { useState } from 'react';
-import {
-  Accordion,
-  Paragraph,
-  Square,
-  Input,
-  Label,
-  YStack,
-  XStack,
-} from 'tamagui';
-import { ChevronDown } from '@tamagui/lucide-icons'; // Certifique-se que está instalado
+import React from 'react';
+import { Accordion, Paragraph, Square, Input, Label, YStack } from 'tamagui';
+import { ChevronDown } from '@tamagui/lucide-icons';
+import { palette } from '../constants/style';
 
 type Props = {
-  num: string; // O número atual
-  setNum: (txt: string) => void; // A função para atualizar
+  num: string;
+  setNum: (txt: string) => void;
 };
+
 export function PersonalizarAccordion({ num, setNum }: Props) {
-  // Estado para guardar o número digitado
+  const textColor = '#ffffff';
 
   return (
     <Accordion
       overflow="hidden"
-      width="70%"
+      width="50%"
       type="single"
       collapsible
       borderColor="$borderColor"
       borderWidth={1}
       borderRadius="$4"
-      backgroundColor="$background"
+      backgroundColor={palette.lightBlue}
     >
       <Accordion.Item value="personalizar">
         {/* --- CABEÇALHO: "Personalizar" --- */}
@@ -34,38 +28,41 @@ export function PersonalizarAccordion({ num, setNum }: Props) {
           flexDirection="row"
           justifyContent="space-between"
           padding="$4"
+          backgroundColor={palette.primaryBlue}
         >
           {({ open }: { open: boolean }) => (
             <>
-              <Paragraph fontWeight="bold" fontSize="$4">
+              <Paragraph fontWeight="bold" fontSize="$4" color={textColor}>
                 Personalizar
               </Paragraph>
-              {/* Ícone animado */}
+
               <Square animation="quick" rotate={open ? '180deg' : '0deg'}>
-                <ChevronDown size="$1" />
+                <ChevronDown size="$1" color={textColor} />
               </Square>
             </>
           )}
         </Accordion.Trigger>
 
         {/* --- CONTEÚDO: Input de Número --- */}
-        <Accordion.Content animation="medium" backgroundColor="$gray2">
-          <YStack padding="$4" space="$2">
-            {/* Rótulo do Input */}
-            <Label htmlFor="input-questoes" fontSize="$3" color="$gray11">
+        <Accordion.Content
+          animation="medium"
+          backgroundColor={palette.lightBlue}
+        >
+          <YStack padding="$4" gap="$2">
+            <Label htmlFor="input-questoes" fontSize="$3" color={textColor}>
               Número de questões
             </Label>
-
-            {/* Campo de Texto Numérico */}
             <Input
               id="input-questoes"
               size="$4"
               borderWidth={1}
-              keyboardType="numeric" // Abre apenas o teclado numérico
+              keyboardType="numeric"
               placeholder="Ex: 10"
               value={num}
-              onChangeText={setNum} // Atualiza o estado ao digitar
-              backgroundColor="$background"
+              onChangeText={setNum}
+              backgroundColor={palette.lightBlue}
+              color={textColor} // Cor do texto que o usuário digita
+              placeholderTextColor={palette.offWhite} // Cor do texto de exemplo "Ex: 10"
             />
           </YStack>
         </Accordion.Content>
