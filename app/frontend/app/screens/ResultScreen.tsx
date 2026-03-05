@@ -1,6 +1,5 @@
-import { View, Pressable, ScrollView } from 'react-native';
-import { Text } from 'react-native-paper';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { YStack, XStack, Text, View, Button, styled,  ScrollView  } from 'tamagui';
 import styles from '../constants/style';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -25,38 +24,85 @@ const ResultScreen = () => {
   ).length;
 
   return (
-    <SafeAreaView style={styles.resultArea}>
-        <Stack.Screen options={{ headerShown: false }} />
-        <View style={styles.containerResult}>
-        
-        <View style={styles.topBadge}>
-          <View style={styles.clipboardClip}>
-            <View style={styles.clipboardHole} />
-          </View>
-          <Text style={styles.resultTitle}>RESUMO</Text>
-        </View>
+  <SafeAreaView style={{ flex: 1, backgroundColor: '#0f6ea9' }}>
+      <Stack.Screen options={{ headerShown: false }} />
 
-        <View style={styles.resultCard}>
-          <Text style={styles.resultScore}>
+      {/* containerResult */}
+      <YStack flex={1} alignItems="center" justifyContent="center" paddingHorizontal={20}>
+        
+        {/* topBadge */}
+        <YStack
+          backgroundColor="#f65151"
+          paddingVertical={12}
+          paddingHorizontal={60}
+          borderRadius={15}
+          position="absolute" // Permite flutuar sobre outros elementos
+          alignItems="center"
+          justifyContent="center"
+          zIndex={10}
+          top={80} // Garante que fique na frente de tudo
+          elevation={5} //Sombra android
+        >
+          {/* clipboardClip */}
+          <YStack
+            position="absolute"
+            top={-35}
+            width={70}
+            height={70}
+            borderRadius={35}
+            backgroundColor="#f65151"
+            alignItems="center"
+            zIndex={-1} // Fica atrás do retângulo "RESUMO"
+          >
+            {/* white circle */}
+            <View width={12} height={12} borderRadius={6} backgroundColor="#fff" marginTop={15} />
+          </YStack>
+          
+          <Text fontSize={22} fontWeight="800" color="#fff">
+            RESUMO
+          </Text>
+        </YStack>
+
+        {/* resultCard */}
+        <YStack
+          backgroundColor="#f2f2f2"
+          width="90%"
+          height="70%"
+          borderRadius={30}
+          paddingTop={50} // Espaço para não bater no badge vermelho
+          paddingHorizontal={25}
+          paddingBottom={30}
+          alignItems="center"
+        >
+          <Text fontSize={60} fontWeight="900" color="#000" marginBottom={20}>
             {score}/{result.length}
           </Text>
 
-        
-
-          <ScrollView showsVerticalScrollIndicator={false}
-                      style= {{ width:'100%'}}
-                      contentContainerStyle = {{ paddingBottom: 20}}
-                      >
-            {result && result.map((answer: any, index: number) => {
+          <ScrollView 
+            showsVerticalScrollIndicator={false}
+            style={{ width: '100%' }}
+            contentContainerStyle={{ paddingBottom: 20 }}
+          >
+            {result.map((answer: any, index: number) => {
+              // Lógica para definir a cor (Verde se acertou, Vermelho se errou)
               const statusColor = answer.message === 'correct' ? '#55bf44' : '#f65151';
 
               return (
-                <View key={index} style={styles.resultItem}>
-                  <Text style={[styles.resultQuestion, { color: statusColor }]}>
-                    Questão {index + 1}: 
+                <XStack key={index} justifyContent="center" alignItems="center" paddingVertical={12} width="100%">
+                  <Text 
+                    fontSize={16} 
+                    fontWeight="bold" 
+                    marginRight={8} 
+                    color={statusColor}
+                  >
+                    Questão {index + 1}:
                   </Text>
 
-                  <Pressable
+                  <Text
+                    color="#093d60"
+                    textDecorationLine="underline"
+                    fontWeight="bold"
+                    fontSize={14}
                     onPress={() => {
                       router.push({
                         pathname: '../screens/SolutionScreen',
@@ -64,26 +110,33 @@ const ResultScreen = () => {
                       });
                     }}
                   >
-                    <Text style={styles.resolutionText}>Resolução</Text>
-                  </Pressable>
-                </View>
+                    Resolução
+                  </Text>
+                </XStack>
               );
-            })} 
+            })}
           </ScrollView>
-        </View>
-       </View>
-      
+        </YStack>
+      </YStack>
 
-        <Pressable
-          style={styles.restartQuizButton}
-          onPress={() => router.push('../(tabs)/home')}
-        >
-          <Text style={styles.restartQuizText}>VOLTAR</Text>
-        </Pressable>
+      {/* restartQuizButton */}
+      <YStack
+        backgroundColor="#f65151"
+        width="100%"
+        paddingVertical={25}
+        alignItems="center"
+        justifyContent="center"
+        position="absolute" // Fixa o botão no final da tela
+        bottom={0}
+        pressStyle={{ opacity: 0.8 }} // Efeito visual de clique
+        onPress={() => router.push('../(tabs)/home')}
+      >
+        <Text color="#fff" fontWeight="bold" fontSize={22}>
+          VOLTAR
+        </Text>
+      </YStack>
     </SafeAreaView>
-  
   );
-
 };
 
 export default ResultScreen;
