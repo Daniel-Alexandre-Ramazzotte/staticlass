@@ -171,12 +171,6 @@ const QuizInProgressScreen = () => {
     scaleAnim.setValue(1);
   }, [counter]);
 
-  //console.log('answers:', quizQuestions.answers);
-  //console.log('current index:', counter);
-  //console.log('answers[counter]:', quizQuestions.answers[counter]);
-  console.log('user answer:', userAnswer);
-  console.log('selected:', selected);
-
   const renderContent = () => {
     if (loading) {
       return <ActivityIndicator size="large" color="#0000ff" />;
@@ -274,7 +268,9 @@ const QuizInProgressScreen = () => {
                   minHeight={50}
                   py="$3"
                   backgroundColor={
-                    userAnswer === answer.id ? palette.grey : palette.darkBlue
+                    userAnswer === answer.id
+                      ? palette.lightBlue
+                      : palette.darkBlue
                   }
                 >
                   <XStack f={1} ai="center" w="100%" px="$4">

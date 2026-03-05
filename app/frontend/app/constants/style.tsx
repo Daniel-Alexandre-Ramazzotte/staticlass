@@ -2,11 +2,12 @@ import { StyleSheet } from 'react-native';
 import { Button, Checkbox, styled, XStack, Label } from 'tamagui';
 import { Check as CheckIcon } from '@tamagui/lucide-icons';
 
+// #0066b7
 export const palette = {
   primary: '#1E63C3',
   primaryBlue: '#0074c3',
   primaryGreen: '#55bf44',
-  lightBlue: '#0066b7',
+  lightBlue: '#0089b7',
   accent: '#283cad9f',
   secondary: '#3700ffff',
   background: '#002272ff',
