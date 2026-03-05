@@ -17,6 +17,7 @@ export const palette = {
   white: '#ffffff',
   grey: '#b0b0b0',
   red: '#f65151',
+  darkBlue: '#093d60',
 };
 
 export const PRIMARY = '#1E63C3';
@@ -67,6 +68,13 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOpacity: 0.08,
     shadowRadius: 8,
+  },
+  errorText: {
+    fontSize: 14,
+    textAlign: 'center',
+    color: 'red',
+    marginBottom: 30,
+    fontWeight: 'bold',
   },
   loginButton: {
     width: 200,
@@ -172,17 +180,17 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   restartButton: {
-    position: 'absolute', 
-    bottom: 20, 
-    backgroundColor: palette.secondary, 
-    padding: 15, 
-    borderRadius: 12, 
-    alignItems: 'center', 
-    justifyContent: 'center', 
+    position: 'absolute',
+    bottom: 20,
+    backgroundColor: palette.secondary,
+    padding: 15,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
     width: 200,
   },
-  restartText: { color: '#ffffff', fontWeight: 'bold'},
-  
+  restartText: { color: '#ffffff', fontWeight: 'bold' },
+
   errorLoginText: {
     fontSize: 14,
     textAlign: 'center',
@@ -191,10 +199,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   scrollContainer: {
-  flexGrow: 1,
-  alignItems: 'center',
-  justifyContent: 'center',
-  paddingVertical: 20,
+    flexGrow: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
   },
 
   profileHeader: {
@@ -202,14 +210,15 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   userNameText: {
-  fontSize: 22,
-  fontWeight: 'bold',
-  color: '#333', 
-  marginTop: 10,  
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+    marginTop: 10,
   },
   statsContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+  },
   image: {
     width: 300,
     height: 200,
@@ -217,20 +226,9 @@ const styles = StyleSheet.create({
   },
   resultQuestion: { fontSize: 16, fontWeight: '600', color: '#ffffffff' },
   safeArea: { flex: 1, backgroundColor: BG },
-  scrollContainer: {
-    flexGrow: 1, // permite o conteúdo ocupar o espaço necessário
-    alignItems: 'center',
-    width: '80%',
-    backgroundColor: '#FFFFFF', 
-    borderRadius: 15,           
-    paddingVertical: 10,      
-    marginTop: -10,
-    marginBottom: 30,             
-    elevation: 4,           
-  },
 
   statItem: {
-    flex: 1,                  
+    flex: 1,
     alignItems: 'center',
     backgroundColor: 'transparent',
     paddingVertical: 5,
@@ -248,7 +246,6 @@ const styles = StyleSheet.create({
     color: '#5a5a5a',
     fontWeight: '500',
   },
- 
 });
 
 // Estilos específicos para componentes Tamagui
@@ -256,7 +253,7 @@ export const tamaguiStyles = {
   statsButton: {
     backgroundColor: '#007AFF', // Azul vibrante
     borderRadius: 12,
-    size: "$5",
+    size: '$5',
     pressStyle: { scale: 0.97, opacity: 0.9 },
   },
   rankingButton: {
@@ -265,13 +262,13 @@ export const tamaguiStyles = {
     borderWidth: 1,
     borderColor: '#007AFF',
     color: '#007AFF',
-    size: "$5",
+    size: '$5',
     pressStyle: { scale: 0.97, opacity: 0.8 },
   },
   buttonOutline: {
     backgroundColor: '#171717', // Off-black como no seu print
     borderRadius: 12,
-    size: "$5",
+    size: '$5',
     pressStyle: { scale: 0.97, opacity: 0.9 },
   },
   buttonTextLight: {
@@ -282,10 +279,6 @@ export const tamaguiStyles = {
     color: '#ffffff',
     fontWeight: '600',
   },
- 
 };
 
-});
-
 export default styles;
-

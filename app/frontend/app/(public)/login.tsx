@@ -58,16 +58,12 @@ export default function LoginScreen() {
 
     try {
       const response = await CheckLogin({ email, password });
+      console.log('Resposta do login:', response);
       if (!response) {
         setErrorMessage('Falha no login. Verifique suas credenciais.');
         return;
       }
       const token = response?.data.token;
-      await AsyncStorage.setItem('userEmail', email);
-      console.log("Email salvo com sucesso:", email);
-
-      await AsyncStorage.setItem('@auth_session', token); 
-      
 
       await signIn(token);
     } catch (error: any) {

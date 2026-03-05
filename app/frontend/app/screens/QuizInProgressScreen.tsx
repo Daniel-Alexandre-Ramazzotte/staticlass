@@ -50,8 +50,8 @@ interface QuizQuestions {
 
 const QuizInProgressScreen = () => {
   const { qtd } = useLocalSearchParams();
+  const altLetters = ['A', 'B', 'C', 'D', 'E'];
   const router = useRouter();
-
   const [quizQuestions, setQuestions] = useState<QuizQuestions>({
     num_questions: 0,
     counter: 0,
@@ -62,7 +62,6 @@ const QuizInProgressScreen = () => {
     image_questions: [''],
     image_solutions: [''],
   });
-
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [userAnswer, setUserAnswer] = useState<string>('');
@@ -80,9 +79,7 @@ const QuizInProgressScreen = () => {
     try {
       setLoading(true);
       setError(null);
-      
       const response = await api.get(`/questions/rand/${qtd}`);
-      const data = response.data;
 
       if (!response || response.status !== 200) {
         throw new Error('Erro ao buscar a questão');
@@ -100,9 +97,8 @@ const QuizInProgressScreen = () => {
         image_questions: data.image_questions,
         image_solutions: data.image_solutions,
       });
-      
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Erro ao buscar questões');
+      setError(err.message || 'Erro ao buscar a questão');
     } finally {
       setLoading(false);
     }
@@ -167,12 +163,12 @@ const QuizInProgressScreen = () => {
     useCallback(() => {
       fetchQuestion();
       return () => {};
-    }, [qtd])
+    }, [])
   );
 
   useEffect(() => {
     setSelected(null);
-    setUserAnswer('');
+    scaleAnim.setValue(1);
   }, [counter]);
 
   const renderContent = () => {

@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios, { AxiosError } from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://192.168.0.26:5000'
+  baseURL: 'http://10.0.2.2:5000/',
 });
 
 // Adiciona um interceptor para incluir o token de autenticação em cada requisição
@@ -28,8 +28,8 @@ api.interceptors.response.use(
   },
   (error: AxiosError) => {
     if (error.response) {
-      console.log("Status do Erro:", error.response?.status); 
-      console.log("Dados do Erro:", error.response?.data);
+      console.log('Status do Erro:', error.response?.status);
+      console.log('Dados do Erro:', error.response?.data);
       const message =
         (error.response?.data as any)?.message || 'Ocorreu um erro inesperado.';
 
