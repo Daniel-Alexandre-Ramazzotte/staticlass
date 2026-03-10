@@ -37,6 +37,7 @@ def random_question(num = NUM_QUESTIONS):
     'image_solutions' : [q.image_s for q in random_questions],
 
     })
+    session['correct_answers'] = [q.correct_answer for q in random_questions]
     return questions
 
 def check_answer(data):
@@ -44,8 +45,13 @@ def check_answer(data):
         return jsonify({"error": "data is incorrect"})
 
     if data['answer'] == session['correct_answers'][data['question_index']]:
+
+        print(f"Resposta correta para a pergunta {data['question_index']}: {data['answer']}")
+        print(f"Resposta correta esperada: {session['correct_answers'][data['question_index']]}")
         return jsonify({'message' : 'correct'})
     else:
+        print(f"Resposta incorreta para a pergunta {data['question_index']}: {data['answer']}")
+        print(f"Resposta correta esperada: {session['correct_answers'][data['question_index']]}")
         return jsonify({'message' : 'incorrect'})
 
 

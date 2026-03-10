@@ -314,21 +314,32 @@ const QuizInProgressScreen = () => {
   };
 
   const handleNextQuestion = async () => {
-    if (userAnswer === '') {
-      return;
-    }
-    let res = await CheckAnswer(userAnswer, counter);
-    let count = counter + 1;
-    setCounter(count);
-    const newResponses = [...userResponses, res];
-    setUserResponses(newResponses);
-    if (count >= quizQuestions.num_questions) {
+    if (userAnswer === '') return;
+
+    const correct = quizQuestions.correct_answers[counter];
+
+    const currentQuestionResult = {
+      message: userAnswer === correct ? 'correct' : 'incorrect',
+      userAnswer: userAnswer,
+      issue: quizQuestions.issues[counter],
+      correct_answer: correct,
+      solution: quizQuestions.solutions[counter],
+      image_q: quizQuestions.image_questions?.[counter] || null,
+      image_s: quizQuestions.image_solutions?.[counter] || null,
+    };
+
+    const newResponses = [...userResponses, currentQuestionResult];
+    setUserResponses(newResponses as any);
+
+    const nextIndex = counter + 1;
+
+    if (nextIndex >= quizQuestions.num_questions) {
       router.push({
-        pathname: '../screens/ResultScreen',
+        pathname: '../screens/ResultScreen' as any,
         params: { result: JSON.stringify(newResponses) },
       });
     } else {
-      setUserAnswer('');
+      setCounter(nextIndex);
     }
   };
 
