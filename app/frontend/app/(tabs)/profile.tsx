@@ -105,14 +105,14 @@ export default function ProfileScreen() {
           size="$5"
           backgroundColor="#007AFF"
           color="white"
-          onPress={() => router.push('/statistics')}
+          onPress={() => router.push('/Statistics')}
         >
           Estatísticas
         </Button>
 
         <Button
           icon={<Award color="#007AFF" size={20} />}
-          onPress={() => router.push('/ranking')}
+          onPress={() => router.push('/Ranking')}
           {...tamaguiStyles.rankingButton}
         >
           Ranking Global
@@ -121,7 +121,7 @@ export default function ProfileScreen() {
         <Button
           icon={Settings}
           {...tamaguiStyles.buttonOutline}
-          onPress={() => router.push('/settings')}
+          onPress={() => router.push('/Settings')}
         >
           Configurações
         </Button>

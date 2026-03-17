@@ -1,8 +1,7 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-//import QuestionLobbyScreen from './(tabs)/question.tsx';
-import QuizInProgressScreen from './screens/QuizInProgressScreen';
-import ResultScreen from './screens/ResultScreen';
+import QuizInProgressScreen from './(app)/QuizInProgressScreen';
+import ResultScreen from './(app)/ResultScreen';
 
 const Stack = createStackNavigator();
 

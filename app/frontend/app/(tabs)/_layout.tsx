@@ -27,7 +27,7 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="home"
+        name="Home"
         options={{
           title: 'Início',
           tabBarIcon: ({ focused }) => (
@@ -43,7 +43,7 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="questions"
+        name="Questions"
         options={{
           title: 'Questões',
           tabBarIcon: ({ focused }) => (
@@ -58,7 +58,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="Profile"
         options={{
           title: 'Perfil',
           tabBarIcon: ({ focused }) => (

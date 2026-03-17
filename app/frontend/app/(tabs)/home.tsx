@@ -1,22 +1,17 @@
 import React, { useState } from 'react';
-import {
-  View,
-  TouchableOpacity,
-  ActivityIndicator,
-  Pressable,
-} from 'react-native';
+import { Pressable } from 'react-native';
 
 import { useRouter } from 'expo-router';
 
 import { useAuth } from 'app/context/AuthContext';
 import { XStack, YStack, ZStack, Button, Image, Text } from 'tamagui';
-import styles, { palette } from 'app/constants/style';
+import { palette } from 'app/constants/style';
 
 export default function HomeScreen() {
   const router = useRouter();
   const [qtdQuestoes, setQtdQuestoes] = useState('5');
-  const { signOut, role, email } = useAuth();
-
+  const { signOut, role, email, name } = useAuth();
+  console.log('Dados do usuário no HomeScreen:', { email, role, name });
   return (
     <YStack f={1} jc="center">
       {/*Header*/}
@@ -30,44 +25,71 @@ export default function HomeScreen() {
         width={'100%'}
       >
         <Text color="#fff" fontSize="$6" fontWeight="bold">
-          {`Olá Nome do Usuário!`}
+          {`Olá, ${name || 'Usuário'}!`}
         </Text>
 
         <Text fontSize="$8">☰</Text>
       </XStack>
 
-      <YStack f={1} jc="center" ai="center" gap="$4">
-        <Text style={styles.title} py="$10">
-          Bem-vindo ao app!
-        </Text>
-
-        {/* DEVE SAIR DAQUI, IR PARA UM MENU SANDUICHE, APENAS AQUI PARA DEBUG */}
-        {role === 'admin' && (
-            <Pressable onPress={() => router.push('/screens/AdminScreen')}>
-              <Text>Ir para Admin</Text>
-            </Pressable>
-          ) && (
-            <Pressable
-              onPress={() => router.push('/(professor)/QuestionsManager')}
-            >
-              <Text>Gerenciar Questões</Text>
-            </Pressable>
-          )}
-
-        {role === 'professor' && (
-          <Pressable onPress={() => router.push('/(professor)/ProfessorMenu')}>
-            <Text>Gerenciar Questões</Text>
-          </Pressable>
-        )}
-        <ZStack>
+      {/* CORPO DA TELA (ZStack para colocar a imagem no fundo) */}
+      <ZStack f={1} width={'100%'}>
+        {/* Imagem de Fundo (Marca d'água posicionada na base) */}
+        <YStack
+          position="absolute"
+          bottom={0}
+          left={0}
+          right={0}
+          ai="center"
+          opacity={0.4}
+        >
           <Image
-            height={300}
-            width={300}
-            mt={'auto'}
             source={require('../../assets/images/logo.png')}
+            width={'100%'}
+            height={300} // Ajuste a altura conforme a proporção da sua logo real
+            objectFit="contain"
           />
-        </ZStack>
-      </YStack>
+        </YStack>
+
+        {/* Conteúdo em Primeiro Plano */}
+        <YStack f={1} px="$5" pt="$8" gap="$1">
+          <Text color={palette.darkBlue} fontSize={28} fontWeight="900">
+            Olá, {name || 'Usuário'}!
+          </Text>
+          <Text color={palette.darkBlue} fontSize={22} fontWeight="600">
+            Bem-vindo!
+          </Text>
+
+          {/* MENUS DE ADMIN/PROFESSOR (Mantidos apenas para debug) */}
+          <YStack mt="$8" gap="$4">
+            {role === 'admin' && (
+              <>
+                <Pressable onPress={() => router.push('/(admin)/AdminScreen')}>
+                  <Text color={palette.darkBlue} fontWeight="bold">
+                    → Ir para Admin
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={() => router.push('/(professor)/QuestionsManager')}
+                >
+                  <Text color={palette.darkBlue} fontWeight="bold">
+                    → Gerenciar Questões
+                  </Text>
+                </Pressable>
+              </>
+            )}
+
+            {role === 'professor' && (
+              <Pressable
+                onPress={() => router.push('/(professor)/ProfessorMenu')}
+              >
+                <Text color={palette.darkBlue} fontWeight="bold">
+                  → Gerenciar Questões
+                </Text>
+              </Pressable>
+            )}
+          </YStack>
+        </YStack>
+      </ZStack>
     </YStack>
   );
 }

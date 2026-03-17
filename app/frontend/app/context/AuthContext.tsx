@@ -8,12 +8,14 @@ interface JwtPayload {
   role: UserRole; // Cargo/Role do usuário
   email: string; // email do usuario
   exp: number; // Data de expiracao
+  name: string; // Nome do usuário
 }
 
 interface AuthContextProps {
   session: string | null;
   role: UserRole;
   email: string | null;
+  name: string | null;
   isLoading: boolean;
   signIn: (token: string) => Promise<void>;
   signOut: () => void;
@@ -26,6 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [role, setRole] = useState<UserRole>('aluno');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [email, setEmail] = useState<string | null>(null);
+  const [name, setName] = useState<string | null>(null);
 
   useEffect(() => {
     loadStorageData();
@@ -45,6 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setSession(storedSession);
           setRole(decoded.role);
           setEmail(decoded.email);
+          setName(decoded.name);
         } else {
           await signOut();
         }
@@ -64,7 +68,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(token);
       setRole(decoded.role);
       setEmail(decoded.email);
-
+      setName(decoded.name);
+      console.log('Token decodificado no signIn:', decoded);
       await AsyncStorage.setItem('@auth_session', token);
     } catch (error) {
       console.log('Erro ao fazer login', error);
@@ -75,12 +80,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSession(null);
     setRole('aluno');
     setEmail(null);
+    setName(null);
     await AsyncStorage.removeItem('@auth_session');
   }
 
   return (
     <AuthContext.Provider
-      value={{ session, role, email, isLoading, signIn, signOut }}
+      value={{ session, role, email, isLoading, name, signIn, signOut }}
     >
       {children}
     </AuthContext.Provider>

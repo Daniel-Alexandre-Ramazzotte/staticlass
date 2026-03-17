@@ -7,20 +7,10 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { BottomNavigation, Provider } from 'react-native-paper';
 import { useFocusEffect } from '@react-navigation/native';
-import CheckAnswer from '../services/CheckAnswer';
 import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
-import styles, {
-  palette,
-  SELECTED,
-  BG,
-  BUTTONS,
-  PRIMARY,
-} from '../constants/style';
-import CustomButton from 'app/components/CustomButton/CustomButton';
-import GradientWrapper from 'app/components/GradientWrapper/GradientWrapper';
+import styles, { palette } from '../constants/style';
+
 import api from '../services/api';
 import { ChevronLeft } from 'lucide-react-native';
 import {
@@ -32,6 +22,7 @@ import {
   Button,
   Progress,
 } from 'tamagui';
+import { AppButton } from '../components/AppButton';
 
 interface QuizQuestions {
   num_questions: number;
@@ -50,7 +41,6 @@ interface QuizQuestions {
 
 const QuizInProgressScreen = () => {
   const { qtd } = useLocalSearchParams();
-  const altLetters = ['A', 'B', 'C', 'D', 'E'];
   const router = useRouter();
   const [quizQuestions, setQuestions] = useState<QuizQuestions>({
     num_questions: 0,
@@ -85,7 +75,8 @@ const QuizInProgressScreen = () => {
         throw new Error('Erro ao buscar a questão');
       }
       const data = await response.data;
-      console.log(data);
+
+      //console.log(data);
 
       await setQuestions({
         num_questions: Number(qtd),
@@ -136,8 +127,8 @@ const QuizInProgressScreen = () => {
       console.log('URL tentada:', `/uploads/${imageName}`);
       if (err.response) {
         // Resposta recebida do servidor com status de erro
-        console.log('Status:', err.response.status);
-        console.log('Dados do erro:', err.response.data);
+        //console.log('Status:', err.response.status);
+        //console.log('Dados do erro:', err.response.data);
       } else if (err.request) {
         // A requisição foi feita mas não houve resposta (Erro de Network/IP)
         console.log('Sem resposta do servidor. Verifique IP e Porta.');
@@ -205,7 +196,7 @@ const QuizInProgressScreen = () => {
             {/*Barra de Progresso*/}
             <Progress
               f={1}
-              value={progressoAtual}
+              value={progressoAtual || 0}
               size="$3"
               backgroundColor={palette.white}
             >
@@ -294,15 +285,14 @@ const QuizInProgressScreen = () => {
             </YStack>
           </YStack>
 
-          <Button
+          <AppButton
             mt="auto"
+            buttonSize="big"
+            type={userAnswer ? 'secondary' : 'inactive'}
             onPress={handleNextQuestion}
-            backgroundColor={userAnswer ? palette.primaryGreen : palette.grey}
           >
-            <Text color={palette.offWhite} fontWeight="bold" fontSize={26}>
-              CONFIRMAR
-            </Text>
-          </Button>
+            CONFIRMAR
+          </AppButton>
         </YStack>
       </ScrollView>
     );
@@ -332,10 +322,10 @@ const QuizInProgressScreen = () => {
     setUserResponses(newResponses as any);
 
     const nextIndex = counter + 1;
-
+    setUserAnswer('');
     if (nextIndex >= quizQuestions.num_questions) {
       router.push({
-        pathname: '../screens/ResultScreen' as any,
+        pathname: '/(app)/ResultScreen' as any,
         params: { result: JSON.stringify(newResponses) },
       });
     } else {

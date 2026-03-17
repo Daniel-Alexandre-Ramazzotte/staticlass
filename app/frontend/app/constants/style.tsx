@@ -1,6 +1,6 @@
+import { Background } from '@react-navigation/elements';
 import { PlaneLanding } from '@tamagui/lucide-icons';
 import { StyleSheet } from 'react-native';
-import { black } from 'react-native-paper/lib/typescript/styles/themes/v2/colors';
 
 // #0066b7
 export const palette = {
@@ -39,12 +39,6 @@ const styles = StyleSheet.create({
     borderRadius: 28,
     marginBottom: 18,
     resizeMode: 'contain',
-  },
-  title: {
-    fontSize: 36,
-    fontWeight: '800',
-    color: PRIMARY,
-    //textTransform: 'lowercase',
   },
   subtitle: { marginTop: 8, fontSize: 16, color: '#333', textAlign: 'center' },
   input: {
@@ -95,16 +89,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: 'center',
   },
-  link: { marginTop: 12 },
-  linkText: { color: PRIMARY, textDecorationLine: 'underline' },
   footerNote: {
     position: 'absolute',
     bottom: 18,
     alignItems: 'center',
     width: '100%',
   },
-  footerText: { color: '#666' },
-
   mainContainer: {
     flex: 1,
     height: '100%',
@@ -122,35 +112,7 @@ const styles = StyleSheet.create({
     backgroundColor: palette.accent,
     borderRadius: 20,
   },
-  gtitle: {
-    fontWeight: 'bold',
-    fontSize: 24,
-    color: palette.offWhite,
-  },
-  gsubtitle: {
-    fontWeight: 'bold',
-    fontSize: 20,
-    color: '#171717',
-    marginBottom: 5,
-  },
-  endTitle: {
-    fontWeight: 'bold',
-    fontSize: 20,
-    color: BG,
-  },
-  scoreAnnouncement: {
-    fontWeight: 'bold',
-    fontSize: 30,
-    color: '#fcfcfc',
-  },
-  awardImg: {
-    width: 200,
-    height: 250,
-    resizeMode: 'contain',
-  },
-  bold: {
-    fontWeight: 'bold',
-  },
+
   resultContainer: {
     flex: 1,
     marginTop: 20,
@@ -165,9 +127,7 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: -40,
   },
-  reviewAnswer: {
-    marginVertical: 5,
-  },
+
   issueText: {
     fontSize: 16,
     color: palette.offBlack,
@@ -266,7 +226,7 @@ export const tamaguiStyles = {
     pressStyle: { scale: 0.97, opacity: 0.8 },
   },
   buttonOutline: {
-    backgroundColor: '#171717', // Off-black como no seu print
+    backgroundColor: '#171717',
     borderRadius: 12,
     size: '$5',
     pressStyle: { scale: 0.97, opacity: 0.9 },
@@ -278,6 +238,13 @@ export const tamaguiStyles = {
   buttonTextDark: {
     color: '#ffffff',
     fontWeight: '600',
+  },
+  logoLogin: {
+    width: 200,
+    height: 200,
+    borderRadius: 28,
+    marginBottom: 18,
+    resizeMode: 'contain',
   },
 };
 

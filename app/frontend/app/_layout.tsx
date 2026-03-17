@@ -2,7 +2,6 @@ import { Stack, SplashScreen, useRouter, useSegments } from 'expo-router';
 import { useFonts } from 'expo-font';
 import React, { useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
-import { Drawer } from 'expo-router/drawer';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { TamaguiProvider } from 'tamagui';
 import { tamaguiConfig } from '../tamagui.config';
@@ -33,11 +32,11 @@ function InitialLayout() {
     if (!session) {
       // Se não tem sessão, manda pro login
       if (!inAuthGroup) {
-        router.replace('/(public)/login');
+        router.replace('/(public)/Login');
       }
     } else {
       if (inAuthGroup) {
-        router.replace('(tabs)/home');
+        router.replace('(tabs)/Home');
       }
     }
   }, [session, isLoading, fontsLoaded, segments]);
@@ -60,14 +59,12 @@ function InitialLayout() {
           }}
         >
           <Stack.Screen
-            name="(public)/login"
+            name="(public)/Login"
             options={{ headerShown: false }}
           />
 
-          <Stack.Screen name="(app)" options={{ headerShown: false }} />
-
           <Stack.Screen
-            name="quizInProgress"
+            name="(public)/QuizInProgressScreen"
             options={{ headerShown: false }}
           />
         </Stack>

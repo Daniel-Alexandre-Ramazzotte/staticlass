@@ -63,11 +63,13 @@ def login_user(data):
 
     # Entender melhor a logica
     # Jogar isso em outro lugar /utils/
+    print(f"Gerando token para usuário: {user.email} (ID: {user.id}, Role: {user.role}, nome: {user.name})")
     token = create_access_token(
         identity=str(user.id),
         additional_claims={
             "role": user.role,
-            "email": user.email
+            "email": user.email,
+            "name": user.name
             }
     )
     return token, None, 200

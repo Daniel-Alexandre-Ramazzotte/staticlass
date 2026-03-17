@@ -1,6 +1,14 @@
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { YStack, XStack, Text, View, Button, styled,  ScrollView  } from 'tamagui';
-import styles from '../constants/style';
+import {
+  YStack,
+  XStack,
+  Text,
+  View,
+  Button,
+  styled,
+  ScrollView,
+} from 'tamagui';
+
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const ResultScreen = () => {
@@ -24,12 +32,16 @@ const ResultScreen = () => {
   ).length;
 
   return (
-  <SafeAreaView style={{ flex: 1, backgroundColor: '#0f6ea9' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#0f6ea9' }}>
       <Stack.Screen options={{ headerShown: false }} />
 
       {/* containerResult */}
-      <YStack flex={1} alignItems="center" justifyContent="center" paddingHorizontal={20}>
-        
+      <YStack
+        flex={1}
+        alignItems="center"
+        justifyContent="center"
+        paddingHorizontal={20}
+      >
         {/* topBadge */}
         <YStack
           backgroundColor="#f65151"
@@ -55,9 +67,15 @@ const ResultScreen = () => {
             zIndex={-1} // Fica atrás do retângulo "RESUMO"
           >
             {/* white circle */}
-            <View width={12} height={12} borderRadius={6} backgroundColor="#fff" marginTop={15} />
+            <View
+              width={12}
+              height={12}
+              borderRadius={6}
+              backgroundColor="#fff"
+              marginTop={15}
+            />
           </YStack>
-          
+
           <Text fontSize={22} fontWeight="800" color="#fff">
             RESUMO
           </Text>
@@ -78,21 +96,28 @@ const ResultScreen = () => {
             {score}/{result.length}
           </Text>
 
-          <ScrollView 
+          <ScrollView
             showsVerticalScrollIndicator={false}
             style={{ width: '100%' }}
             contentContainerStyle={{ paddingBottom: 20 }}
           >
             {result.map((answer: any, index: number) => {
               // Lógica para definir a cor (Verde se acertou, Vermelho se errou)
-              const statusColor = answer.message === 'correct' ? '#55bf44' : '#f65151';
+              const statusColor =
+                answer.message === 'correct' ? '#55bf44' : '#f65151';
 
               return (
-                <XStack key={index} justifyContent="center" alignItems="center" paddingVertical={12} width="100%">
-                  <Text 
-                    fontSize={16} 
-                    fontWeight="bold" 
-                    marginRight={8} 
+                <XStack
+                  key={index}
+                  justifyContent="center"
+                  alignItems="center"
+                  paddingVertical={12}
+                  width="100%"
+                >
+                  <Text
+                    fontSize={16}
+                    fontWeight="bold"
+                    marginRight={8}
                     color={statusColor}
                   >
                     Questão {index + 1}:
@@ -105,7 +130,7 @@ const ResultScreen = () => {
                     fontSize={14}
                     onPress={() => {
                       router.push({
-                        pathname: '../screens/SolutionScreen',
+                        pathname: '/(app)/SolutionScreen',
                         params: { questionData: JSON.stringify(answer) },
                       });
                     }}
@@ -129,7 +154,7 @@ const ResultScreen = () => {
         position="absolute" // Fixa o botão no final da tela
         bottom={0}
         pressStyle={{ opacity: 0.8 }} // Efeito visual de clique
-        onPress={() => router.push('../(tabs)/home')}
+        onPress={() => router.push('/(tabs)/Home')}
       >
         <Text color="#fff" fontWeight="bold" fontSize={22}>
           VOLTAR

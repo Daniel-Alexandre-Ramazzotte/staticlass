@@ -1,12 +1,6 @@
 import { useRouter } from 'expo-router';
-import {
-  View,
-  Image,
-  TextInput,
-  Pressable,
-  KeyboardAvoidingView,
-} from 'react-native';
-import styles, { palette } from 'app/constants/style';
+import { View, TextInput, Pressable, KeyboardAvoidingView } from 'react-native';
+import styles, { tamaguiStyles, palette } from 'app/constants/style';
 import { useState } from 'react';
 import CheckLogin from '../services/CheckLogin';
 import RecoverPassword from '../services/RecoverPasswordService';
@@ -21,6 +15,7 @@ import {
   SizeTokens,
   Input,
   TextArea,
+  Image,
 } from 'tamagui';
 
 /*
@@ -81,9 +76,11 @@ export default function LoginScreen() {
     >
       <Image
         source={require('../../assets/images/logo.png')}
-        style={styles.logo}
+        width={220}
+        height={220}
+        objectFit="contain"
       />
-      <Text style={styles.title}>{appName}</Text>
+
       {/* Campo de email*/}
 
       <YStack
@@ -136,7 +133,7 @@ export default function LoginScreen() {
 
         {/* Botao de recuperacao de senha */}
         <Button
-          onPress={() => router.push('/(public)/recover-password')}
+          onPress={() => router.push('/(public)/RecoverPassword')}
           backgroundColor={palette.offWhite}
           color={palette.primaryBlue}
           w={'100%'}
@@ -148,14 +145,14 @@ export default function LoginScreen() {
         </Button>
         {/* Botao de registro */}
         <Button
-          onPress={() => router.push('/(public)/register')}
+          onPress={() => router.push('/(public)/Register')}
           backgroundColor={palette.offWhite}
           color={palette.primaryBlue}
           w={'100%'}
           alignSelf="center"
         >
           <Text color={palette.primaryBlue} fontWeight={'bold'} fontSize={16}>
-            Registrar
+            CADASTRE-SE
           </Text>
         </Button>
 
