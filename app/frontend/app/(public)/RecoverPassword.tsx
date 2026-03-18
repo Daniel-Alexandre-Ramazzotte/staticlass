@@ -20,7 +20,7 @@ export default function RecoverPassword() {
     Alert.alert(
       'Se o email estiver cadastrado, você receberá um link para redefinir sua senha.',
       '',
-      [{ text: 'OK', onPress: () => router.push('/(public)/login') }]
+      [{ text: 'OK', onPress: () => router.push('/(public)/Login') }]
     );
   };
 

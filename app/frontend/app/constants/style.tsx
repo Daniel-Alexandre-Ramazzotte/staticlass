@@ -40,6 +40,11 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     resizeMode: 'contain',
   },
+  title: {
+    fontSize: 36,
+    fontWeight: '800',
+    color: PRIMARY,
+  },
   subtitle: { marginTop: 8, fontSize: 16, color: '#333', textAlign: 'center' },
   input: {
     height: 50,

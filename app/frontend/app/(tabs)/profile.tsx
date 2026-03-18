@@ -1,63 +1,59 @@
 import { useRouter, useFocusEffect } from 'expo-router';
-import {
-  View,
-  Text,
-  Image,
-} from 'react-native';
+import { View, Text, Image } from 'react-native';
 import styles, { tamaguiStyles } from 'app/constants/style';
-import { useEffect, useState, useCallback  } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import api from '../services/api';
 import { Button, XStack, YStack } from 'tamagui';
-import { Settings, Trophy, Flame, BarChart2, Award, Camera } from '@tamagui/lucide-icons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  Settings,
+  Trophy,
+  Flame,
+  BarChart2,
+  Award,
+  Camera,
+} from '@tamagui/lucide-icons';
+import { useAuth } from '../context/AuthContext';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const [userName, setUserName] = useState('');
   const [score, setScore] = useState(0);
-  const [streak, setStreak] = useState("0");
- 
+  const [streak, setStreak] = useState('0');
+  const { signOut, role, email, name } = useAuth();
   const loadUserData = async () => {
     try {
-      
-      const savedEmail = await AsyncStorage.getItem('userEmail');
-      
-
-      if (!savedEmail) {
-        console.log("Aviso: Nenhum e-mail encontrado no armazenamento.");
+      if (!email) {
+        console.log('Aviso: Nenhum e-mail encontrado no armazenamento.');
         return;
       }
 
-      const response = await api.get(`/users/profile/${savedEmail.trim()}`);
-    
+      const response = await api.get(`/users/profile/${email.trim()}`);
+
       const userData = response.data;
 
-      
       if (userData) {
         const nameToSet = userData.name || userData.nome || 'Usuário';
         const scoreToSet = userData.score ?? 0;
 
         setUserName(nameToSet);
         setScore(scoreToSet);
-        
+        setStreak(userData.streak?.toString() || '0');
       }
-
     } catch (err: any) {
-
       console.dir(err);
-      
+
       if (err.response) {
         // O backend respondeu, mas com erro (Ex: 404, 500)
-        console.log("Status do Backend:", err.response.status);
-        console.log("Resposta do Backend:", err.response.data);
+        console.log('Status do Backend:', err.response.status);
+        console.log('Resposta do Backend:', err.response.data);
         alert(`Erro do Servidor: ${err.response.status}`);
       } else if (err.request) {
         // O app não conseguiu nem falar com o backend
-        console.log("O servidor não respondeu. O IP da API pode estar errado.");
-        alert("Erro de conexão: Servidor offline ou IP incorreto.");
+        console.log('O servidor não respondeu. O IP da API pode estar errado.');
+        alert('Erro de conexão: Servidor offline ou IP incorreto.');
       } else {
         // Erro de código no JavaScript
-        console.log("Erro de código:", err.message);
+        console.log('Erro de código:', err.message);
         alert(`Erro de código: ${err.message}`);
       }
     }
@@ -70,15 +66,14 @@ export default function ProfileScreen() {
   );
 
   return (
-
-  <View style={styles.mainContainer}>
+    <View style={styles.mainContainer}>
       <View style={styles.profileHeader}>
         {/* A imagem entra aqui, antes do texto */}
         <Image
           source={require('../../assets/images/logo.png')}
           style={styles.logo} // Certifique-se que o estilo tenha largura e altura
         />
-       
+
         <Text style={styles.userNameText}>{userName}</Text>
       </View>
 
@@ -89,7 +84,7 @@ export default function ProfileScreen() {
           <Text style={styles.statValue}>{score}</Text>
           <Text style={styles.statLabel}>Pontos</Text>
         </View>
-       
+
         <View style={styles.statItem}>
           <Flame size={28} color="#FF4500" />
           <Text style={styles.statValue}>{streak} dias</Text>
@@ -99,7 +94,6 @@ export default function ProfileScreen() {
 
       {/* Menu de Opções com Tamagui */}
       <YStack space="$3" width="90%" paddingHorizontal="$4">
-       
         <Button
           icon={BarChart2}
           size="$5"
@@ -125,10 +119,7 @@ export default function ProfileScreen() {
         >
           Configurações
         </Button>
-
       </YStack>
     </View>
   );
 }
-
-

@@ -11,6 +11,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const [qtdQuestoes, setQtdQuestoes] = useState('5');
   const { signOut, role, email, name } = useAuth();
+
   console.log('Dados do usuário no HomeScreen:', { email, role, name });
   return (
     <YStack f={1} jc="center">

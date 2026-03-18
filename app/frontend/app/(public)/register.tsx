@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import styles from 'app/constants/style';
 import { useState } from 'react';
-import style from 'app/constants/style';
+
 import RegisterNewUserService from 'app/services/RegisterNewUserService';
 import { appName } from 'app/constants/names';
 /*
@@ -41,7 +41,9 @@ export default function RegisterScreen() {
       name,
     });
     if (response?.status !== 201) {
-      setErrorMessage(response?.data.error || 'Erro ao registrar. Tente novamente.');
+      setErrorMessage(
+        response?.data.error || 'Erro ao registrar. Tente novamente.'
+      );
     } else {
       showAlert();
     }
@@ -50,7 +52,7 @@ export default function RegisterScreen() {
     Alert.alert(
       'Email cadastrado com sucesso! Faça login para continuar.',
       '',
-      [{ text: 'OK', onPress: () => router.push('/(public)/login') }]
+      [{ text: 'OK', onPress: () => router.push('/(public)/Login') }]
     );
   };
   return (
@@ -62,26 +64,26 @@ export default function RegisterScreen() {
       ></Image>
       <Text style={styles.title}>Cadastre-se no {appName}!</Text>
       <TextInput
-        style={style.input}
+        style={styles.input}
         value={name}
         onChangeText={setName}
         placeholder="Nome"
       />
       <TextInput
-        style={style.input}
+        style={styles.input}
         value={email}
         onChangeText={setEmail}
         placeholder="Email"
       />
       <TextInput
-        style={style.input}
+        style={styles.input}
         value={password}
         onChangeText={setPassword}
         placeholder="Senha"
         secureTextEntry
       />
       <TextInput
-        style={style.input}
+        style={styles.input}
         value={confirm_password}
         onChangeText={setConfirmPassword}
         placeholder="Confirmar Senha"
