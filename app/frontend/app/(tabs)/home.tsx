@@ -49,6 +49,7 @@ export default function HomeScreen() {
         </YStack>
 
         {/* Conteúdo em Primeiro Plano */}
+
         <YStack f={1} px="$5" pt="$8" gap="$1">
           <Text color={palette.darkBlue} fontSize={28} fontWeight="900">
             Olá, {name || 'Usuário'}!
