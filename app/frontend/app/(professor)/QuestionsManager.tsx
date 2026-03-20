@@ -2,6 +2,10 @@ import { useRouter } from 'expo-router';
 import { XStack, YStack, Button, Text, ScrollView } from 'tamagui';
 import { palette } from 'app/constants/style';
 import { ChevronLeft, Eye, Pencil, Trash2 } from 'lucide-react-native';
+import { useAuth } from 'app/context/AuthContext';
+import api from 'app/services/api';
+import { useEffect, useState } from 'react';
+import { AppButton } from 'app/components/AppButton';
 
 // esse gerenciador ainda nao esta funcionando, apenas tem o visual aplicado
 // O que falta:
@@ -10,10 +14,45 @@ import { ChevronLeft, Eye, Pencil, Trash2 } from 'lucide-react-native';
 
 export default function QuestionsManager() {
   const router = useRouter();
-  const questions = Array.from(
-    { length: 11 },
-    (_, idx) => `Questao ${idx + 1}`
-  );
+  const { userId, isLoading: isAuthLoading } = useAuth();
+  type ProfessorQuestion = {
+    id: number;
+    issue: string;
+  };
+
+  const [questions, setQuestions] = useState<ProfessorQuestion[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isAuthLoading) {
+      return;
+    }
+
+    if (!userId) {
+      setIsLoading(false);
+      setErrorMessage('Usuario nao autenticado. Faca login novamente.');
+      return;
+    }
+
+    setIsLoading(true);
+
+    const fetchQuestions = async () => {
+      try {
+        const result = await api.get(`/questions/professor/${userId}`);
+
+        setQuestions(result.data as ProfessorQuestion[]);
+        setErrorMessage(null);
+      } catch (error) {
+        console.error('Erro ao buscar questões:', error);
+        setErrorMessage('Nao foi possivel carregar as questoes.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchQuestions();
+  }, [userId, isAuthLoading]);
 
   return (
     <YStack f={1} backgroundColor="#d6d6db">
@@ -79,61 +118,83 @@ export default function QuestionsManager() {
               Questoes
             </Text>
 
-            {questions.map((question) => (
-              <XStack key={question} ai="center" jc="space-between">
-                <Text
-                  backgroundColor="#4f7ea0"
-                  color={palette.offWhite}
-                  fontWeight="700"
-                  px="$3"
-                  py="$2"
-                  width={88}
-                  borderRadius={2}
-                >
-                  {question}
-                </Text>
+            {isLoading && (
+              <Text color={palette.offWhite} textAlign="center" py="$2">
+                Carregando questoes...
+              </Text>
+            )}
 
-                <XStack ai="center" gap="$2" mr="$2">
+            {!isLoading && errorMessage && (
+              <Text color="#8f1f1f" textAlign="center" py="$2">
+                {errorMessage}
+              </Text>
+            )}
+
+            {!isLoading && !errorMessage && questions.length === 0 && (
+              <Text color={palette.offWhite} textAlign="center" py="$2">
+                Nenhuma questao cadastrada para este professor.
+              </Text>
+            )}
+
+            {!isLoading &&
+              !errorMessage &&
+              questions.map((question) => (
+                <XStack
+                  key={question.id}
+                  ai="center"
+                  jc="space-between"
+                  gap="$2"
+                >
+                  <YStack
+                    backgroundColor="#4f7ea0"
+                    px="$3"
+                    py="$2"
+                    borderRadius={4}
+                    flex={1}
+                    gap="$1"
+                  >
+                    <Text color={palette.offWhite} fontWeight="700">
+                      Questao {question.id}
+                    </Text>
+                    <Text color={palette.offWhite} numberOfLines={2}>
+                      {question.issue}
+                    </Text>
+                  </YStack>
+
+                  <XStack ai="center" gap="$2" mr="$2">
+                    <Button
+                      size="$2"
+                      circular
+                      backgroundColor="transparent"
+                      pressStyle={{ opacity: 0.7 }}
+                      icon={<Pencil color="#24506e" size={16} />}
+                    />
+                    <Button
+                      size="$2"
+                      circular
+                      backgroundColor="transparent"
+                      pressStyle={{ opacity: 0.7 }}
+                      icon={<Eye color="#24506e" size={16} />}
+                    />
+                  </XStack>
+
                   <Button
                     size="$2"
                     circular
                     backgroundColor="transparent"
                     pressStyle={{ opacity: 0.7 }}
-                    icon={<Pencil color="#24506e" size={16} />}
-                  />
-                  <Button
-                    size="$2"
-                    circular
-                    backgroundColor="transparent"
-                    pressStyle={{ opacity: 0.7 }}
-                    icon={<Eye color="#24506e" size={16} />}
+                    icon={<Trash2 color="#24506e" size={18} />}
                   />
                 </XStack>
-
-                <Button
-                  size="$2"
-                  circular
-                  backgroundColor="transparent"
-                  pressStyle={{ opacity: 0.7 }}
-                  icon={<Trash2 color="#24506e" size={18} />}
-                />
-              </XStack>
-            ))}
+              ))}
           </YStack>
 
-          <Button
-            backgroundColor="#3f6f91"
-            color={palette.offWhite}
-            fontSize="$9"
-            fontWeight="800"
-            borderRadius={999}
-            width={'100%'}
-            maxWidth={360}
-            py="$5"
+          <AppButton
+            backgroundColor={palette.darkBlue}
             onPress={() => router.push('/(professor)/AddNewQuestion')}
           >
-            Adicionar Nova Questao
-          </Button>
+            Adicionar Nova Questão
+          </AppButton>
         </YStack>
       </ScrollView>
     </YStack>

@@ -2,7 +2,12 @@ import React, { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { PersonalizarAccordion } from 'app/components/CustomAccordion';
 import { XStack, YStack, Button, Text } from 'tamagui';
-import { palette } from 'app/constants/style';
+import {
+  palette,
+  primaryFontA,
+  primaryFontB,
+  primaryFontC,
+} from 'app/constants/style';
 import { AppButton } from 'app/components/AppButton';
 import { useAuth } from 'app/context/AuthContext';
 
@@ -29,7 +34,12 @@ export default function QuestionsScreen() {
         jc="space-between" // Espaço entre os itens
         width={'100%'}
       >
-        <Text color="#fff" fontSize="$6" fontWeight="bold">
+        <Text
+          color="#fff"
+          fontSize="$6"
+          fontWeight="bold"
+          fontFamily={primaryFontA}
+        >
           {`Olá, ${name || 'Usuário'}!`}
         </Text>
       </XStack>
@@ -39,6 +49,7 @@ export default function QuestionsScreen() {
           buttonSize="big"
           backgroundColor={palette.primaryGreen}
           onPress={handleStartQuiz}
+          fontFamily={primaryFontA}
         >
           Iniciar Quiz
         </AppButton>

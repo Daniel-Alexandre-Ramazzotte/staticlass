@@ -2,6 +2,10 @@ import { Background } from '@react-navigation/elements';
 import { PlaneLanding } from '@tamagui/lucide-icons';
 import { StyleSheet } from 'react-native';
 
+export const primaryFontA = 'ChauPhilomeneOne';
+export const primaryFontB = 'AoboshiOne';
+export const primaryFontC = 'Carlito';
+
 // #0066b7
 export const palette = {
   primary: '#1E63C3',

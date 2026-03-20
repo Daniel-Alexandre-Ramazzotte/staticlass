@@ -1,7 +1,8 @@
 from flask import Blueprint, jsonify, session, current_app
-from ..repositories.questions_repository import get_random_question, add_question_to_db, update_question, search_subject, add_subject_to_db
+from ..repositories.questions_repository import get_random_question, add_question_to_db, update_question, search_subject, add_subject_to_db, get_professor_questions
 import os
 from werkzeug.utils import secure_filename
+
 ## Numero fixo temporario
 NUM_QUESTIONS = 5
 
@@ -65,7 +66,7 @@ def add_question_service(data):
         
         return jsonify({"error": "missing fields in data"})
 
-    
+
     subject_name = data.pop("subject")
    
     subject_result = search_subject(subject_name)
@@ -123,3 +124,10 @@ def get_images():
     '''
     upload_folder = current_app.config['UPLOAD_FOLDER']
     files = os.listdir(upload_folder)
+
+
+def get_professor_questions_service(professor_id):
+    '''
+    Retorna as questões criadas por um professor específico.
+    '''
+    return get_professor_questions(professor_id)

@@ -1,6 +1,8 @@
 from flask import Blueprint, request, send_from_directory
-from ..services.questions_service import check_answer, random_question, add_question_service, update_question_service, process_upload, get_images
+from ..services.questions_service import check_answer, random_question, add_question_service, update_question_service, process_upload, get_images, get_professor_questions_service
 from typing import Any, Dict
+from flask import jsonify
+from statl.utils.auth_middleware import require_role
 import os 
 
 NUM_QUESTIONS = 5
@@ -34,7 +36,6 @@ def check_correct_answer():
     data = request.get_json()
     return check_answer(data)
 
-# TODO: 
 
 @bp.route('/add', methods = ['POST'])
 def add_question():
@@ -44,8 +45,7 @@ def add_question():
 
     file_issue = request.files.get("image_q")
     file_solution = request.files.get("image_s")
-    
-    # ADICIONE ESTES PRINTS DE DEBUG
+
 
     path_issue = process_upload(file_issue)
     
@@ -68,3 +68,16 @@ def serve_image(filename):
     except FileNotFoundError:
         print("Arquivo não encontrado no servidor.")
         return "Arquivo não encontrado", 404
+
+
+@require_role(['admin','professor'])
+@bp.route('/professor/<string:professor_id>', methods = ['GET'])
+def get_professor_questions(professor_id):
+    if not professor_id:
+        return jsonify({'error': 'Professor ID is required'}), 400
+
+
+
+    result = get_professor_questions_service(professor_id)
+    questions = [dict(row) for row in result.mappings().all()]
+    return jsonify(questions), 200

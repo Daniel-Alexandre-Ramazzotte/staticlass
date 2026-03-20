@@ -13,6 +13,7 @@ import { palette } from 'app/constants/style';
 import api from '../services/api';
 import { AppButton } from 'app/components/AppButton';
 import { ChevronLeft } from 'lucide-react-native';
+import { useAuth } from 'app/context/AuthContext';
 
 export default function AddNewQuestion() {
   const [isSelected, setIsSelected] = useState(false);
@@ -27,7 +28,14 @@ export default function AddNewQuestion() {
   const [subject, setSubject] = useState('');
   const [difficulty, setDifficulty] = useState('');
   const [solution, setSolution] = useState('');
+  const { userId } = useAuth();
+
   const handleQuestionSubmit = async () => {
+    if (!userId) {
+      alert('Usuario nao autenticado. Faca login novamente.');
+      return;
+    }
+
     if (
       !issue ||
       !altA ||
@@ -55,6 +63,7 @@ export default function AddNewQuestion() {
       formData.append('subject', subject);
       //formData.append('difficulty', difficulty);
       formData.append('solution', solution);
+      formData.append('id_professor', userId);
 
       const response = await api.post('/questions/add', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },

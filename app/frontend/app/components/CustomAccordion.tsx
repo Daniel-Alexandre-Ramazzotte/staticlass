@@ -1,7 +1,7 @@
 import React from 'react';
 import { Accordion, Paragraph, Square, Input, Label, YStack } from 'tamagui';
 import { ChevronDown } from '@tamagui/lucide-icons';
-import { palette } from '../constants/style';
+import { palette, primaryFontC } from '../constants/style';
 
 type Props = {
   num: string;
@@ -32,7 +32,12 @@ export function PersonalizarAccordion({ num, setNum }: Props) {
         >
           {({ open }: { open: boolean }) => (
             <>
-              <Paragraph fontWeight="bold" fontSize="$4" color={textColor}>
+              <Paragraph
+                fontFamily={primaryFontC}
+                fontWeight="bold"
+                fontSize="$4"
+                color={textColor}
+              >
                 Personalizar
               </Paragraph>
 

@@ -4,7 +4,12 @@ import { useRouter } from 'expo-router';
 
 import { useAuth } from 'app/context/AuthContext';
 import { XStack, YStack, ZStack, Button, Image, Text } from 'tamagui';
-import { palette } from 'app/constants/style';
+import {
+  palette,
+  primaryFontA,
+  primaryFontB,
+  primaryFontC,
+} from 'app/constants/style';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -24,7 +29,12 @@ export default function HomeScreen() {
         jc="space-between" // Espaço entre os itens
         width={'100%'}
       >
-        <Text color="#fff" fontSize="$6" fontWeight="bold">
+        <Text
+          color="#fff"
+          fontSize="$6"
+          fontWeight="bold"
+          fontFamily={primaryFontA}
+        >
           {`Olá, ${name || 'Usuário'}!`}
         </Text>
       </XStack>
@@ -51,10 +61,20 @@ export default function HomeScreen() {
         {/* Conteúdo em Primeiro Plano */}
 
         <YStack f={1} px="$5" pt="$8" gap="$1">
-          <Text color={palette.darkBlue} fontSize={28} fontWeight="900">
+          <Text
+            color={palette.darkBlue}
+            fontSize={28}
+            fontWeight="900"
+            fontFamily={primaryFontA}
+          >
             Olá, {name || 'Usuário'}!
           </Text>
-          <Text color={palette.darkBlue} fontSize={22} fontWeight="600">
+          <Text
+            color={palette.darkBlue}
+            fontSize={22}
+            fontWeight="600"
+            fontFamily={primaryFontC}
+          >
             Bem-vindo!
           </Text>
 

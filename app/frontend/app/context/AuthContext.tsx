@@ -16,6 +16,7 @@ interface AuthContextProps {
   role: UserRole;
   email: string | null;
   name: string | null;
+  userId: string | null;
   isLoading: boolean;
   signIn: (token: string) => Promise<void>;
   signOut: () => void;
@@ -29,37 +30,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [email, setEmail] = useState<string | null>(null);
   const [name, setName] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
+    const loadStorageData = async () => {
+      // Carregar dados do AsyncStorage
+      try {
+        const storedSession = await AsyncStorage.getItem('@auth_session');
+
+        if (storedSession) {
+          const decoded = jwtDecode<JwtPayload>(storedSession);
+
+          const isExpired = decoded.exp * 1000 < Date.now();
+
+          if (!isExpired) {
+            setSession(storedSession);
+            setRole(decoded.role);
+            setEmail(decoded.email);
+            setName(decoded.name);
+            setUserId(decoded.sub);
+          } else {
+            await signOut();
+          }
+        }
+      } catch (error) {
+        console.log('Erro ao ler token', error);
+        await signOut();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     loadStorageData();
   }, []);
-
-  async function loadStorageData() {
-    // Carregar dados do AsyncStorage
-    try {
-      const storedSession = await AsyncStorage.getItem('@auth_session');
-
-      if (storedSession) {
-        const decoded = jwtDecode<JwtPayload>(storedSession);
-
-        const isExpired = decoded.exp * 1000 < Date.now();
-
-        if (!isExpired) {
-          setSession(storedSession);
-          setRole(decoded.role);
-          setEmail(decoded.email);
-          setName(decoded.name);
-        } else {
-          await signOut();
-        }
-      }
-    } catch (error) {
-      console.log('Erro ao ler token', error);
-      await signOut();
-    } finally {
-      setIsLoading(false);
-    }
-  }
 
   async function signIn(token: string) {
     try {
@@ -69,6 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setRole(decoded.role);
       setEmail(decoded.email);
       setName(decoded.name);
+      setUserId(decoded.sub);
       console.log('Token decodificado no signIn:', decoded);
       await AsyncStorage.setItem('@auth_session', token);
     } catch (error) {
@@ -81,12 +85,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setRole('aluno');
     setEmail(null);
     setName(null);
+    setUserId(null);
     await AsyncStorage.removeItem('@auth_session');
   }
 
   return (
     <AuthContext.Provider
-      value={{ session, role, email, isLoading, name, signIn, signOut }}
+      value={{ session, role, email, isLoading, name, userId, signIn, signOut }}
     >
       {children}
     </AuthContext.Provider>

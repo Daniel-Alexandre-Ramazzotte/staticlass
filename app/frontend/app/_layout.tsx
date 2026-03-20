@@ -8,13 +8,16 @@ import { tamaguiConfig } from '../tamagui.config';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 function InitialLayout() {
-  const { session, role, isLoading } = useAuth(); //  Pegamos os dados do contexto
+  const { session, isLoading } = useAuth(); //  Pegamos os dados do contexto
   const segments = useSegments(); // Para saber em qual tela estamos
   const router = useRouter(); // Para navegar
 
   const [fontsLoaded] = useFonts({
     Inter: require('@tamagui/font-inter/otf/Inter-Medium.otf'),
     InterBold: require('@tamagui/font-inter/otf/Inter-Bold.otf'),
+    ChauPhilomeneOne: require('../assets/fonts/ChauPhilomeneOne-Regular.ttf'),
+    AoboshiOne: require('../assets/fonts/AoboshiOne-Regular.ttf'),
+    Carlito: require('../assets/fonts/Carlito-Regular.ttf'),
   });
 
   useEffect(() => {
@@ -36,10 +39,10 @@ function InitialLayout() {
       }
     } else {
       if (inAuthGroup) {
-        router.replace('(tabs)/Home');
+        router.replace('/(tabs)/Home');
       }
     }
-  }, [session, isLoading, fontsLoaded, segments]);
+  }, [session, isLoading, fontsLoaded, segments, router]);
 
   // Enquanto carrega fontes ou verifica autenticação, mostra spinner
   if (!fontsLoaded || isLoading) {
