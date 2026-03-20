@@ -1,16 +1,18 @@
 import { useRouter } from 'expo-router';
-import { View, Text, Pressable, TextInput } from 'react-native';
 import { useState } from 'react';
-
-import styles from 'app/constants/style';
-import api from '../services/api';
 import {
-  CheckButton,
-  StyledCheckbox,
-  StyledIndicator,
-  ButtonText,
-} from 'app/constants/style';
-import { useAuth } from '../context/AuthContext';
+  Input,
+  YStack,
+  XStack,
+  ZStack,
+  Text,
+  ScrollView,
+  Button,
+} from 'tamagui';
+import { palette } from 'app/constants/style';
+import api from '../services/api';
+import { AppButton } from 'app/components/AppButton';
+import { ChevronLeft } from 'lucide-react-native';
 
 export default function AddNewQuestion() {
   const [isSelected, setIsSelected] = useState(false);
@@ -75,73 +77,288 @@ export default function AddNewQuestion() {
   };
 
   return (
-    <View>
-      <Text style={styles.title}>Adicionar Nova Questão - Em breve</Text>
+    <ZStack f={1}>
+      <YStack
+        position="absolute"
+        top={0}
+        right={0}
+        bottom={0}
+        left={0}
+        backgroundColor={palette.backgroundLight}
+        opacity={0.2}
+        pointerEvents="none"
+      />
+      <ScrollView
+        f={1}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
+        <YStack>
+          {/*Header*/}
+          <XStack
+            backgroundColor={palette.primaryBlue}
+            pt="$8" // Testar melhor
+            pb="$4"
+            px="$4"
+            ai="center" // Alinhamento vertical
+            jc="space-between" // Espaço entre os itens
+            width={'100%'}
+          >
+            {/*Botão de Voltar*/}
+            <Button
+              size="$3" // Testar tamanhos
+              circular
+              backgroundColor="transparent"
+              pressStyle={{ opacity: 0.7 }}
+              onPress={() => router.back()}
+              icon={<ChevronLeft color={palette.white} size={28} />} // Ícone de seta para esquerda, Testar tamanhos
+            />
+            <Text
+              f={1}
+              color="#fff"
+              fontSize="$8"
+              fontWeight="bold"
+              textAlign="center"
+              mr="$6"
+            >
+              Gerenciar Questões
+            </Text>
+          </XStack>
+          <YStack ai="center" gap="$4" width={'70%'} alignSelf="center" py="$4">
+            <YStack width={'100%'} gap={0}>
+              <Text
+                backgroundColor={palette.darkBlue}
+                color={palette.offWhite}
+                padding="$1"
+                width="40%"
+                borderRadius={4}
+                alignSelf="flex-start"
+                marginLeft="$1"
+                textAlign="left"
+                fontWeight="bold"
+              >
+                Tema:
+              </Text>
+              <Input
+                width={'94%'}
+                alignSelf="flex-end"
+                marginTop="$1"
+                onChangeText={setSubject}
+                backgroundColor={palette.backgroundLight}
+                opacity={0.3}
+                color={palette.offWhite}
+              />
+            </YStack>
 
-      <TextInput
-        style={styles.input}
-        onChangeText={setSubject}
-        placeholder="Tema da questão"
-      />
-      {/*
-      <TextInput
-        style={styles.input}
-        onChangeText={setDifficulty}
-        placeholder="Dificuldade da questão"
-      /> */}
+            <YStack width={'100%'} gap={0}>
+              <Text
+                backgroundColor={palette.darkBlue}
+                color={palette.offWhite}
+                padding="$1"
+                width="40%"
+                borderRadius={4}
+                alignSelf="flex-start"
+                marginLeft="$1"
+                textAlign="left"
+                fontWeight="bold"
+              >
+                Enunciado:
+              </Text>
+              <Input
+                width={'94%'}
+                alignSelf="flex-end"
+                marginTop="$1"
+                onChangeText={setIssue}
+                backgroundColor={palette.backgroundLight}
+                opacity={0.3}
+                color={palette.offWhite}
+              />
+            </YStack>
 
-      <TextInput
-        style={styles.input}
-        onChangeText={setIssue}
-        placeholder="Enunciado da questão"
-      />
+            <YStack width={'100%'} gap={0}>
+              <Text
+                backgroundColor={palette.darkBlue}
+                color={palette.offWhite}
+                padding="$1"
+                width="40%"
+                borderRadius={4}
+                alignSelf="flex-start"
+                marginLeft="$1"
+                textAlign="left"
+                fontWeight="bold"
+              >
+                Alternativa A:
+              </Text>
+              <Input
+                width={'94%'}
+                alignSelf="flex-end"
+                marginTop="$1"
+                onChangeText={setAltA}
+                backgroundColor={palette.backgroundLight}
+                opacity={0.3}
+                color={palette.offWhite}
+              />
+            </YStack>
 
-      <TextInput
-        style={styles.input}
-        onChangeText={setAltA}
-        placeholder="Alternativa A"
-      />
-      <TextInput
-        style={styles.input}
-        onChangeText={setAltB}
-        placeholder="Alternativa B"
-      />
-      <TextInput
-        style={styles.input}
-        onChangeText={setAltC}
-        placeholder="Alternativa C  "
-      />
-      <TextInput
-        style={styles.input}
-        onChangeText={setAltD}
-        placeholder="Alternativa D"
-      />
+            <YStack width={'100%'} gap={0}>
+              <Text
+                backgroundColor={palette.darkBlue}
+                color={palette.offWhite}
+                padding="$1"
+                width="40%"
+                borderRadius={4}
+                alignSelf="flex-start"
+                marginLeft="$1"
+                textAlign="left"
+                fontWeight="bold"
+              >
+                Alternativa B:
+              </Text>
+              <Input
+                width={'94%'}
+                alignSelf="flex-end"
+                marginTop="$1"
+                onChangeText={setAltB}
+                backgroundColor={palette.backgroundLight}
+                opacity={0.3}
+                color={palette.offWhite}
+              />
+            </YStack>
 
-      <TextInput
-        style={styles.input}
-        onChangeText={setAltE}
-        placeholder="Alternativa E"
-      />
+            <YStack width={'100%'} gap={0}>
+              <Text
+                backgroundColor={palette.darkBlue}
+                color={palette.offWhite}
+                padding="$1"
+                width="40%"
+                borderRadius={4}
+                alignSelf="flex-start"
+                marginLeft="$1"
+                textAlign="left"
+                fontWeight="bold"
+              >
+                Alternativa C:
+              </Text>
+              <Input
+                width={'94%'}
+                alignSelf="flex-end"
+                marginTop="$1"
+                onChangeText={setAltC}
+                backgroundColor={palette.backgroundLight}
+                opacity={0.3}
+                color={palette.offWhite}
+              />
+            </YStack>
 
-      <TextInput
-        style={styles.input}
-        onChangeText={setSolution}
-        placeholder="Solução da questão"
-      />
+            <YStack width={'100%'} gap={0}>
+              <Text
+                backgroundColor={palette.darkBlue}
+                color={palette.offWhite}
+                padding="$1"
+                width="40%"
+                borderRadius={4}
+                alignSelf="flex-start"
+                marginLeft="$1"
+                textAlign="left"
+                fontWeight="bold"
+              >
+                Alternativa D:
+              </Text>
+              <Input
+                width={'94%'}
+                alignSelf="flex-end"
+                marginTop="$1"
+                onChangeText={setAltD}
+                backgroundColor={palette.backgroundLight}
+                opacity={0.3}
+                color={palette.offWhite}
+              />
+            </YStack>
 
-      <TextInput
-        style={styles.input}
-        onChangeText={setCorrectAlt}
-        placeholder="Alternativa Correta (A, B, C, D ou E)"
-      />
+            <YStack width={'100%'} gap={0}>
+              <Text
+                backgroundColor={palette.darkBlue}
+                color={palette.offWhite}
+                padding="$1"
+                width="40%"
+                borderRadius={4}
+                alignSelf="flex-start"
+                marginLeft="$1"
+                textAlign="left"
+                fontWeight="bold"
+              >
+                Alternativa E:
+              </Text>
+              <Input
+                width={'94%'}
+                alignSelf="flex-end"
+                marginTop="$1"
+                onChangeText={setAltE}
+                backgroundColor={palette.backgroundLight}
+                opacity={0.3}
+                color={palette.offWhite}
+              />
+            </YStack>
 
-      <Pressable onPress={() => router.back()}>
-        <Text style={styles.startButton}>Cancelar</Text>
-      </Pressable>
+            <YStack width={'100%'} gap={0}>
+              <Text
+                backgroundColor={palette.darkBlue}
+                color={palette.offWhite}
+                padding="$1"
+                width="40%"
+                borderRadius={4}
+                alignSelf="flex-start"
+                marginLeft="$1"
+                textAlign="left"
+                fontWeight="bold"
+              >
+                Solucao:
+              </Text>
+              <Input
+                width={'94%'}
+                alignSelf="flex-end"
+                marginTop="$1"
+                onChangeText={setSolution}
+                backgroundColor={palette.backgroundLight}
+                opacity={0.3}
+                color={palette.offWhite}
+              />
+            </YStack>
 
-      <Pressable onPress={handleQuestionSubmit}>
-        <Text style={styles.startButton}>Salvar Questão</Text>
-      </Pressable>
-    </View>
+            <YStack width={'100%'} gap={0}>
+              <Text
+                backgroundColor={palette.darkBlue}
+                color={palette.offWhite}
+                padding="$1"
+                width="40%"
+                borderRadius={4}
+                alignSelf="flex-start"
+                marginLeft="$1"
+                textAlign="left"
+                fontWeight="bold"
+              >
+                Alternativa Correta:
+              </Text>
+              <Input
+                width={'94%'}
+                alignSelf="flex-end"
+                marginTop="$1"
+                onChangeText={setCorrectAlt}
+                backgroundColor={palette.backgroundLight}
+                opacity={0.3}
+                color={palette.offWhite}
+              />
+            </YStack>
+
+            <AppButton
+              onPress={handleQuestionSubmit}
+              backgroundColor={palette.primaryGreen}
+            >
+              Salvar Questão
+            </AppButton>
+          </YStack>
+        </YStack>
+      </ScrollView>
+    </ZStack>
   );
 }

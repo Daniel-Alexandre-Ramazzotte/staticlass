@@ -14,12 +14,12 @@ export function PersonalizarAccordion({ num, setNum }: Props) {
   return (
     <Accordion
       overflow="hidden"
-      width="50%"
+      width="40%"
       type="single"
       collapsible
       borderColor="$borderColor"
       borderWidth={1}
-      borderRadius="$4"
+      borderRadius="$10"
       backgroundColor={palette.lightBlue}
     >
       <Accordion.Item value="personalizar">

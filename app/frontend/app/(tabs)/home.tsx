@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { Pressable } from 'react-native';
+import React from 'react';
 
 import { useRouter } from 'expo-router';
 
@@ -9,8 +8,8 @@ import { palette } from 'app/constants/style';
 
 export default function HomeScreen() {
   const router = useRouter();
-  const [qtdQuestoes, setQtdQuestoes] = useState('5');
-  const { signOut, role, email, name } = useAuth();
+
+  const { role, email, name } = useAuth();
 
   console.log('Dados do usuário no HomeScreen:', { email, role, name });
   return (
@@ -28,13 +27,11 @@ export default function HomeScreen() {
         <Text color="#fff" fontSize="$6" fontWeight="bold">
           {`Olá, ${name || 'Usuário'}!`}
         </Text>
-
-        <Text fontSize="$8">☰</Text>
       </XStack>
 
-      {/* CORPO DA TELA (ZStack para colocar a imagem no fundo) */}
+      {/* CORPO DA TELA - HomeScreen */}
       <ZStack f={1} width={'100%'}>
-        {/* Imagem de Fundo (Marca d'água posicionada na base) */}
+        {/* Imagem de Fundo  */}
         <YStack
           position="absolute"
           bottom={0}
@@ -46,7 +43,7 @@ export default function HomeScreen() {
           <Image
             source={require('../../assets/images/logo.png')}
             width={'100%'}
-            height={300} // Ajuste a altura conforme a proporção da sua logo real
+            height={400}
             objectFit="contain"
           />
         </YStack>
@@ -64,29 +61,37 @@ export default function HomeScreen() {
           <YStack mt="$8" gap="$4">
             {role === 'admin' && (
               <>
-                <Pressable onPress={() => router.push('/(admin)/AdminScreen')}>
+                <Button
+                  chromeless
+                  onPress={() => router.push('/(admin)/AdminScreen')}
+                  alignSelf="flex-start"
+                >
                   <Text color={palette.darkBlue} fontWeight="bold">
                     → Ir para Admin
                   </Text>
-                </Pressable>
-                <Pressable
+                </Button>
+                <Button
+                  chromeless
                   onPress={() => router.push('/(professor)/QuestionsManager')}
+                  alignSelf="flex-start"
                 >
                   <Text color={palette.darkBlue} fontWeight="bold">
                     → Gerenciar Questões
                   </Text>
-                </Pressable>
+                </Button>
               </>
             )}
 
             {role === 'professor' && (
-              <Pressable
+              <Button
+                chromeless
                 onPress={() => router.push('/(professor)/ProfessorMenu')}
+                alignSelf="flex-start"
               >
                 <Text color={palette.darkBlue} fontWeight="bold">
                   → Gerenciar Questões
                 </Text>
-              </Pressable>
+              </Button>
             )}
           </YStack>
         </YStack>
