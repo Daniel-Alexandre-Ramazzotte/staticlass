@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from statl.utils.auth_middleware import require_role
-from ..services.user_service import update_user_service, delete_user_service, get_user_by_email_service, update_own_profile_service, delete_own_account_service
+from ..services.user_service import update_user_service, delete_user_service, get_user_by_email_service, update_own_profile_service, delete_own_account_service, get_all_professors_service, create_professor_service, get_all_alunos_service
 
 bp = Blueprint('users', __name__, url_prefix='/users')
 
@@ -59,4 +59,46 @@ def get_profile(email):
             "score": getattr(user, 'score', 0)
         }), 200
     return jsonify({"message": "Usuário não encontrado"}), 404
+
+
+@bp.route('/admin/get-all-professors', methods=['GET'])
+@require_role('admin')
+def get_all_professors():
+    '''
+    Rota para o admin obter uma lista de todos os professores.
+    '''
+    result = get_all_professors_service()
+    professors = [dict(row) for row in result]
+
+    return jsonify(professors), 200
+
+@bp.route('/admin/create-professor', methods=['POST'])
+@require_role('admin')
+def create_professor():
+    data = request.json
+    
+    result, error, status = create_professor_service(data)
+
+    if error:
+        return error, status
+
+    if result is None:
+        return jsonify({"error": "Falha ao criar professor."}), 500
+
+    return jsonify({
+        "message": "Professor criado com sucesso",
+        "id": result["id"],
+        "temporary_password": result["temporary_password"],
+    }), 201
+
+@bp.route('/admin/get-all-alunos', methods=['GET'])
+@require_role(['admin'])
+def get_all_alunos():
+    ''' Retorna uma lista de todos os alunos cadastrados no sistema.
+    '''
+    result = get_all_alunos_service()
+    if result is None:
+        return jsonify({"error": "Não foi possível carregar os alunos."}), 500
+    alunos = [dict(row) for row in result]
+    return jsonify(alunos), 200
 

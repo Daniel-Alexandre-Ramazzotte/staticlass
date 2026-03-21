@@ -1,4 +1,7 @@
-from ..repositories.user_repository import get_user_by_email, get_user_by_id,  create_user, update_user, delete_user
+
+
+from ..repositories.user_repository import get_user_by_email, get_user_by_id,  create_user, update_user, delete_user, get_all_professors, create_professor, get_all_alunos
+
 from werkzeug.security import generate_password_hash
 from flask import jsonify
 from werkzeug.security import check_password_hash
@@ -78,3 +81,46 @@ def update_own_profile_service(user_id, data):
     
     updated_user = get_user_by_id(user_id)
     return updated_user, None, 200
+
+
+def get_all_professors_service():
+    '''
+    Retorna uma lista de todos os professores cadastrados no sistema.
+    '''
+    return get_all_professors()
+
+def create_professor_service(data):
+    '''
+    Cria um novo professor no sistema. O email deve ser único e válido, e a senha deve ser fornecida.
+    '''
+    from statl.services.auth_service import email_valido
+
+    if not data:
+        return None, jsonify({"error": "Dados inválidos."}), 400
+
+    email = (data.get("email") or "").strip()
+    name = (data.get("name") or "").strip()
+
+    if not email or not name:
+        return None, jsonify({"error": "Nome e email são obrigatórios."}), 400
+
+    if not email_valido(email):
+        return None, jsonify({"error": "Email inválido."}), 400
+
+    if get_user_by_email(email):
+        return None, jsonify({"error": "Email já está em uso."}), 400
+
+    # A tela de cadastro atual não solicita senha; aplica senha temporária.
+    raw_password = data.get("password") or "Professor@123"
+    professor_id = create_professor(email, generate_password_hash(raw_password), name)
+
+    return {
+        "id": professor_id,
+        "temporary_password": raw_password,
+    }, None, 201
+
+
+def get_all_alunos_service():
+    ''' Retorna uma lista de todos os alunos cadastrados no sistema.
+    '''
+    return get_all_alunos()

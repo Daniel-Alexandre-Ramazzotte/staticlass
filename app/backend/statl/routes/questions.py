@@ -1,5 +1,5 @@
 from flask import Blueprint, request, send_from_directory
-from ..services.questions_service import check_answer, random_question, add_question_service, update_question_service, process_upload, get_images, get_professor_questions_service
+from ..services.questions_service import check_answer, random_question, add_question_service, update_question_service, process_upload, get_images, get_professor_questions_service, get_all_questions_service
 from typing import Any, Dict
 from flask import jsonify
 from statl.utils.auth_middleware import require_role
@@ -79,5 +79,16 @@ def get_professor_questions(professor_id):
 
 
     result = get_professor_questions_service(professor_id)
+    questions = [dict(row) for row in result.mappings().all()]
+    return jsonify(questions), 200
+
+
+@require_role(['admin'])
+@bp.route('/admin/<string:admin_id>', methods = ['GET'])
+def get_admin_questions(admin_id):
+    if not admin_id:
+        return jsonify({'error': 'Admin ID is required'}), 400
+
+    result = get_all_questions_service()
     questions = [dict(row) for row in result.mappings().all()]
     return jsonify(questions), 200

@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, session, current_app
-from ..repositories.questions_repository import get_random_question, add_question_to_db, update_question, search_subject, add_subject_to_db, get_professor_questions
+from ..repositories.questions_repository import get_random_question, add_question_to_db, update_question, search_subject, add_subject_to_db, get_professor_questions, get_all_questions
 import os
 from werkzeug.utils import secure_filename
 
@@ -131,3 +131,9 @@ def get_professor_questions_service(professor_id):
     Retorna as questões criadas por um professor específico.
     '''
     return get_professor_questions(professor_id)
+
+def get_all_questions_service():
+    '''
+    Retorna todas as questões do banco de dados.
+    '''
+    return get_all_questions()

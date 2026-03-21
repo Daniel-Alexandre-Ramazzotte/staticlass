@@ -5,7 +5,8 @@ import { YStack, XStack, Text, Button } from 'tamagui';
 import styles, { palette } from 'app/constants/style';
 import { useAuth } from 'app/context/AuthContext';
 import { ChevronLeft } from 'lucide-react-native';
-export default function ProfessorMenu() {
+
+export default function AdminMenu() {
   const router = useRouter();
   const { name } = useAuth();
   return (
@@ -41,28 +42,27 @@ export default function ProfessorMenu() {
         </Text>
       </XStack>
       <YStack f={1} jc="center" ai="center" gap="$4">
-        {/* Botao para o Criador de Listas*/}
+        {/* Botao para o Gerenciador de Questões*/}
 
         <AppButton
           backgroundColor={palette.primaryGreen}
-          onPress={() => router.push('/(professor)/CreateNewList')}
-        >
-          Criar Nova Lista
-        </AppButton>
-        {/* Botao para o gerenciador de Listas*/}
-        <AppButton
-          backgroundColor={palette.primaryBlue}
-          onPress={() => router.push('/(professor)/ListManager')}
-        >
-          {' '}
-          Gerenciar Listas
-        </AppButton>
-        {/* Botao para o gerenciador de questoes*/}
-        <AppButton
-          backgroundColor={palette.grey}
           onPress={() => router.push('/(professor)/QuestionsManager')}
         >
           Gerenciar Questões
+        </AppButton>
+        {/* Botao para o gerenciador de professores*/}
+        <AppButton
+          backgroundColor={palette.primaryBlue}
+          onPress={() => router.push('/(admin)/ProfessorManager')}
+        >
+          Gerenciar Professor
+        </AppButton>
+        {/* Botao para o gerenciador de alunos*/}
+        <AppButton
+          backgroundColor={palette.grey}
+          onPress={() => router.push('/(admin)/AlunoManager')}
+        >
+          Gerenciar de Alunos
         </AppButton>
       </YStack>
     </YStack>

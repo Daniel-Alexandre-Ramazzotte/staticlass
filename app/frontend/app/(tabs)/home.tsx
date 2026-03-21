@@ -84,20 +84,11 @@ export default function HomeScreen() {
               <>
                 <Button
                   chromeless
-                  onPress={() => router.push('/(admin)/AdminScreen')}
+                  onPress={() => router.push('/(admin)/AdminMenu')}
                   alignSelf="flex-start"
                 >
                   <Text color={palette.darkBlue} fontWeight="bold">
                     → Ir para Admin
-                  </Text>
-                </Button>
-                <Button
-                  chromeless
-                  onPress={() => router.push('/(professor)/QuestionsManager')}
-                  alignSelf="flex-start"
-                >
-                  <Text color={palette.darkBlue} fontWeight="bold">
-                    → Gerenciar Questões
                   </Text>
                 </Button>
               </>

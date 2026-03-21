@@ -14,7 +14,7 @@ import { AppButton } from 'app/components/AppButton';
 
 export default function QuestionsManager() {
   const router = useRouter();
-  const { userId, isLoading: isAuthLoading } = useAuth();
+  const { userId, isLoading: isAuthLoading, role } = useAuth();
   type ProfessorQuestion = {
     id: number;
     issue: string;
@@ -39,10 +39,13 @@ export default function QuestionsManager() {
 
     const fetchQuestions = async () => {
       try {
-        const result = await api.get(`/questions/professor/${userId}`);
-
-        setQuestions(result.data as ProfessorQuestion[]);
-        setErrorMessage(null);
+        if (role === 'professor') {
+          const result = await api.get(`/questions/professor/${userId}`);
+          setQuestions(result.data as ProfessorQuestion[]);
+        } else if (role === 'admin') {
+          const result = await api.get(`/questions/admin/${userId}`);
+          setQuestions(result.data as ProfessorQuestion[]);
+        }
       } catch (error) {
         console.error('Erro ao buscar questões:', error);
         setErrorMessage('Nao foi possivel carregar as questoes.');

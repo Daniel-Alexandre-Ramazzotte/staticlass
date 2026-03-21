@@ -1,6 +1,5 @@
 from .. import db
 from sqlalchemy import text
-from ..utils.auth_middleware import  require_role
 
 
 # get user by email
@@ -29,6 +28,18 @@ def create_user(email, password_hash, name):
     '''
     db.session.execute(
         text("INSERT INTO users (email, password_hash, name) VALUES (:email, :password_hash, :name)"),
+        {"email": email, "password_hash": password_hash, "name": name}
+    )
+    user_id = db.session.execute(text("SELECT LAST_INSERT_ID()")).scalar()
+    db.session.commit()
+    return user_id
+
+
+def create_professor(email, password_hash, name):
+    ''' Cria um novo professor com o email, hash de senha e nome fornecidos.
+    '''
+    db.session.execute(
+        text("INSERT INTO users (email, password_hash, name, role) VALUES (:email, :password_hash, :name, 'professor')"),
         {"email": email, "password_hash": password_hash, "name": name}
     )
     user_id = db.session.execute(text("SELECT LAST_INSERT_ID()")).scalar()
@@ -72,3 +83,37 @@ def delete_user(user_id):
         db.session.commit()
     except Exception as e:
         raise KeyError(f"Something went wrong {e}")
+
+
+def get_all_professors():
+    ''' Retorna uma lista de todos os professores cadastrados no sistema.
+    '''
+    professors = db.session.execute(
+        text(
+            """
+            SELECT id, name, email
+            FROM users
+            WHERE role = :role
+            ORDER BY name ASC
+            """
+        ),
+        {"role": "professor"}
+    ).mappings().all()
+    return professors
+
+
+def get_all_alunos():
+    ''' Retorna uma lista de todos os alunos cadastrados no sistema.
+    '''
+    alunos = db.session.execute(
+        text(
+            """
+            SELECT id, name, email
+            FROM users
+            WHERE role = :role
+            ORDER BY name ASC
+            """
+        ),
+        {"role": "aluno"}
+    ).mappings().all()
+    return alunos

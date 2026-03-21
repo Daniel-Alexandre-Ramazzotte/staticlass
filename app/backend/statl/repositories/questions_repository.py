@@ -102,3 +102,8 @@ def get_professor_questions(professor_id: str):
     result = db.session.execute(query, {"professor_id": professor_id})
     print(result)
     return result
+
+def get_all_questions():
+    query = text("SELECT * FROM questions")
+    result = db.session.execute(query)
+    return result
