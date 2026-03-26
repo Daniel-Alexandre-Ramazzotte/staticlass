@@ -22,4 +22,4 @@ EXPOSE 8080
 
 # Produção: gunicorn com 4 workers
 # Porta 8080 para Fly.io (PORT env var), 5000 para docker-compose local
-CMD ["sh", "-c", "gunicorn --workers 4 --bind 0.0.0.0:${PORT:-5000} 'statl:create_app()'"]
+CMD ["sh", "-c", "gunicorn --workers 1 --bind 0.0.0.0:${PORT:-5000} 'statl:create_app()'"]
