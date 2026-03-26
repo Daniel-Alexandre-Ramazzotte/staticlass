@@ -2,10 +2,10 @@ import { useRouter } from 'expo-router';
 import { View, TextInput, Pressable, KeyboardAvoidingView } from 'react-native';
 import styles, { tamaguiStyles, palette } from 'app/constants/style';
 import { useState } from 'react';
-import CheckLogin from '../services/CheckLogin';
-import RecoverPassword from '../services/RecoverPasswordService';
+import CheckLogin from 'app/services/CheckLogin';
+import RecoverPassword from 'app/services/RecoverPasswordService';
 import { appName } from 'app/constants/names';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from 'app/context/AuthContext';
 import {
   XStack,
   YStack,
@@ -39,6 +39,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const { signIn } = useAuth();
 
@@ -53,16 +54,17 @@ export default function LoginScreen() {
 
     try {
       const response = await CheckLogin({ email, password });
-      console.log('Resposta do login:', response);
       if (!response) {
-        setErrorMessage('Falha no login. Verifique suas credenciais.');
+        setErrorMessage('Sem resposta do servidor. Verifique sua conexão.');
         return;
       }
-      const token = response?.data.token;
-
-      await signIn(token);
+      if (response.status !== 200) {
+        setErrorMessage(response.data?.error || 'Email ou senha incorretos.');
+        return;
+      }
+      await signIn(response.data.token);
     } catch (error: any) {
-      console.error('Erro no login:', error);
+      setErrorMessage('Erro de conexão. Tente novamente.');
     }
   };
 
@@ -107,16 +109,31 @@ export default function LoginScreen() {
         <Text fontSize={16} color={palette.offBlack}>
           Senha:
         </Text>
-        <Input
-          gap="$4"
-          width={'100%'}
-          onChangeText={setPassword}
-          placeholder="Senha"
-          secureTextEntry={true}
-          backgroundColor={palette.darkBlue}
-          color={palette.offWhite}
-          placeholderTextColor={palette.grey}
-        />
+        <XStack width={'100%'} ai="center">
+          <Input
+            f={1}
+            onChangeText={setPassword}
+            placeholder="Senha"
+            secureTextEntry={!showPassword}
+            backgroundColor={palette.darkBlue}
+            color={palette.offWhite}
+            placeholderTextColor={palette.grey}
+            borderTopRightRadius={0}
+            borderBottomRightRadius={0}
+          />
+          <Button
+            onPress={() => setShowPassword(v => !v)}
+            backgroundColor={palette.darkBlue}
+            borderTopLeftRadius={0}
+            borderBottomLeftRadius={0}
+            px="$3"
+            height={44}
+          >
+            <Text color={palette.grey} fontSize={13}>
+              {showPassword ? 'Ocultar' : 'Mostrar'}
+            </Text>
+          </Button>
+        </XStack>
 
         {/* Botão de login */}
         <Button
@@ -145,7 +162,7 @@ export default function LoginScreen() {
         </Button>
         {/* Botao de registro */}
         <Button
-          onPress={() => router.push('/(public)/Register')}
+          onPress={() => router.push('/(public)/register')}
           backgroundColor={palette.offWhite}
           color={palette.primaryBlue}
           w={'100%'}

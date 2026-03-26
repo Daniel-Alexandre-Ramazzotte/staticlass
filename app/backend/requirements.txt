@@ -1,11 +1,12 @@
 Flask==3.1.2
+Flask-Cors==5.0.1
 Flask_JWT_Extended==4.7.1
 Flask_Login==0.6.3
 flask_mail==0.10.0
 flask_sqlalchemy==3.1.1
 flask_wtf==1.2.2
 itsdangerous==2.2.0
-mysql_connector_repackaged==0.3.1
+pymysql==1.1.2
 python-dotenv==1.2.1
 SQLAlchemy==2.0.45
 Werkzeug==3.1.5

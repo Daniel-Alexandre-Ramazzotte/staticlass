@@ -5,7 +5,7 @@ import { View, ActivityIndicator } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { TamaguiProvider } from 'tamagui';
 import { tamaguiConfig } from '../tamagui.config';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider, useAuth } from '../src/context/AuthContext';
 
 function InitialLayout() {
   const { session, isLoading } = useAuth(); //  Pegamos os dados do contexto
@@ -35,11 +35,11 @@ function InitialLayout() {
     if (!session) {
       // Se não tem sessão, manda pro login
       if (!inAuthGroup) {
-        router.replace('/(public)/Login');
+        router.replace('/(public)/login');
       }
     } else {
       if (inAuthGroup) {
-        router.replace('/(tabs)/Home');
+        router.replace('/(tabs)/home');
       }
     }
   }, [session, isLoading, fontsLoaded, segments, router]);
@@ -62,12 +62,7 @@ function InitialLayout() {
           }}
         >
           <Stack.Screen
-            name="(public)/Login"
-            options={{ headerShown: false }}
-          />
-
-          <Stack.Screen
-            name="(public)/QuizInProgressScreen"
+            name="(public)/login"
             options={{ headerShown: false }}
           />
         </Stack>

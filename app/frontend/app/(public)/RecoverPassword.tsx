@@ -1,7 +1,7 @@
 import { Text, View, Pressable, TextInput, Alert } from 'react-native';
 import { useState } from 'react';
 import { useRouter, Stack } from 'expo-router';
-import RecoverPasswordService from '../services/RecoverPasswordService';
+import RecoverPasswordService from 'app/services/RecoverPasswordService';
 import styles from 'app/constants/style';
 
 export default function RecoverPassword() {

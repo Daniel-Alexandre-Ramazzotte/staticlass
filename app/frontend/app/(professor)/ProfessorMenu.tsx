@@ -1,70 +1,32 @@
+import React from 'react';
 import { useRouter } from 'expo-router';
-
+import { YStack } from 'tamagui';
+import { palette } from 'app/constants/style';
 import { AppButton } from 'app/components/AppButton';
-import { YStack, XStack, Text, Button } from 'tamagui';
-import styles, { palette } from 'app/constants/style';
-import { useAuth } from 'app/context/AuthContext';
-import { ChevronLeft } from 'lucide-react-native';
+
+// Mantido por compatibilidade — a navegação principal usa (tabs)/listas.tsx
 export default function ProfessorMenu() {
   const router = useRouter();
-  const { name } = useAuth();
   return (
-    <YStack f={1} jc="center">
-      {/*Header*/}
-      <XStack
-        backgroundColor={palette.primaryBlue}
-        pt="$8" // Testar melhor
-        pb="$4"
-        px="$4"
-        ai="center"
-        jc="space-between"
-        width={'100%'}
+    <YStack f={1} jc="center" ai="center" gap="$4" px="$8" backgroundColor={palette.offWhite}>
+      <AppButton
+        backgroundColor={palette.primaryGreen}
+        onPress={() => router.push('/(professor)/CreateNewList')}
       >
-        {/*Botão de Voltar*/}
-        <Button
-          size="$3" // Testar tamanhos
-          circular
-          backgroundColor="transparent"
-          pressStyle={{ opacity: 0.7 }}
-          onPress={() => router.back()}
-          icon={<ChevronLeft color={palette.white} size={28} />} // Ícone de seta para esquerda, Testar tamanhos
-        />
-        <Text
-          f={1}
-          color="#fff"
-          fontSize="$8"
-          fontWeight="bold"
-          textAlign="center"
-          mr="$6"
-        >
-          Menu do Administrador
-        </Text>
-      </XStack>
-      <YStack f={1} jc="center" ai="center" gap="$4">
-        {/* Botao para o Criador de Listas*/}
-
-        <AppButton
-          backgroundColor={palette.primaryGreen}
-          onPress={() => router.push('/(professor)/CreateNewList')}
-        >
-          Criar Nova Lista
-        </AppButton>
-        {/* Botao para o gerenciador de Listas*/}
-        <AppButton
-          backgroundColor={palette.primaryBlue}
-          onPress={() => router.push('/(professor)/ListManager')}
-        >
-          {' '}
-          Gerenciar Listas
-        </AppButton>
-        {/* Botao para o gerenciador de questoes*/}
-        <AppButton
-          backgroundColor={palette.grey}
-          onPress={() => router.push('/(professor)/QuestionsManager')}
-        >
-          Gerenciar Questões
-        </AppButton>
-      </YStack>
+        Criar lista
+      </AppButton>
+      <AppButton
+        backgroundColor={palette.darkBlue}
+        onPress={() => router.push('/(professor)/ListManager')}
+      >
+        Gerenciar Listas
+      </AppButton>
+      <AppButton
+        backgroundColor={palette.red}
+        onPress={() => router.push('/(professor)/QuestionsManager')}
+      >
+        Gerenciar Questões
+      </AppButton>
     </YStack>
   );
 }

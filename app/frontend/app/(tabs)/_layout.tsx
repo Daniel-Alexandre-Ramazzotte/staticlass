@@ -1,10 +1,28 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { Home, Notebook, Trophy, User } from '@tamagui/lucide-icons';
+import { Home, Notebook, Calendar, Trophy, User } from '@tamagui/lucide-icons';
 import { Circle } from 'tamagui';
-import { palette } from '../constants/style';
+import { palette } from 'app/constants/style';
+import { useAuth } from 'app/context/AuthContext';
+
+function TabIcon({ Icon, focused }: { Icon: any; focused: boolean }) {
+  return (
+    <Circle
+      size={42}
+      backgroundColor={palette.white}
+      opacity={focused ? 1 : 0.7}
+    >
+      <Icon color={palette.primaryBlue} size={26} />
+    </Circle>
+  );
+}
 
 export default function TabLayout() {
+  const { role } = useAuth();
+
+  const isAluno = role === 'aluno';
+  const isProfessor = role === 'professor';
+
   return (
     <Tabs
       screenOptions={{
@@ -27,49 +45,54 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="Home"
+        name="home"
         options={{
           title: 'Início',
-          tabBarIcon: ({ focused }) => (
-            <Circle
-              size={42}
-              backgroundColor={palette.white}
-              opacity={focused ? 1 : 0.7}
-            >
-              <Home color={palette.primaryBlue} size={26} />
-            </Circle>
-          ),
+          tabBarIcon: ({ focused }) => <TabIcon Icon={Home} focused={focused} />,
+        }}
+      />
+
+      {/* Aluno only */}
+      <Tabs.Screen
+        name="questions"
+        options={{
+          title: 'Questões',
+          href: isAluno ? undefined : null,
+          tabBarIcon: ({ focused }) => <TabIcon Icon={Notebook} focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
+        name="daily"
+        options={{
+          title: 'Tarefa diária',
+          href: isAluno ? undefined : null,
+          tabBarIcon: ({ focused }) => <TabIcon Icon={Calendar} focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
+        name="ranking"
+        options={{
+          title: 'Ranking',
+          href: isAluno ? undefined : null,
+          tabBarIcon: ({ focused }) => <TabIcon Icon={Trophy} focused={focused} />,
+        }}
+      />
+
+      {/* Professor only */}
+      <Tabs.Screen
+        name="listas"
+        options={{
+          title: 'Listas',
+          href: isProfessor ? undefined : null,
+          tabBarIcon: ({ focused }) => <TabIcon Icon={Notebook} focused={focused} />,
         }}
       />
 
       <Tabs.Screen
-        name="Questions"
-        options={{
-          title: 'Questões',
-          tabBarIcon: ({ focused }) => (
-            <Circle
-              size={42}
-              backgroundColor={palette.white}
-              opacity={focused ? 1 : 0.7}
-            >
-              <Notebook color={palette.primaryBlue} size={26} />
-            </Circle>
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="Profile"
+        name="profile"
         options={{
           title: 'Perfil',
-          tabBarIcon: ({ focused }) => (
-            <Circle
-              size={42}
-              backgroundColor={palette.white}
-              opacity={focused ? 1 : 0.7}
-            >
-              <User color={palette.primaryBlue} size={26} />
-            </Circle>
-          ),
+          tabBarIcon: ({ focused }) => <TabIcon Icon={User} focused={focused} />,
         }}
       />
     </Tabs>

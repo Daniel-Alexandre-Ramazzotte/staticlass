@@ -1,5 +1,6 @@
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 import os
 from dotenv import load_dotenv
 from flask_jwt_extended import JWTManager
@@ -26,9 +27,8 @@ def create_app(testing: bool = False):
     app = Flask(__name__, instance_relative_config = True)
     app.config.from_object(Config)
 
-    print("MAIL_SERVER no create_app:", app.config.get("MAIL_SERVER"))
     app.config["SQLALCHEMY_DATABASE_URI"] = (
-        f"mysql+mysqlconnector://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}"
+        f"mysql+pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}"
         f"@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
     )
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -44,6 +44,7 @@ def create_app(testing: bool = False):
     else:
         app.config["WTF_CSRF_ENABLED"] = True
     
+    CORS(app, origins='*')
     jwt = JWTManager(app)
     login_manager.init_app(app)
     
@@ -59,6 +60,8 @@ def create_app(testing: bool = False):
 
     
     with app.app_context():
+        from .models import chapters  # noqa: F401
+        from .models import questions as question_models  # noqa: F401
         db.create_all()
     return app
 

@@ -10,7 +10,7 @@ import {
   Button,
 } from 'tamagui';
 import { palette } from 'app/constants/style';
-import api from '../services/api';
+import api from 'app/services/api';
 import { AppButton } from 'app/components/AppButton';
 import { ChevronLeft } from 'lucide-react-native';
 import { useAuth } from 'app/context/AuthContext';

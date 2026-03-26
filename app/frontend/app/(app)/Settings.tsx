@@ -1,355 +1,177 @@
 import React, { useState, useEffect } from 'react';
-import {
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
-  View,
-  Text,
-} from 'react-native';
-import { useAuth } from '../context/AuthContext';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { useAuth } from 'app/context/AuthContext';
 import { useRouter } from 'expo-router';
-import { YStack, XStack, Input, Button, Label, Card } from 'tamagui';
-import { LogOut, Trash2, ChevronLeft, User, Lock } from '@tamagui/lucide-icons';
-
-import api from '../services/api';
+import { YStack, XStack, Text, Input, Button } from 'tamagui';
+import { ChevronLeft } from '@tamagui/lucide-icons';
+import { palette, primaryFontA } from 'app/constants/style';
+import api from 'app/services/api';
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { signOut, email: authEmail } = useAuth();
-
-  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-
   const [loading, setLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deletePassword, setDeletePassword] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  // Carregamento Inicial usando o email do Contexto
   useEffect(() => {
-    const fetchUserData = async () => {
-      if (!authEmail) return;
-
-      try {
-        const response = await api.get(`/users/profile/${authEmail.trim()}`);
-
-        if (response.data) {
-          setName(response.data.name || '');
-          setEmail(response.data.email || '');
-        }
-      } catch (err) {
-        console.error('Erro ao buscar dados:', err);
-        Alert.alert('Erro', 'Não foi possível carregar seus dados.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserData();
+    if (!authEmail) return;
+    api.get(`/users/profile/${authEmail.trim()}`)
+      .then(r => { setEmail(r.data?.email || ''); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, [authEmail]);
 
-  //Salvar Perfil
-  const handleSave = async () => {
-    if (password && password !== confirmPassword) {
-      Alert.alert('Erro', 'As senhas não coincidem.');
-      return;
-    }
-
-    // Verifica se o e-mail foi alterado
-    const emailAlterado =
-      email.trim().toLowerCase() !== authEmail?.trim().toLowerCase();
-
-    setIsSaving(true);
+  const handleSaveEmail = async () => {
+    if (!email.trim()) { Alert.alert('Erro', 'Email inválido.'); return; }
+    setSaving(true);
     try {
-      const payload = {
-        name,
-        email: email.trim(),
-        password: password || undefined,
-        confirm_password: confirmPassword || undefined,
-      };
-
-      await api.put('/users/update-me', payload);
-
-      if (emailAlterado) {
-        // Se mudou o e-mail, precisamos de um novo Token (Sair e Entrar)
-        Alert.alert(
-          'E-mail Alterado',
-          'Como você alterou seu e-mail, você precisará fazer login novamente.',
-          [
-            {
-              text: 'OK',
-              onPress: async () => {
-                await signOut();
-                router.replace('/(public)/Login');
-              },
-            },
-          ]
-        );
-      } else {
-        // Se mudou apenas nome ou senha, segue o fluxo normal
-        Alert.alert('Sucesso', 'Perfil atualizado!', [
-          { text: 'OK', onPress: () => router.back() },
-        ]);
-      }
-    } catch (err: any) {
-      Alert.alert('Falha', err.response?.data?.error || 'Erro ao atualizar.');
-    } finally {
-      setIsSaving(false);
-    }
+      await api.put('/users/update-me', { email: email.trim() });
+      Alert.alert('E-mail Alterado', 'Faça login novamente.', [{
+        text: 'OK', onPress: async () => { await signOut(); router.replace('/(public)/login'); },
+      }]);
+    } catch (e: any) {
+      Alert.alert('Erro', e.response?.data?.error || 'Erro ao atualizar.');
+    } finally { setSaving(false); }
   };
 
-  //Logout
-  const handleLogout = async () => {
-    Alert.alert('Sair', 'Deseja realmente sair?', [
+  const handleSavePassword = async () => {
+    if (!password || password !== confirmPassword) {
+      Alert.alert('Erro', 'As senhas não coincidem.'); return;
+    }
+    setSaving(true);
+    try {
+      await api.put('/users/update-me', { password, confirm_password: confirmPassword });
+      Alert.alert('Sucesso', 'Senha atualizada!', [{ text: 'OK', onPress: () => router.back() }]);
+    } catch (e: any) {
+      Alert.alert('Erro', e.response?.data?.error || 'Erro ao atualizar.');
+    } finally { setSaving(false); }
+  };
+
+  const handleDelete = () => {
+    Alert.alert('Deletar conta', 'Esta ação não pode ser desfeita. Tem certeza?', [
       { text: 'Cancelar', style: 'cancel' },
       {
-        text: 'Sair',
+        text: 'Deletar', style: 'destructive',
         onPress: async () => {
-          await signOut();
-          router.replace('/(public)/Login');
+          try {
+            await api.delete('/users/delete-me');
+            await signOut();
+            router.replace('/(public)/login');
+          } catch (e: any) {
+            Alert.alert('Erro', e.response?.data?.error || 'Erro ao deletar.');
+          }
         },
       },
     ]);
   };
 
-  //Exclusão
-  const handleDeleteClick = () => setShowDeleteModal(true);
-
-  const confirmDeletionStep2 = () => {
-    if (!deletePassword) {
-      Alert.alert('Erro', 'Digite sua senha para continuar.');
-      return;
-    }
-    Alert.alert('Tem certeza absoluta?', 'Esta ação não pode ser desfeita.', [
-      { text: 'Desistir', style: 'cancel' },
-      {
-        text: 'EXCLUIR TUDO',
-        style: 'destructive',
-        onPress: finalDeleteAction,
-      },
-    ]);
-  };
-
-  const finalDeleteAction = async () => {
-    try {
-      const response = await api.delete('/users/delete-me', {
-        data: { password: deletePassword },
-      });
-
-      console.log('Resposta do servidor:', response.data);
-
-      setShowDeleteModal(false);
-      await signOut();
-
-      Alert.alert('Conta Excluída', 'Seus dados foram removidos.');
-      router.replace('/(public)/Login');
-    } catch (err: any) {
-      Alert.alert('Erro', err.response?.data?.error || 'Senha incorreta.');
-    }
-  };
-
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Configurações</Text>
-      </View>
-    );
-  }
+  if (loading) return null;
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{ flex: 1, backgroundColor: '#fff' }}
+      style={{ flex: 1, backgroundColor: palette.primaryBlue }}
     >
       {/* Header */}
       <XStack
-        alignItems="center"
-        padding="$4"
-        gap="$2"
-        backgroundColor="#fff"
-        borderBottomWidth={1}
-        borderBottomColor="#eee"
+        backgroundColor={palette.primaryBlue}
+        pt="$10"
+        pb="$4"
+        px="$4"
+        ai="center"
+        gap="$3"
       >
         <Button
-          icon={<ChevronLeft color="#000" />}
           circular
-          onPress={() => router.back()}
+          size="$3"
           backgroundColor="transparent"
-          chromeless
+          pressStyle={{ opacity: 0.7 }}
+          onPress={() => router.back()}
+          icon={<ChevronLeft color={palette.white} size={24} />}
         />
-        <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#000' }}>
+        <Text color={palette.white} fontSize={20} fontWeight="bold" fontFamily={primaryFontA}>
           Configurações
         </Text>
       </XStack>
 
-      <ScrollView contentContainerStyle={{ padding: 20 }}>
-        <YStack gap="$4">
-          {/* Dados Pessoais */}
-          <Card bordered padding="$4" backgroundColor="#fff">
-            <YStack gap="$2">
-              <XStack gap="$2" alignItems="center">
-                <User size={18} color="#007AFF" />
-                <Text style={{ fontWeight: '600', color: '#000' }}>
-                  Dados Pessoais
-                </Text>
-              </XStack>
+      <ScrollView
+        style={{ flex: 1, backgroundColor: '#5b9ecc' }}
+        contentContainerStyle={{ padding: 24, gap: 8 }}
+      >
+        <Text color={palette.white} fontSize={16} fontWeight="bold" textDecorationLine="underline" mb="$2">
+          Conta
+        </Text>
 
-              <Label color="#000">Nome</Label>
-              <Input
-                backgroundColor="#fff"
-                color="#000"
-                value={name}
-                onChangeText={setName}
-                placeholder="Seu nome"
-                placeholderTextColor="#999"
-              />
-
-              <Label color="#000">E-mail</Label>
-              <Input
-                backgroundColor="#fff"
-                color="#000"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                placeholder="seu@email.com"
-                placeholderTextColor="#999"
-              />
-            </YStack>
-          </Card>
-
-          {/* Senha */}
-          <Card bordered padding="$4" backgroundColor="#fff">
-            <YStack gap="$3">
-              <XStack gap="$2" alignItems="center">
-                <Lock size={18} color="#007AFF" />
-                <Text style={{ fontWeight: '600', color: '#000' }}>
-                  Segurança (Opcional)
-                </Text>
-              </XStack>
-
-              <Input
-                backgroundColor="#fff"
-                color="#000"
-                secureTextEntry
-                value={password}
-                onChangeText={setPassword}
-                placeholder="Nova senha"
-                placeholderTextColor="#999"
-              />
-
-              <Input
-                backgroundColor="#fff"
-                color="#000"
-                secureTextEntry
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                placeholder="Confirmar nova senha"
-                placeholderTextColor="#999"
-              />
-            </YStack>
-          </Card>
-
-          <Button
-            onPress={handleSave}
-            backgroundColor="#007AFF"
-            color="white"
-            fontWeight="bold"
-            height={50}
-            disabled={isSaving}
-            opacity={isSaving ? 0.5 : 1}
-          >
-            {isSaving ? 'Salvando...' : 'Salvar Alterações'}
-          </Button>
-
-          <Button
-            icon={LogOut}
-            onPress={handleLogout}
-            backgroundColor="white"
-            borderColor="#007AFF"
-            borderWidth={1}
-            color="#007AFF"
-            height={50}
-          >
-            Sair da Conta
-          </Button>
-
-          <Button
-            icon={Trash2}
-            backgroundColor="white"
-            borderColor="#FF3B30"
-            color="#FF3B30"
-            borderWidth={1}
-            onPress={handleDeleteClick}
-          >
-            Excluir Minha Conta
-          </Button>
-        </YStack>
-      </ScrollView>
-
-      {/* Modal de Exclusão */}
-      {showDeleteModal && (
-        <View
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.6)',
-            zIndex: 9999,
-          }}
+        {/* Alterar Email */}
+        <Text color={palette.white} fontSize={14} mb="$1">Alterar E-mail</Text>
+        <Input
+          value={email}
+          onChangeText={setEmail}
+          placeholder="Novo e-mail"
+          placeholderTextColor="rgba(255,255,255,0.6)"
+          backgroundColor="rgba(255,255,255,0.2)"
+          color={palette.white}
+          borderWidth={0}
+          mb="$3"
+        />
+        <Button
+          backgroundColor="rgba(255,255,255,0.25)"
+          color={palette.white}
+          onPress={handleSaveEmail}
+          disabled={saving}
+          mb="$4"
         >
-          <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            style={{ flex: 1, justifyContent: 'center', padding: 20 }}
-          >
-            <Card bordered padding="$5" backgroundColor="white" elevate>
-              <YStack space="$4">
-                <Text
-                  style={{ fontSize: 18, fontWeight: 'bold', color: '#FF3B30' }}
-                >
-                  Confirmar Exclusão
-                </Text>
-                <Text style={{ color: '#666' }}>
-                  Digite sua senha atual para autorizar a exclusão da conta.
-                </Text>
+          Salvar E-mail
+        </Button>
 
-                <Input
-                  secureTextEntry
-                  placeholder="Senha atual"
-                  value={deletePassword}
-                  onChangeText={setDeletePassword}
-                  backgroundColor="#f9f9f9"
-                  color="#000"
-                  placeholderTextColor="#000"
-                  autoFocus
-                />
+        {/* Alterar Senha */}
+        <Text color={palette.white} fontSize={14} mb="$1">Alterar Senha</Text>
+        <Input
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Nova senha"
+          placeholderTextColor="rgba(255,255,255,0.6)"
+          backgroundColor="rgba(255,255,255,0.2)"
+          color={palette.white}
+          borderWidth={0}
+          secureTextEntry
+          mb="$2"
+        />
+        <Input
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          placeholder="Confirmar senha"
+          placeholderTextColor="rgba(255,255,255,0.6)"
+          backgroundColor="rgba(255,255,255,0.2)"
+          color={palette.white}
+          borderWidth={0}
+          secureTextEntry
+          mb="$3"
+        />
+        <Button
+          backgroundColor="rgba(255,255,255,0.25)"
+          color={palette.white}
+          onPress={handleSavePassword}
+          disabled={saving}
+          mb="$8"
+        >
+          Salvar Senha
+        </Button>
 
-                <XStack space="$2" justifyContent="flex-end">
-                  <Button
-                    onPress={() => {
-                      setShowDeleteModal(false);
-                      setDeletePassword('');
-                    }}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    backgroundColor="#FF3B30"
-                    color="white"
-                    onPress={confirmDeletionStep2}
-                  >
-                    Confirmar
-                  </Button>
-                </XStack>
-              </YStack>
-            </Card>
-          </KeyboardAvoidingView>
-        </View>
-      )}
+        {/* Delete */}
+        <Button
+          backgroundColor={palette.red}
+          color={palette.white}
+          borderRadius={30}
+          height={50}
+          onPress={handleDelete}
+        >
+          Deletar conta
+        </Button>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }

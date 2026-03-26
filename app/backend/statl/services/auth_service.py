@@ -1,6 +1,6 @@
 from flask import jsonify
 from flask_jwt_extended import create_access_token
-from statl.repositories.user_repository import get_user_by_email, create_user, update_password
+from statl.repositories.user_repository import get_user_by_email, get_user_by_id, create_user, update_password
 from werkzeug.security import generate_password_hash, check_password_hash
 from statl.security.tokens import generate_reset_token, verify_reset_token
 from statl.services.email_service import send_reset_email
@@ -61,9 +61,6 @@ def login_user(data):
     if user is None or not check_password_hash(user.password_hash, password):
         return None, jsonify({"error": "Email ou senha incorretos."}), 400
 
-    # Entender melhor a logica
-    # Jogar isso em outro lugar /utils/
-    print(f"Gerando token para usuário: {user.email} (ID: {user.id}, Role: {user.role}, nome: {user.name})")
     token = create_access_token(
         identity=str(user.id),
         additional_claims={
@@ -99,8 +96,8 @@ def reset_password(token: str, new_password: str):
     user_id = verify_reset_token(token)
     if not user_id:
         return False
-    
-    user = get_user_by_email(user_id)
+
+    user = get_user_by_id(user_id)
     if not user:
         return False
     

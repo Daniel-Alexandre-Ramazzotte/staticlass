@@ -1,139 +1,96 @@
+import React from 'react';
+import { ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import {
-  YStack,
-  XStack,
-  Text,
-  View,
-  Button,
-  styled,
-  ScrollView,
-} from 'tamagui';
-
+import { YStack, XStack, Text, View } from 'tamagui';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { palette } from 'app/constants/style';
 
 const ResultScreen = () => {
   const router = useRouter();
-
   const params = useLocalSearchParams();
-  let result = null;
-  let message = '';
-  if (params.result && typeof params.result === 'string') {
-    result = JSON.parse(params.result);
-  }
+  const result = params.result ? JSON.parse(params.result as string) : [];
 
-  for (const [index, answer] of result.entries()) {
-    if (answer.message === 'incorrect') {
-      message = `Resposta incorreta para a pergunta ${index + 1}.`;
-    }
-  }
-
-  const score = result.filter(
-    (answer: any) => answer.message === 'correct'
-  ).length;
+  const score = result.filter((a: any) => a.message === 'correct').length;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#0f6ea9' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: palette.primaryBlue }}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      {/* containerResult */}
-      <YStack
-        flex={1}
-        alignItems="center"
-        justifyContent="center"
-        paddingHorizontal={20}
-      >
-        {/* topBadge */}
+      <YStack f={1} ai="center" jc="center" px="$5">
+        {/* Clipboard badge */}
         <YStack
-          backgroundColor="#f65151"
-          paddingVertical={12}
-          paddingHorizontal={60}
-          borderRadius={15}
-          position="absolute" // Permite flutuar sobre outros elementos
-          alignItems="center"
-          justifyContent="center"
+          backgroundColor={palette.primaryGreen}
+          px="$8"
+          py="$3"
+          borderRadius={14}
+          position="relative"
+          ai="center"
           zIndex={10}
-          top={80} // Garante que fique na frente de tudo
-          elevation={5} //Sombra android
+          mb={-14}
         >
-          {/* clipboardClip */}
           <YStack
             position="absolute"
-            top={-35}
-            width={70}
-            height={70}
-            borderRadius={35}
-            backgroundColor="#f65151"
-            alignItems="center"
-            zIndex={-1} // Fica atrás do retângulo "RESUMO"
+            top={-18}
+            width={36}
+            height={36}
+            borderRadius={18}
+            backgroundColor={palette.primaryGreen}
+            ai="center"
+            jc="center"
           >
-            {/* white circle */}
-            <View
-              width={12}
-              height={12}
-              borderRadius={6}
-              backgroundColor="#fff"
-              marginTop={15}
-            />
+            <View width={10} height={10} borderRadius={5} backgroundColor={palette.white} />
           </YStack>
-
-          <Text fontSize={22} fontWeight="800" color="#fff">
+          <Text fontSize={20} fontWeight="900" color={palette.white} mt="$1">
             RESUMO
           </Text>
         </YStack>
 
-        {/* resultCard */}
+        {/* Card */}
         <YStack
-          backgroundColor="#f2f2f2"
-          width="90%"
-          height="70%"
-          borderRadius={30}
-          paddingTop={50} // Espaço para não bater no badge vermelho
-          paddingHorizontal={25}
-          paddingBottom={30}
-          alignItems="center"
+          backgroundColor={palette.darkBlue}
+          width="100%"
+          borderRadius={20}
+          pt="$8"
+          pb="$6"
+          px="$6"
+          ai="center"
         >
-          <Text fontSize={60} fontWeight="900" color="#000" marginBottom={20}>
+          <Text fontSize={56} fontWeight="900" color={palette.white} mb="$1">
             {score}/{result.length}
           </Text>
+          <Text fontSize={14} color="rgba(255,255,255,0.7)" mb="$4">
+            Pontuação: {score}
+          </Text>
 
-          <ScrollView
-            showsVerticalScrollIndicator={false}
-            style={{ width: '100%' }}
-            contentContainerStyle={{ paddingBottom: 20 }}
-          >
+          <ScrollView style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
             {result.map((answer: any, index: number) => {
-              // Lógica para definir a cor (Verde se acertou, Vermelho se errou)
-              const statusColor =
-                answer.message === 'correct' ? '#55bf44' : '#f65151';
-
+              const isCorrect = answer.message === 'correct';
               return (
                 <XStack
                   key={index}
-                  justifyContent="center"
-                  alignItems="center"
-                  paddingVertical={12}
+                  jc="space-between"
+                  ai="center"
+                  py="$2"
                   width="100%"
                 >
                   <Text
-                    fontSize={16}
+                    fontSize={15}
                     fontWeight="bold"
-                    marginRight={8}
-                    color={statusColor}
+                    color={isCorrect ? palette.primaryGreen : palette.red}
                   >
-                    Questão {index + 1}:
+                    Questão {String(index + 1).padStart(2, '0')}:
                   </Text>
-
                   <Text
-                    color="#093d60"
+                    color={palette.white}
                     textDecorationLine="underline"
                     fontWeight="bold"
                     fontSize={14}
-                    onPress={() => {
+                    onPress={() =>
                       router.push({
                         pathname: '/(app)/SolutionScreen',
                         params: { questionData: JSON.stringify(answer) },
-                      });
-                    }}
+                      })
+                    }
                   >
                     Resolução
                   </Text>
@@ -144,19 +101,16 @@ const ResultScreen = () => {
         </YStack>
       </YStack>
 
-      {/* restartQuizButton */}
+      {/* Bottom button */}
       <YStack
-        backgroundColor="#f65151"
+        backgroundColor={palette.red}
         width="100%"
-        paddingVertical={25}
-        alignItems="center"
-        justifyContent="center"
-        position="absolute" // Fixa o botão no final da tela
-        bottom={0}
-        pressStyle={{ opacity: 0.8 }} // Efeito visual de clique
-        onPress={() => router.push('/(tabs)/Home')}
+        py="$5"
+        ai="center"
+        onPress={() => router.replace('/(tabs)/home')}
+        pressStyle={{ opacity: 0.85 }}
       >
-        <Text color="#fff" fontWeight="bold" fontSize={22}>
+        <Text color={palette.white} fontWeight="bold" fontSize={20}>
           VOLTAR
         </Text>
       </YStack>

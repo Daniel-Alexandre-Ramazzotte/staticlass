@@ -1,109 +1,149 @@
 from .. import db
 from sqlalchemy import text
-from ..utils.auth_middleware import require_role
-from werkzeug.utils import secure_filename
-import os
-from flask import current_app as app
-from flask import jsonify
 
 TABLE_NAME = "questions"
 
 
-
-@require_role(['admin','professor'])
-def add_question_to_db(data : dict):
-    query = text(f"""INSERT INTO {TABLE_NAME}(id, issue, answer_a, answer_b, answer_c, answer_d, answer_e, correct_answer, solution, image_q, image_s, id_subject, id_professor) 
-                 VALUES (:id, :issue, :answer_a, :answer_b, :answer_c, :answer_d, :answer_e, :correct_answer, :solution, :image_q, :image_s, :id_subject, :id_professor)""")
-    print("aq")
-    if data.get("id") is None:
-        max_id = db.session.execute(text(f"SELECT MAX(id) FROM {TABLE_NAME}")).scalar()
-        data["id"] = (max_id or 0) + 1
-        
+def add_question_to_db(data: dict):
+    query = text(f"""
+        INSERT INTO {TABLE_NAME}
+            (issue, answer_a, answer_b, answer_c, answer_d, answer_e,
+             correct_answer, solution, image_q, image_s, id_subject, id_professor)
+        VALUES
+            (:issue, :answer_a, :answer_b, :answer_c, :answer_d, :answer_e,
+             :correct_answer, :solution, :image_q, :image_s, :id_subject, :id_professor)
+    """)
     params = {
-        "id" : data.get('id'),
-        "issue": data.get('issue'),
-        "answer_a": data.get('answer_a'),
-        "answer_b": data.get('answer_b'),
-        "answer_c": data.get('answer_c'),
-        "answer_d": data.get('answer_d'),
-        "answer_e": data.get('answer_e'),
-        "correct_answer": data.get('correct_answer'),
-        "solution": data.get('solution'),
-        "image_q": data.get('image_q'), 
-        "image_s": data.get('image_s'),
-        "id_subject": data.get('id_subject'),
-        "id_professor": data.get('id_professor')
+        "issue":          data.get("issue"),
+        "answer_a":       data.get("answer_a"),
+        "answer_b":       data.get("answer_b"),
+        "answer_c":       data.get("answer_c"),
+        "answer_d":       data.get("answer_d"),
+        "answer_e":       data.get("answer_e"),
+        "correct_answer": data.get("correct_answer"),
+        "solution":       data.get("solution"),
+        "image_q":        data.get("image_q"),
+        "image_s":        data.get("image_s"),
+        "id_subject":     data.get("id_subject"),
+        "id_professor":   data.get("id_professor"),
     }
-    print(params)
     try:
         db.session.execute(query, params)
-        db.session.commit()
-        return jsonify({'message': 'question added successfully'}), 201
-
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': str(e)}), 500
-    
-
-
-
-def add_subject_to_db(subject_name : str):
-    query = text("INSERT INTO subjects (subject_name) VALUES (:subject_name)")
-    try:
-        db.session.execute(query, {"subject_name": subject_name})
-        
         new_id = db.session.execute(text("SELECT LAST_INSERT_ID()")).scalar()
         db.session.commit()
-        print(new_id)
         return new_id
     except Exception as e:
         db.session.rollback()
         raise e
 
 
-@require_role(['admin','professor'])
-def update_question(data : dict):
-    params = ", ".join([f"{key} = :{key}" for key in data.keys() if key != "id"])
+def add_subject_to_db(subject_name: str):
+    try:
+        db.session.execute(
+            text("INSERT INTO subjects (subject_name) VALUES (:subject_name)"),
+            {"subject_name": subject_name},
+        )
+        new_id = db.session.execute(text("SELECT LAST_INSERT_ID()")).scalar()
+        db.session.commit()
+        return new_id
+    except Exception as e:
+        db.session.rollback()
+        raise e
 
+
+_ALLOWED_QUESTION_UPDATE_FIELDS = {
+    "issue", "answer_a", "answer_b", "answer_c", "answer_d", "answer_e",
+    "correct_answer", "solution", "image_q", "image_s", "id_subject",
+    "difficulty", "needs_fix", "chapter_id", "topic_id",
+}
+
+
+def update_question(data: dict):
+    safe = {k: v for k, v in data.items() if k in _ALLOWED_QUESTION_UPDATE_FIELDS}
+    if not safe:
+        raise ValueError("Nenhum campo válido para atualizar")
+    safe["id"] = data["id"]
+    params = ", ".join([f"{k} = :{k}" for k in safe if k != "id"])
     query = text(f"UPDATE {TABLE_NAME} SET {params} WHERE id = :id")
-    db.session.execute(query, data)
+    db.session.execute(query, safe)
     db.session.commit()
 
-@require_role(['admin','professor'])
+
 def delete_question(question_id):
-    query = text(f"DELETE FROM {TABLE_NAME} WHERE id = :id")
     try:
-        db.session.execute(query, {"id": question_id})
+        db.session.execute(text(f"DELETE FROM {TABLE_NAME} WHERE id = :id"), {"id": question_id})
         db.session.commit()
     except Exception as e:
         db.session.rollback()
         raise e
 
 
-def get_random_question(amount : int):
+def get_random_question(amount: int):
     query = text("SELECT * FROM questions ORDER BY RAND() LIMIT :num_questoes")
-    result = db.session.execute(query, {"num_questoes": amount})
-   
-    return result
-
-def get_question_by_id(question_id : int):
-    query = text(f"SELECT * FROM questions WHERE id = :id")
-    result = db.session.execute(query, {"id": question_id})
-    return result
+    return db.session.execute(query, {"num_questoes": amount})
 
 
-def search_subject(subject_name : str):
-    query = text("SELECT * FROM subjects WHERE subject_name LIKE :subject_name")
-    result = db.session.execute(query, {"subject_name": f"%{subject_name}%"})
-    return result
+def get_question_by_id(question_id: int):
+    return db.session.execute(
+        text("SELECT * FROM questions WHERE id = :id"),
+        {"id": question_id},
+    ).fetchone()
+
+
+def search_subject(subject_name: str):
+    return db.session.execute(
+        text("SELECT * FROM subjects WHERE subject_name LIKE :subject_name"),
+        {"subject_name": f"%{subject_name}%"},
+    )
+
 
 def get_professor_questions(professor_id: str):
-    query = text("SELECT * FROM questions WHERE id_professor = :professor_id")
-    result = db.session.execute(query, {"professor_id": professor_id})
-    print(result)
-    return result
+    return db.session.execute(
+        text("SELECT * FROM questions WHERE id_professor = :professor_id"),
+        {"professor_id": professor_id},
+    )
+
 
 def get_all_questions():
-    query = text("SELECT * FROM questions")
-    result = db.session.execute(query)
-    return result
+    return db.session.execute(text("SELECT * FROM questions"))
+
+
+def get_random_question_filtered(amount: int, chapter_id=None, topic_id=None, difficulty=None):
+    conditions = []
+    params = {"num_questoes": amount}
+
+    if chapter_id is not None:
+        conditions.append("chapter_id = :chapter_id")
+        params["chapter_id"] = chapter_id
+    if topic_id is not None:
+        conditions.append("topic_id = :topic_id")
+        params["topic_id"] = topic_id
+    if difficulty is not None:
+        conditions.append("difficulty = :difficulty")
+        params["difficulty"] = difficulty
+
+    where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+    return db.session.execute(
+        text(f"SELECT * FROM questions {where} ORDER BY RAND() LIMIT :num_questoes"),
+        params,
+    )
+
+
+def get_all_chapters():
+    return db.session.execute(text("SELECT * FROM chapters ORDER BY number")).mappings().all()
+
+
+def get_topics_by_chapter(chapter_id=None):
+    if chapter_id:
+        return db.session.execute(
+            text("SELECT * FROM topics WHERE chapter_id = :cid ORDER BY id"),
+            {"cid": chapter_id},
+        ).mappings().all()
+    return db.session.execute(text("SELECT * FROM topics ORDER BY chapter_id, id")).mappings().all()
+
+
+def get_alternatives_by_question(question_id: int):
+    return db.session.execute(
+        text("SELECT * FROM alternatives WHERE question_id = :qid ORDER BY letter"),
+        {"qid": question_id},
+    ).mappings().all()

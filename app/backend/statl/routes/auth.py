@@ -1,10 +1,5 @@
-from flask import  Blueprint,jsonify, request
+from flask import Blueprint, jsonify, request
 from statl.services.auth_service import register_user, login_user, request_password_reset, reset_password
-from flask_jwt_extended import decode_token
-from flask_login import current_user
-from sqlalchemy import select
-from statl.utils.auth_form import ResetPasswordRequestForm
-from statl.services.user_service import get_user_by_email_service
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -23,7 +18,7 @@ def register():
     return jsonify({"message": "User Created", "id": user}), http_code
 
 # login
-@bp.route('/login', methods=['GET', 'POST'])
+@bp.route('/login', methods=['POST'])
 def login():
     data = request.json
 

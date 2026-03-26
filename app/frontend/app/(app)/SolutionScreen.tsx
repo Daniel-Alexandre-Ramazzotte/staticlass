@@ -1,123 +1,105 @@
-import { Pressable, ScrollView, View } from 'react-native';
-import { useLocalSearchParams, Stack, router } from 'expo-router';
-import {
-  YStack,
-  XStack,
-  Text,
-  Card,
-  Image,
-  Paragraph,
-  Separator,
-  Theme,
-} from 'tamagui';
+import React from 'react';
+import { ScrollView } from 'react-native';
+import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
+import { YStack, XStack, Text, Button } from 'tamagui';
 import { ChevronLeft } from '@tamagui/lucide-icons';
+import { palette, primaryFontA } from 'app/constants/style';
 
 const SolutionScreen = () => {
+  const router = useRouter();
   const { questionData } = useLocalSearchParams();
   const q = JSON.parse(questionData as string);
-  console.log('Dados da questão recebidos:', q);
+
+  const isCorrect = q.message === 'correct';
 
   return (
-    <Theme name="dark">
-      <ScrollView
-        style={{ backgroundColor: '#002d4e' }} // Azul marinho do fundo
-        contentContainerStyle={{ paddingBottom: 40 }}
-        showsVerticalScrollIndicator={true}
-        persistentScrollbar={true}
-        indicatorStyle="white"
+    <ScrollView
+      style={{ flex: 1, backgroundColor: palette.darkBlue }}
+      contentContainerStyle={{ paddingBottom: 40 }}
+      showsVerticalScrollIndicator={false}
+    >
+      <Stack.Screen options={{ headerShown: false }} />
+
+      {/* Header */}
+      <XStack
+        backgroundColor={palette.primaryBlue}
+        pt="$12"
+        pb="$3"
+        px="$4"
+        ai="center"
+        jc="center"
+        position="relative"
       >
-        <Stack.Screen options={{ headerShown: false }} />
-
-        {/* 1. HEADER ÚNICO: Seta e Balão na mesma linha */}
-        <XStack
-          px="$4"
-          pt="$12"
-          pb="$5"
-          ai="center"
-          jc="center"
-          backgroundColor="#002d4e"
-          position="relative" // Necessário para o alinhamento absoluto da seta
+        <YStack position="absolute" left="$4" top="$11">
+          <Button
+            circular
+            size="$3"
+            backgroundColor="transparent"
+            pressStyle={{ opacity: 0.7 }}
+            onPress={() => router.back()}
+            icon={<ChevronLeft color={palette.white} size={28} />}
+          />
+        </YStack>
+        <YStack
+          backgroundColor={palette.primaryBlue}
+          px="$6"
+          py="$2"
+          borderRadius={20}
+          borderWidth={2}
+          borderColor="rgba(255,255,255,0.4)"
         >
-          {/* SETA DE VOLTAR (Posicionada à esquerda) */}
-          <YStack position="absolute" left="$4" pt="$11">
-            <Pressable onPress={() => router.back()} hitSlop={20}>
-              <YStack padding="$2">
-                <ChevronLeft size={35} color="white" />
-              </YStack>
-            </Pressable>
-          </YStack>
-
-          {/* BALÃO DA QUESTÃO (Centralizado) */}
-          <YStack
-            backgroundColor="#0066cc"
-            paddingHorizontal="$8"
-            paddingVertical="$2"
-            borderRadius="$10"
-          >
-            <Text
-              color="white"
-              fontWeight="900"
-              fontSize="$5"
-              textTransform="uppercase"
-            >
-              Questão {q.id || ''}
-            </Text>
-          </YStack>
-        </XStack>
-
-        {/* 2. BLOCO PRETO DO ENUNCIADO (Logo abaixo do header) */}
-        <YStack backgroundColor="black" padding="$6" gap="$4">
-          <Paragraph
-            color="white"
-            fontSize="$5"
-            lineHeight={24}
-            textAlign="left"
-          >
-            {q.issue || 'Texto do enunciado não encontrado'}
-          </Paragraph>
-
-          {q.image_q && (
-            <Image
-              source={{ uri: q.image_q }}
-              width="100%"
-              height={200}
-              objectFit="contain"
-            />
-          )}
+          <Text color={palette.white} fontWeight="900" fontSize={16} fontFamily={primaryFontA}>
+            QUESTÃO {q.id || ''}
+          </Text>
         </YStack>
+      </XStack>
 
-        {/* Bloco de Resposta e Solução (Fundo Azul) */}
-        <YStack p="$6" gap="$6">
-          {/* Gabarito */}
-          <XStack gap="$2" ai="flex-start">
-            <Text color="white" fontSize="$6" fontWeight="bold">
-              SUA RESPOSTA:
-            </Text>
-            <Text color="white" fontSize="$6" f={1}>
-              {q.userAnswer}
-            </Text>
-          </XStack>
-          <XStack gap="$2" ai="flex-start">
-            <Text color="white" fontSize="$6" fontWeight="bold">
-              GABARITO:
-            </Text>
-            <Text color="white" fontSize="$6" f={1}>
-              {q.correct_answer}
-            </Text>
-          </XStack>
+      {/* Enunciado */}
+      <YStack backgroundColor={palette.darkBlue} p="$6" gap="$3">
+        <Text color={palette.white} fontSize={15} lineHeight={22}>
+          {q.issue}
+        </Text>
+      </YStack>
 
-          {/* Solução */}
+      {/* Resposta e Solução */}
+      <YStack backgroundColor={palette.darkBlue} px="$6" pb="$6" gap="$5">
+        {isCorrect ? (
           <YStack gap="$2">
-            <Text color="white" fontSize="$6" fontWeight="bold">
-              Solução:
+            <Text color={palette.primaryGreen} fontSize={18} fontWeight="bold">
+              GABARITO: {q.correct_answer}
             </Text>
-            <Paragraph color="white" fontSize="$5" lineHeight={22}>
-              {q.solution || 'Sem explicação disponível.'}
-            </Paragraph>
           </YStack>
+        ) : (
+          <YStack gap="$2">
+            <Text color={palette.red} fontSize={16} fontWeight="bold">
+              Alternativa {q.userAnswer}: Errada
+            </Text>
+          </YStack>
+        )}
+
+        <YStack gap="$2">
+          <Text color={palette.white} fontSize={16} fontWeight="bold">
+            Solução:
+          </Text>
+          <Text color="rgba(255,255,255,0.85)" fontSize={14} lineHeight={22}>
+            {q.solution || 'Sem explicação disponível.'}
+          </Text>
         </YStack>
-      </ScrollView>
-    </Theme>
+
+        {q.section && (
+          <YStack
+            backgroundColor={palette.primaryGreen}
+            borderRadius={12}
+            px="$4"
+            py="$3"
+          >
+            <Text color={palette.white} fontSize={13} textAlign="center">
+              Conteúdo pode ser encontrado na seção {q.section}
+            </Text>
+          </YStack>
+        )}
+      </YStack>
+    </ScrollView>
   );
 };
 

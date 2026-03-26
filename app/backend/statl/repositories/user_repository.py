@@ -2,118 +2,91 @@ from .. import db
 from sqlalchemy import text
 
 
-# get user by email
+_ALLOWED_USER_UPDATE_FIELDS = {"name", "email", "score", "active", "password_hash"}
+
+
 def get_user_by_email(email):
-    ''' Retorna o usuário com o email fornecido.
-    '''
-    user = db.session.execute(
-    text("SELECT * FROM users WHERE email = :email"),
-    {"email": email}).fetchone()
-    return user
-
-
-# Get User by their id 
-def get_user_by_id(user_id):
-    ''' Retorna o usuário com o ID fornecido.
-    '''
-    user = db.session.execute(
-        text("SELECT * FROM users WHERE id = :id"),
-        {"id": user_id}
+    return db.session.execute(
+        text("SELECT * FROM users WHERE email = :email"),
+        {"email": email},
     ).fetchone()
-    return user
 
-# Create user
+
+def get_user_by_id(user_id):
+    return db.session.execute(
+        text("SELECT * FROM users WHERE id = :id"),
+        {"id": user_id},
+    ).fetchone()
+
+
 def create_user(email, password_hash, name):
-    ''' Cria um novo usuário com o email, hash de senha e nome fornecidos.
-    '''
     db.session.execute(
         text("INSERT INTO users (email, password_hash, name) VALUES (:email, :password_hash, :name)"),
-        {"email": email, "password_hash": password_hash, "name": name}
+        {"email": email, "password_hash": password_hash, "name": name},
     )
-    user_id = db.session.execute(text("SELECT LAST_INSERT_ID()")).scalar()
     db.session.commit()
-    return user_id
+    user = db.session.execute(
+        text("SELECT id FROM users WHERE email = :email"), {"email": email}
+    ).fetchone()
+    return user.id
 
 
 def create_professor(email, password_hash, name):
-    ''' Cria um novo professor com o email, hash de senha e nome fornecidos.
-    '''
     db.session.execute(
         text("INSERT INTO users (email, password_hash, name, role) VALUES (:email, :password_hash, :name, 'professor')"),
-        {"email": email, "password_hash": password_hash, "name": name}
+        {"email": email, "password_hash": password_hash, "name": name},
     )
-    user_id = db.session.execute(text("SELECT LAST_INSERT_ID()")).scalar()
     db.session.commit()
-    return user_id
+    user = db.session.execute(
+        text("SELECT id FROM users WHERE email = :email"), {"email": email}
+    ).fetchone()
+    return user.id
 
-# Update user
+
 def update_user(user_id, data):
-    ''' Atualiza os dados do usuário com o ID fornecido.
-    '''
-    fields = ', '.join([f"{k} = :{k}" for k in data.keys()])
-    params = data.copy()
-    params["id"] = user_id
+    safe = {k: v for k, v in data.items() if k in _ALLOWED_USER_UPDATE_FIELDS}
+    if not safe:
+        raise KeyError("Nenhum campo válido para atualizar")
+    safe["id"] = user_id
+    fields = ", ".join([f"{k} = :{k}" for k in safe if k != "id"])
     try:
-        query = text(f"UPDATE users SET {fields} WHERE id = :id")
-        db.session.execute(query, params)
+        db.session.execute(text(f"UPDATE users SET {fields} WHERE id = :id"), safe)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        raise KeyError(f"Something went wrong {e}")
+        raise KeyError(f"Erro ao atualizar usuário: {e}")
 
 
 def update_password(user_id, new_password_hash):
-    ''' Atualiza a senha do usuário com o ID fornecido.
-    '''
     try:
-        query = text("UPDATE users SET password_hash = :password_hash WHERE id = :id")
-        db.session.execute(query, {"password_hash": new_password_hash, "id": user_id})
+        db.session.execute(
+            text("UPDATE users SET password_hash = :password_hash WHERE id = :id"),
+            {"password_hash": new_password_hash, "id": user_id},
+        )
         db.session.commit()
     except Exception as e:
-        raise KeyError(f"Something went wrong {e}")
+        db.session.rollback()
+        raise KeyError(f"Erro ao atualizar senha: {e}")
 
-# Delete user - quero deletar um aluno pode manter essa mesma função ?
-# @require_role(['admin','professor']) 
+
 def delete_user(user_id):
-    ''' Deleta o usuário com o ID fornecido.
-    '''
     try:
-        query = text("DELETE FROM users WHERE id = :id")
-        db.session.execute(query, {"id": user_id})
+        db.session.execute(text("DELETE FROM users WHERE id = :id"), {"id": user_id})
         db.session.commit()
     except Exception as e:
-        raise KeyError(f"Something went wrong {e}")
+        db.session.rollback()
+        raise KeyError(f"Erro ao deletar usuário: {e}")
 
 
 def get_all_professors():
-    ''' Retorna uma lista de todos os professores cadastrados no sistema.
-    '''
-    professors = db.session.execute(
-        text(
-            """
-            SELECT id, name, email
-            FROM users
-            WHERE role = :role
-            ORDER BY name ASC
-            """
-        ),
-        {"role": "professor"}
+    return db.session.execute(
+        text("SELECT id, name, email FROM users WHERE role = :role ORDER BY name ASC"),
+        {"role": "professor"},
     ).mappings().all()
-    return professors
 
 
 def get_all_alunos():
-    ''' Retorna uma lista de todos os alunos cadastrados no sistema.
-    '''
-    alunos = db.session.execute(
-        text(
-            """
-            SELECT id, name, email
-            FROM users
-            WHERE role = :role
-            ORDER BY name ASC
-            """
-        ),
-        {"role": "aluno"}
+    return db.session.execute(
+        text("SELECT id, name, email FROM users WHERE role = :role ORDER BY name ASC"),
+        {"role": "aluno"},
     ).mappings().all()
-    return alunos

@@ -52,7 +52,7 @@ export default function RegisterScreen() {
     Alert.alert(
       'Email cadastrado com sucesso! Faça login para continuar.',
       '',
-      [{ text: 'OK', onPress: () => router.push('/(public)/Login') }]
+      [{ text: 'OK', onPress: () => router.push('/(public)/login') }]
     );
   };
   return (

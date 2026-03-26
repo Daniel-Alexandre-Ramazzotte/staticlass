@@ -1,104 +1,81 @@
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from statl.utils.auth_middleware import require_role
-from ..services.user_service import update_user_service, delete_user_service, get_user_by_email_service, update_own_profile_service, delete_own_account_service, get_all_professors_service, create_professor_service, get_all_alunos_service
+from ..services.user_service import (
+    update_user_service, delete_user_service, get_user_by_email_service,
+    update_own_profile_service, delete_own_account_service,
+    get_all_professors_service, create_professor_service, get_all_alunos_service,
+)
 
 bp = Blueprint('users', __name__, url_prefix='/users')
-
-# Seriam utilizados para administração dos usuários
 
 
 @bp.route('/update/<int:user_id>', methods=['PUT'])
 @require_role('admin')
 def update_user_route(user_id):
-    data = request.json
-    
-    return update_user_service(user_id, data)
+    return update_user_service(user_id, request.json)
 
 
 @bp.route('/update-me', methods=['PUT'])
 @jwt_required()
 def update_me():
-    current_user_id = get_jwt_identity() # Pega o ID de quem está logado
-    data = request.json
-    
-    user, error, status = update_own_profile_service(current_user_id, data)
-    
-    if error: return error, status
-    return jsonify({"message": "Você atualizou seus dados com sucesso"}), 200
+    user, error, status = update_own_profile_service(get_jwt_identity(), request.json)
+    if error:
+        return error, status
+    return jsonify({"message": "dados atualizados com sucesso"}), 200
+
 
 @bp.route('/delete/<int:user_id>', methods=['DELETE'])
 @require_role('admin')
 def delete_user_route(user_id):
     return delete_user_service(user_id)
 
+
 @bp.route('/delete-me', methods=['DELETE'])
 @jwt_required()
 def delete_me():
-    identity = get_jwt_identity() 
-    
-    data = request.json 
+    data = request.json or {}
     password = data.get("password")
-
     if not password:
-        return jsonify({"error": "A senha é necessária para excluir a conta"}), 400
-    
-    result, status = delete_own_account_service(identity, password)
+        return jsonify({"error": "a senha é necessária para excluir a conta"}), 400
+    result, status = delete_own_account_service(get_jwt_identity(), password)
     return jsonify(result), status
 
 
-
 @bp.route('/profile/<email>', methods=['GET'])
+@jwt_required()
 def get_profile(email):
-    user = get_user_by_email_service(email) 
-    if user:
-        return jsonify({
-            "id": user.id, 
-            "name": getattr(user, 'name', getattr(user, 'nome', 'Usuário')),
-            "email": user.email,
-            "score": getattr(user, 'score', 0)
-        }), 200
-    return jsonify({"message": "Usuário não encontrado"}), 404
+    user = get_user_by_email_service(email)
+    if not user:
+        return jsonify({"message": "usuário não encontrado"}), 404
+    return jsonify({
+        "id":    user.id,
+        "name":  user.name,
+        "email": user.email,
+        "score": user.score,
+    }), 200
 
 
 @bp.route('/admin/get-all-professors', methods=['GET'])
 @require_role('admin')
 def get_all_professors():
-    '''
-    Rota para o admin obter uma lista de todos os professores.
-    '''
-    result = get_all_professors_service()
-    professors = [dict(row) for row in result]
+    return jsonify([dict(row) for row in get_all_professors_service()]), 200
 
-    return jsonify(professors), 200
 
 @bp.route('/admin/create-professor', methods=['POST'])
 @require_role('admin')
 def create_professor():
-    data = request.json
-    
-    result, error, status = create_professor_service(data)
-
+    result, error, status = create_professor_service(request.json)
     if error:
         return error, status
-
-    if result is None:
-        return jsonify({"error": "Falha ao criar professor."}), 500
-
     return jsonify({
-        "message": "Professor criado com sucesso",
-        "id": result["id"],
+        "message":            "professor criado com sucesso",
+        "id":                 result["id"],
         "temporary_password": result["temporary_password"],
     }), 201
 
-@bp.route('/admin/get-all-alunos', methods=['GET'])
-@require_role(['admin'])
-def get_all_alunos():
-    ''' Retorna uma lista de todos os alunos cadastrados no sistema.
-    '''
-    result = get_all_alunos_service()
-    if result is None:
-        return jsonify({"error": "Não foi possível carregar os alunos."}), 500
-    alunos = [dict(row) for row in result]
-    return jsonify(alunos), 200
 
+@bp.route('/admin/get-all-alunos', methods=['GET'])
+@require_role('admin')
+def get_all_alunos():
+    return jsonify([dict(row) for row in get_all_alunos_service()]), 200

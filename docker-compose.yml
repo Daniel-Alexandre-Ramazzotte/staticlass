@@ -1,0 +1,23 @@
+services:
+  db:
+    image: mysql:8.4
+    container_name: staticlass-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: staticlass123
+      MYSQL_DATABASE: staticlass
+      MYSQL_USER: flask_user
+      MYSQL_PASSWORD: staticlass123
+    ports:
+      - "3306:3306"
+    volumes:
+      - staticlass_db_data:/var/lib/mysql
+      - ./propet.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "flask_user", "-pstaticlass123"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  staticlass_db_data:

@@ -4,9 +4,11 @@
     "strict": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"],
+      "app/services/*": ["./src/services/*"],
+      "app/components/*": ["./src/components/*"],
+      "app/constants/*": ["./src/constants/*"],
+      "app/context/*": ["./src/context/*"]
     }
   },
   "include": [
