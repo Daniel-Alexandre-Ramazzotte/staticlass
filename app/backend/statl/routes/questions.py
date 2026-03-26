@@ -4,8 +4,10 @@ from ..services.questions_service import (
     process_upload, get_images, get_professor_questions_service, get_all_questions_service,
     random_question_filtered, get_chapters_service, get_topics_service,
 )
+from ..services.resultado_service import status_diaria_service, marcar_diaria_service
 from typing import Any, Dict
 from statl.utils.auth_middleware import require_role
+from flask_jwt_extended import jwt_required, get_jwt_identity
 import os
 
 NUM_QUESTIONS = 5
@@ -84,3 +86,24 @@ def get_professor_questions(professor_id):
 def get_admin_questions(admin_id):
     result = get_all_questions_service()
     return jsonify([dict(row) for row in result.mappings().all()]), 200
+
+
+# ─── Questão Diária ─────────────────────────────────────────────────────────
+
+@bp.route('/diaria/status', methods=['GET'])
+@jwt_required()
+def status_diaria():
+    """Retorna se o aluno logado já fez a questão diária hoje.
+
+    Resposta: { "feita": true | false }
+    """
+    usuario_id = get_jwt_identity()
+    return jsonify(status_diaria_service(usuario_id)), 200
+
+
+@bp.route('/diaria/marcar', methods=['POST'])
+@jwt_required()
+def marcar_diaria():
+    """Registra que o aluno concluiu a questão diária de hoje."""
+    usuario_id = get_jwt_identity()
+    return jsonify(marcar_diaria_service(usuario_id)), 200

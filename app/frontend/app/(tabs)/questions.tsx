@@ -6,10 +6,12 @@ import { palette, primaryFontA } from 'app/constants/style';
 import { AppButton } from 'app/components/AppButton';
 import { useAuth } from 'app/context/AuthContext';
 import api from 'app/services/api';
+import { useLayout } from '../../src/constants/layout';
 
 export default function QuestionsScreen() {
   const router = useRouter();
   const { name } = useAuth();
+  const { isWide, fs, pad, btnH, maxW } = useLayout();
   const [qtdQuestoes, setQtdQuestoes] = useState('5');
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [chapterId, setChapterId] = useState<number | null>(null);
@@ -37,18 +39,20 @@ export default function QuestionsScreen() {
         jc="space-between"
         width="100%"
       >
-        <Text color="#fff" fontSize="$6" fontWeight="bold" fontFamily={primaryFontA}>
+        <Text color="#fff" fontSize={fs(20)} fontWeight="bold" fontFamily={primaryFontA}>
           {`Olá, ${name || 'Usuário'}!`}
         </Text>
       </XStack>
 
-      <YStack f={1} jc="center" ai="center" gap="$4">
+      {/* Em wide: centraliza o conteúdo numa coluna com largura máxima */}
+      <YStack f={1} jc="center" ai="center" gap="$4" alignSelf="center" width="100%" maxWidth={maxW ?? '100%'} px={pad(16)}>
         <AppButton
           type="primary"
-          buttonSize="big"
+          buttonSize={isWide ? 'wide' : 'big'}
           backgroundColor={palette.primaryGreen}
           onPress={handleStartQuiz}
           fontFamily={primaryFontA}
+          width={isWide ? 360 : '80%'}
         >
           Iniciar Quiz
         </AppButton>

@@ -2,13 +2,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios, { AxiosError } from 'axios';
 import { Platform } from 'react-native';
 
-// Web (browser): localhost. Android emulator: 10.0.2.2. Dispositivo físico: IP da rede.
+// Em produção, defina EXPO_PUBLIC_API_URL no arquivo .env do frontend.
+// Fallbacks para desenvolvimento local:
+//   web       → http://localhost:5000/
+//   android   → http://10.0.2.2:5000/  (emulador aponta para o host)
+//   ios/físico→ altere para o IP da sua máquina na rede
 const BASE_URL =
-  Platform.OS === 'web'
+  process.env.EXPO_PUBLIC_API_URL ??
+  (Platform.OS === 'web'
     ? 'http://localhost:5000/'
     : Platform.OS === 'android'
     ? 'http://10.0.2.2:5000/'
-    : 'http://192.168.18.185:5000/';
+    : 'http://192.168.18.185:5000/');
 
 const api = axios.create({
   baseURL: BASE_URL,

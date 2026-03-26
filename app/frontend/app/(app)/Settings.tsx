@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, Switch } from 'react-native';
 import { useAuth } from 'app/context/AuthContext';
 import { useRouter } from 'expo-router';
 import { YStack, XStack, Text, Input, Button } from 'tamagui';
 import { ChevronLeft } from '@tamagui/lucide-icons';
 import { palette, primaryFontA } from 'app/constants/style';
 import api from 'app/services/api';
+import { useTema } from '../../src/context/ThemeContext';
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { signOut, email: authEmail } = useAuth();
+  const { temaEfetivo, alternarTema } = useTema();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -160,6 +162,22 @@ export default function SettingsScreen() {
         >
           Salvar Senha
         </Button>
+
+        {/* Tema */}
+        <Text color={palette.white} fontSize={16} fontWeight="bold" textDecorationLine="underline" mt="$4" mb="$2">
+          Aparência
+        </Text>
+        <XStack ai="center" jc="space-between" mb="$6">
+          <Text color={palette.white} fontSize={14}>
+            Modo escuro {temaEfetivo === 'escuro' ? '🌙' : '☀️'}
+          </Text>
+          <Switch
+            value={temaEfetivo === 'escuro'}
+            onValueChange={alternarTema}
+            trackColor={{ false: 'rgba(255,255,255,0.3)', true: palette.primaryGreen }}
+            thumbColor={palette.white}
+          />
+        </XStack>
 
         {/* Delete */}
         <Button

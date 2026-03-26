@@ -1,25 +1,22 @@
 # Staticlass
 
-App mobile de quizzes interativos de Estatística Básica, desenvolvido como parte do **PROPET DataSci — Ação 11: Apostila de Estatística Básica** (UEM).
+Aplicativo mobile de quiz para alunos e professores da disciplina de **Estatística Básica**, desenvolvido no âmbito do projeto PROPET DataSci — Ação 11 (UEM).
 
-O banco de questões é alimentado pela [Apostila Interativa de Estatística Básica](https://daniel-alexandre-ramazzotte.github.io/Estatistica-Basica/) — 356 questões categorizadas por capítulo, tópico e dificuldade. O app permite que alunos pratiquem com quizzes filtrados, acompanhem seu desempenho e vejam soluções detalhadas; professores gerenciem listas; e administradores controlem usuários.
-
-**Autores:** Daniel Alexandre Ramazzotte, Ana, Vinicius Okada, Thaís N. Resende, Eduarda Barragan, Larissa, Cláudio Homem
-**Programa:** PROPET DataSci — Ação 11 | Departamento de Estatística — UEM
-**Documentação do projeto:** [Notion](https://www.notion.so/PROPET-DataSci-Acao-11-Apostila-Estat-stica-B-sica-3280009068a9816f82c6c48065ebe429)
+O banco de questões é alimentado pela [Apostila Interativa de Estatística Básica](https://daniel-alexandre-ramazzotte.github.io/Estatistica-Basica/) — 356 questões categorizadas por capítulo, tópico e dificuldade.
 
 ---
 
-## Stack
+## Visão Geral
 
-| Camada   | Tecnologia                        |
-|----------|-----------------------------------|
-| Frontend | React Native (Expo) + TypeScript  |
-| UI       | Tamagui + react-native-paper      |
-| Backend  | Python + Flask                    |
-| Banco    | MySQL (Docker) / SQLite (testes)  |
-| Auth     | JWT (Flask-JWT-Extended)          |
-| Email    | Flask-Mail                        |
+O Staticlass permite que alunos pratiquem questões de estatística filtradas por capítulo e dificuldade, acompanhem seu desempenho no ranking e respondam a uma questão diária. Professores podem cadastrar e gerenciar questões. Admins controlam usuários e professores.
+
+### Papéis de usuário
+
+| Papel | Acesso |
+|-------|--------|
+| `aluno` | Quiz, Questão Diária, Ranking, Histórico, Perfil |
+| `professor` | Gerenciar Questões, Criar Listas + tudo do aluno |
+| `admin` | Gerenciar Professores e Alunos + tudo acima |
 
 ---
 
@@ -28,217 +25,211 @@ O banco de questões é alimentado pela [Apostila Interativa de Estatística Bá
 ```
 staticlass/
 ├── app/
-│   ├── backend/
+│   ├── backend/          # API Flask (Python)
 │   │   └── statl/
-│   │       ├── models/          # Modelos SQLAlchemy (Question, Alternative, Chapter, Topic)
-│   │       ├── repositories/    # Acesso ao banco via SQLAlchemy
-│   │       ├── routes/          # Blueprints Flask: auth, questions, users
-│   │       ├── services/        # Regras de negócio
-│   │       ├── security/        # Hash de senha e tokens JWT de reset
-│   │       └── utils/           # Middleware de roles (@require_role)
-│   └── frontend/
-│       ├── app/
-│       │   ├── (public)/        # Login, Registro, Recuperação de senha
-│       │   ├── (tabs)/          # Abas principais (Home, Questões, Daily, Ranking, Perfil)
-│       │   ├── (app)/           # Fluxo do quiz (Quiz, Resultado, Solução, Estatísticas)
-│       │   ├── (professor)/     # Gestão de questões e listas
-│       │   └── (admin)/         # Gestão de professores e alunos
-│       └── src/
-│           ├── context/         # AuthContext (JWT + AsyncStorage)
-│           ├── services/        # Axios (api.tsx) + serviços de autenticação
-│           ├── components/      # AppButton, CustomAccordion
-│           └── constants/       # Paleta de cores, strings compartilhadas
-├── docs/
-├── docker-compose.yml           # MySQL local
-└── propet.sql                   # Schema inicial
+│   │       ├── models/       # ORM SQLAlchemy
+│   │       ├── repositories/ # Queries SQL (camada de dados)
+│   │       ├── services/     # Lógica de negócio
+│   │       ├── routes/       # Blueprints Flask (HTTP)
+│   │       ├── security/     # Hash de senha, JWT reset
+│   │       └── utils/        # Middleware de autenticação
+│   └── frontend/         # App React Native (Expo)
+│       ├── app/              # Rotas (Expo Router, file-based)
+│       │   ├── (public)/     # Login, Registro, Recuperar Senha
+│       │   ├── (tabs)/       # Abas: Home, Questões, Diária, Ranking, Perfil
+│       │   ├── (app)/        # Quiz: InProgress, Result, Solution, Statistics
+│       │   ├── (professor)/  # Gestão de questões e listas
+│       │   └── (admin)/      # Gestão de usuários
+│       └── src/              # Código compartilhado
+│           ├── components/   # AppButton, CustomAccordion
+│           ├── constants/    # Paleta de cores, estilos, nomes
+│           ├── context/      # AuthContext (JWT)
+│           └── services/     # Axios (api.tsx), serviços de auth
+├── uploads/              # Imagens de questões (servidas pelo Flask)
+├── docker-compose.yml    # MySQL via Docker
+└── propet.sql            # Schema SQL de referência
 ```
 
 ---
 
-## Papéis de Usuário
-
-| Papel       | Acesso                                                                 |
-|-------------|------------------------------------------------------------------------|
-| `aluno`     | Quizzes filtrados, questão diária, ranking, estatísticas, perfil       |
-| `professor` | Gerenciar questões próprias, criar e gerenciar listas                  |
-| `admin`     | Gerenciar professores e alunos, painel administrativo                  |
-
----
-
-## Rodando Localmente
+## Backend
 
 ### Pré-requisitos
 
 - Python 3.10+
-- Node.js 18+ e npm
-- Docker e Docker Compose
-- Expo CLI (`npm install -g expo-cli`)
+- MySQL (ou Docker)
 
----
+### Configuração
 
-### 1. Banco de Dados (MySQL via Docker)
-
-```bash
-# Na raiz do repositório
-docker compose up -d
-```
-
-Credenciais (já configuradas no `docker-compose.yml`):
-
-```
-DB_HOST=localhost
-DB_USER=flask_user
-DB_PASS=staticlass123
-DB_NAME=staticlass
-```
-
----
-
-### 2. Backend (Flask)
-
-```bash
-cd app/backend
-```
-
-Crie o arquivo `.env`:
+Crie o arquivo `app/backend/.env`:
 
 ```env
 DB_HOST=localhost
 DB_USER=flask_user
 DB_PASS=staticlass123
 DB_NAME=staticlass
-SECRET_KEY=uma-chave-secreta-qualquer
+SECRET_KEY=sua_chave_secreta_aqui
 ```
 
-Instale as dependências e rode:
+### Subir banco com Docker
 
 ```bash
-pip install -r requirements.txt
-flask --app statl run --host=0.0.0.0
+docker compose up -d
 ```
 
-O `--host=0.0.0.0` é necessário para o emulador Android e dispositivos físicos conseguirem se conectar.
-
-O schema do banco é criado automaticamente pelo `db.create_all()` na inicialização.
-
----
-
-### 3. Importar o Banco de Questões
-
-As 356 questões da apostila estão em `questoes.db` (repositório [Estatistica-Basica](https://github.com/Daniel-Alexandre-Ramazzotte/Estatistica-Basica)):
+### Instalar dependências e rodar
 
 ```bash
 cd app/backend
-
-# O script assume que questoes.db está em ~/Desktop/Estatistica-Basica/banco_questoes/
-python -m statl.migrate_questoes
-
-# Ou passando o caminho explicitamente:
-python -m statl.migrate_questoes --db-path /caminho/para/questoes.db
+pip install -r requirements.txt
+flask --app statl run
 ```
 
-O script é idempotente — pula questões já importadas via `original_id`.
+O banco é criado automaticamente pelo `db.create_all()` na inicialização — incluindo as tabelas `quiz_resultados` e `questao_diaria_historico`.
 
----
-
-### 4. Frontend (Expo)
-
-```bash
-cd app/frontend
-npm install
-```
-
-**No navegador (web):**
-```bash
-npx expo start --web
-```
-
-**No emulador Android:**
-```bash
-npx expo run:android
-```
-
-**No dispositivo físico:** altere `BASE_URL` em `src/services/api.tsx` para o IP da sua máquina na rede local.
-
-> A URL da API é detectada automaticamente por plataforma:
-> - Web (navegador): `localhost:5000`
-> - Emulador Android: `10.0.2.2:5000`
-> - Dispositivo físico: IP da rede (ex: `192.168.x.x:5000`)
-
----
-
-### 5. Testes do Backend
+### Rodar testes
 
 ```bash
 cd app/backend
 pytest
 ```
 
-Os testes usam `create_app(testing=True)` com SQLite em memória — sem necessidade do Docker.
+Os testes usam SQLite em memória (`create_app(testing=True)`).
+
+### Arquitetura do Backend
+
+Camadas estritamente separadas: **Routes → Services → Repositories**
+
+- **Routes** — recebem a requisição HTTP, delegam ao service, devolvem JSON
+- **Services** — lógica de negócio (validação, regras, montagem de resposta)
+- **Repositories** — toda e qualquer query ao banco via SQLAlchemy
+
+### Endpoints
+
+#### Autenticação (`/auth`)
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| POST | `/auth/register` | Cadastrar novo aluno |
+| POST | `/auth/login` | Login — retorna JWT |
+| POST | `/auth/password-reset` | Solicitar reset de senha |
+| POST | `/auth/password-reset/confirm` | Confirmar novo password |
+
+#### Questões (`/questions`)
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| GET | `/questions/filtered` | — | Quiz filtrado (`?num=5&chapter_id=1&difficulty=2`) |
+| GET | `/questions/chapters` | — | Lista os 4 capítulos |
+| GET | `/questions/topics` | — | Lista tópicos (`?chapter_id=1` opcional) |
+| GET | `/questions/diaria/status` | JWT | Se o aluno já fez a diária hoje |
+| POST | `/questions/diaria/marcar` | JWT | Registrar conclusão da diária |
+| POST | `/questions/add` | professor/admin | Adicionar questão |
+| PUT | `/questions/update` | professor/admin | Editar questão |
+
+#### Usuários (`/users`)
+
+| Método | Rota | Auth | Descrição |
+|--------|------|------|-----------|
+| GET | `/users/ranking` | — | Top 10 alunos por pontuação |
+| GET | `/users/historico` | JWT | Histórico de quizzes do usuário logado |
+| POST | `/users/salvar-resultado` | JWT | Salvar resultado e ganhar pontos |
+| GET | `/users/profile/<email>` | JWT | Perfil do usuário |
+| PUT | `/users/update-me` | JWT | Atualizar próprio perfil |
 
 ---
 
-## API — Principais Rotas
+## Frontend
 
-### Auth `/auth`
+### Pré-requisitos
 
-| Método | Rota                          | Descrição                         |
-|--------|-------------------------------|-----------------------------------|
-| POST   | `/auth/register`              | Registra novo aluno               |
-| POST   | `/auth/login`                 | Autentica e retorna token JWT     |
-| POST   | `/auth/password-reset`        | Solicita redefinição de senha     |
-| POST   | `/auth/password-reset/confirm`| Confirma nova senha com token     |
+- Node.js 18+
+- Expo CLI
 
-### Questões `/questions`
+### Instalar e rodar
 
-| Método | Rota                          | Descrição                                        |
-|--------|-------------------------------|--------------------------------------------------|
-| GET    | `/questions/chapters`         | Lista os 4 capítulos                             |
-| GET    | `/questions/topics`           | Lista tópicos (filtro: `?chapter_id=1`)          |
-| GET    | `/questions/filtered`         | Quiz filtrado (`?num=5&chapter_id=1&difficulty=2`)|
-| GET    | `/questions/professor/<id>`   | Questões do professor                            |
-| POST   | `/questions/add`              | Adiciona questão (professor/admin)               |
-| PUT    | `/questions/update`           | Atualiza questão                                 |
-
-### Usuários `/users`
-
-| Método | Rota                              | Acesso      |
-|--------|-----------------------------------|-------------|
-| GET    | `/users/profile/<email>`          | autenticado |
-| PUT    | `/users/update-me`                | autenticado |
-| DELETE | `/users/delete-me`                | autenticado |
-| GET    | `/users/admin/get-all-professors` | admin       |
-| POST   | `/users/admin/create-professor`   | admin       |
-| GET    | `/users/admin/get-all-alunos`     | admin       |
-
----
-
-## Fluxo do Quiz
-
-O quiz usa exclusivamente `GET /questions/filtered`. Cada questão retorna:
-
-```json
-{
-  "id": 397,
-  "issue": "Enunciado da questão...",
-  "correct_answer": "C",
-  "solution": "Explicação detalhada...",
-  "alternatives": [
-    { "letter": "A", "text": "...", "is_correct": false },
-    { "letter": "C", "text": "...", "is_correct": true }
-  ]
-}
+```bash
+cd app/frontend
+npm install
+npx expo start          # Metro bundler (web/QR code)
+npx expo run:android    # Build e abrir no emulador Android
 ```
 
-A checagem de resposta é feita no cliente — `userAnswer === correct_answer`.
+### URL da API
+
+O arquivo `src/services/api.tsx` define a URL base:
+
+- **Emulador Android**: `http://10.0.2.2:5000/`
+- **Dispositivo físico**: altere para o IP da sua máquina na rede local
+
+### Lint
+
+```bash
+cd app/frontend
+npm run lint
+```
+
+### Fluxo de Autenticação
+
+1. `_layout.tsx` envolve o app com `AuthProvider`
+2. No startup, lê o JWT de `AsyncStorage` (`@auth_session`)
+3. Decodifica e verifica expiração com `jwt-decode`
+4. Sem sessão → redireciona para `/(public)/login`
+5. Com sessão → redireciona para `/(tabs)/home`
+
+### Fluxo do Quiz
+
+```
+questions.tsx
+  └─ seleciona filtros (capítulo, dificuldade, quantidade)
+      └─ QuizInProgressScreen
+          └─ GET /questions/filtered
+          └─ usuário responde questão por questão
+          └─ checagem local: userAnswer === correct_answer
+              └─ ResultScreen
+                  └─ POST /users/salvar-resultado  (salva acertos + pontos)
+                  └─ POST /questions/diaria/marcar (se era a diária)
+                      └─ SolutionScreen (por questão)
+```
+
+### Pontuação
+
+Cada acerto vale **10 pontos**, acumulados no campo `score` do usuário. O ranking exibe os alunos em ordem decrescente de pontuação.
 
 ---
 
-## Identidade Visual
+## Banco de Questões
 
-| Cor           | Hex       |
-|---------------|-----------|
-| Verde primário| `#55bf44` |
-| Vermelho      | `#f65151` |
+O app importa 230 questões únicas do projeto [Estatistica-Basica](https://github.com/Daniel-Alexandre-Ramazzotte/Estatistica-Basica), organizadas em:
+
+- **4 capítulos**: Estatística Descritiva, Probabilidade, Inferência, Regressão
+- **17 tópicos** distribuídos pelos capítulos
+- **Dificuldade** de 1 (Fácil) a 3 (Difícil)
+
+### Importar questões
+
+```bash
+cd app/backend
+python -m statl.migrate_questoes
+# ou com caminho customizado:
+python -m statl.migrate_questoes --db-path /caminho/para/questoes.db
+```
+
+O script é idempotente — pula questões já importadas (detecta pelo `original_id`).
+
+---
+
+## Paleta de Cores
+
+| Nome | Hex |
+|------|-----|
+| Verde primário | `#55bf44` |
 | Azul primário | `#0074c3` |
-| Azul escuro   | `#093d60` |
+| Azul escuro | `#093d60` |
+| Vermelho | `#f65151` |
+
+---
+
+## Licença
+
+Projeto acadêmico — PROPET DataSci / UEM.

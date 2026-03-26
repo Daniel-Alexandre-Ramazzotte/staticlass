@@ -1,23 +1,55 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { YStack, XStack, Text, View } from 'tamagui';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { palette } from 'app/constants/style';
+import api from 'app/services/api';
 
 const ResultScreen = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const result = params.result ? JSON.parse(params.result as string) : [];
 
-  const score = result.filter((a: any) => a.message === 'correct').length;
+  // Resultado recebido do QuizInProgressScreen como JSON serializado
+  const resultado = params.result ? JSON.parse(params.result as string) : [];
+
+  // Parâmetros opcionais de filtro usados no quiz — enviados ao backend ao salvar
+  const capitulo_id  = params.chapter_id  ? Number(params.chapter_id)  : undefined;
+  const dificuldade  = params.difficulty  ? Number(params.difficulty)  : undefined;
+  const ehDiaria     = params.daily === 'true';
+
+  const acertos = resultado.filter((r: any) => r.message === 'correct').length;
+  const total   = resultado.length;
+
+  // Controle para não enviar o resultado mais de uma vez (evita re-render duplo)
+  const enviado = useRef(false);
+
+  useEffect(() => {
+    if (enviado.current || total === 0) return;
+    enviado.current = true;
+
+    // Salva o resultado no backend e atualiza o score do aluno
+    api.post('/users/salvar-resultado', {
+      acertos,
+      total,
+      capitulo_id,
+      dificuldade,
+    }).catch(() => {
+      // Falha silenciosa — o aluno vê o resultado mesmo se o servidor não responder
+    });
+
+    // Se era a questão diária, marca como concluída para hoje
+    if (ehDiaria) {
+      api.post('/questions/diaria/marcar').catch(() => {});
+    }
+  }, []);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: palette.primaryBlue }}>
       <Stack.Screen options={{ headerShown: false }} />
 
       <YStack f={1} ai="center" jc="center" px="$5">
-        {/* Clipboard badge */}
+        {/* Badge de resumo */}
         <YStack
           backgroundColor={palette.primaryGreen}
           px="$8"
@@ -45,7 +77,7 @@ const ResultScreen = () => {
           </Text>
         </YStack>
 
-        {/* Card */}
+        {/* Card de pontuação */}
         <YStack
           backgroundColor={palette.darkBlue}
           width="100%"
@@ -56,18 +88,18 @@ const ResultScreen = () => {
           ai="center"
         >
           <Text fontSize={56} fontWeight="900" color={palette.white} mb="$1">
-            {score}/{result.length}
+            {acertos}/{total}
           </Text>
           <Text fontSize={14} color="rgba(255,255,255,0.7)" mb="$4">
-            Pontuação: {score}
+            Pontuação: +{acertos * 10} pts
           </Text>
 
           <ScrollView style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
-            {result.map((answer: any, index: number) => {
-              const isCorrect = answer.message === 'correct';
+            {resultado.map((resposta: any, indice: number) => {
+              const correto = resposta.message === 'correct';
               return (
                 <XStack
-                  key={index}
+                  key={indice}
                   jc="space-between"
                   ai="center"
                   py="$2"
@@ -76,9 +108,9 @@ const ResultScreen = () => {
                   <Text
                     fontSize={15}
                     fontWeight="bold"
-                    color={isCorrect ? palette.primaryGreen : palette.red}
+                    color={correto ? palette.primaryGreen : palette.red}
                   >
-                    Questão {String(index + 1).padStart(2, '0')}:
+                    Questão {String(indice + 1).padStart(2, '0')}:
                   </Text>
                   <Text
                     color={palette.white}
@@ -88,7 +120,7 @@ const ResultScreen = () => {
                     onPress={() =>
                       router.push({
                         pathname: '/(app)/SolutionScreen',
-                        params: { questionData: JSON.stringify(answer) },
+                        params: { questionData: JSON.stringify(resposta) },
                       })
                     }
                   >
@@ -101,7 +133,7 @@ const ResultScreen = () => {
         </YStack>
       </YStack>
 
-      {/* Bottom button */}
+      {/* Botão de voltar */}
       <YStack
         backgroundColor={palette.red}
         width="100%"

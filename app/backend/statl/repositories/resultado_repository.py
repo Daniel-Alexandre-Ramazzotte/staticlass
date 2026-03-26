@@ -1,0 +1,92 @@
+from .. import db
+from sqlalchemy import text
+from datetime import date
+
+
+# ─── Quiz Resultados ────────────────────────────────────────────────────────
+
+def salvar_resultado(usuario_id, acertos, total, capitulo_id=None, dificuldade=None):
+    """Insere um novo resultado de quiz para o usuário."""
+    db.session.execute(
+        text("""
+            INSERT INTO quiz_resultados (usuario_id, acertos, total, capitulo_id, dificuldade, criado_em)
+            VALUES (:usuario_id, :acertos, :total, :capitulo_id, :dificuldade, NOW())
+        """),
+        {
+            "usuario_id":  usuario_id,
+            "acertos":     acertos,
+            "total":       total,
+            "capitulo_id": capitulo_id,
+            "dificuldade": dificuldade,
+        },
+    )
+    db.session.commit()
+
+
+def incrementar_score(usuario_id, pontos):
+    """Soma pontos ao score acumulado do usuário na tabela users."""
+    db.session.execute(
+        text("UPDATE users SET score = COALESCE(score, 0) + :pontos WHERE id = :id"),
+        {"pontos": pontos, "id": usuario_id},
+    )
+    db.session.commit()
+
+
+def buscar_historico(usuario_id, limite=10):
+    """Retorna os últimos resultados de quiz do usuário, do mais recente ao mais antigo."""
+    return db.session.execute(
+        text("""
+            SELECT qr.id, qr.acertos, qr.total, qr.dificuldade, qr.criado_em,
+                   c.name AS capitulo_nome
+            FROM quiz_resultados qr
+            LEFT JOIN chapters c ON c.id = qr.capitulo_id
+            WHERE qr.usuario_id = :usuario_id
+            ORDER BY qr.criado_em DESC
+            LIMIT :limite
+        """),
+        {"usuario_id": usuario_id, "limite": limite},
+    ).mappings().all()
+
+
+def buscar_ranking(limite=10):
+    """Retorna os alunos com maior pontuação, em ordem decrescente."""
+    return db.session.execute(
+        text("""
+            SELECT id, name, COALESCE(score, 0) AS score
+            FROM users
+            WHERE role = 'aluno'
+            ORDER BY score DESC
+            LIMIT :limite
+        """),
+        {"limite": limite},
+    ).mappings().all()
+
+
+# ─── Questão Diária ─────────────────────────────────────────────────────────
+
+def verificar_diaria(usuario_id):
+    """Verifica se o usuário já fez a questão diária hoje. Retorna True ou False."""
+    resultado = db.session.execute(
+        text("""
+            SELECT id FROM questao_diaria_historico
+            WHERE usuario_id = :usuario_id AND data = :hoje
+        """),
+        {"usuario_id": usuario_id, "hoje": date.today()},
+    ).fetchone()
+    return resultado is not None
+
+
+def marcar_diaria(usuario_id):
+    """Registra que o usuário completou a questão diária hoje.
+    Se já foi marcada hoje, não faz nada (ignora duplicata)."""
+    try:
+        db.session.execute(
+            text("""
+                INSERT IGNORE INTO questao_diaria_historico (usuario_id, data)
+                VALUES (:usuario_id, :hoje)
+            """),
+            {"usuario_id": usuario_id, "hoje": date.today()},
+        )
+        db.session.commit()
+    except Exception:
+        db.session.rollback()

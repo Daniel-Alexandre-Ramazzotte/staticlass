@@ -25,7 +25,7 @@ interface QuizQuestion {
 }
 
 const QuizInProgressScreen = () => {
-  const { qtd, chapter_id, difficulty } = useLocalSearchParams();
+  const { qtd, chapter_id, difficulty, daily } = useLocalSearchParams();
   const router = useRouter();
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [loading, setLoading] = useState(true);
@@ -120,9 +120,15 @@ const QuizInProgressScreen = () => {
     setUserAnswer('');
 
     if (counter + 1 >= questions.length) {
+      // Repassa chapter_id, difficulty e daily para que ResultScreen possa salvar o resultado completo
       router.push({
         pathname: '/(app)/ResultScreen' as any,
-        params: { result: JSON.stringify(newResponses) },
+        params: {
+          result:     JSON.stringify(newResponses),
+          chapter_id: chapter_id ?? '',
+          difficulty: difficulty ?? '',
+          daily:      daily ?? '',
+        },
       });
     } else {
       setCounter(counter + 1);

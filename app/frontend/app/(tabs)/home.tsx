@@ -3,10 +3,13 @@ import { useRouter } from 'expo-router';
 import { useAuth } from 'app/context/AuthContext';
 import { XStack, YStack, ZStack, Image, Text, Button } from 'tamagui';
 import { Menu } from '@tamagui/lucide-icons';
-import { palette, primaryFontA, primaryFontC } from 'app/constants/style';
+import { palette as paletaEstatica, primaryFontA, primaryFontC } from 'app/constants/style';
 import { AppButton } from 'app/components/AppButton';
+import { useTema } from '../../src/context/ThemeContext';
 
 function Header({ name, subtitle }: { name: string; subtitle: string }) {
+  const { paleta } = useTema();
+  const palette = paleta;
   return (
     <XStack
       backgroundColor={palette.primaryBlue}
@@ -47,6 +50,8 @@ function Header({ name, subtitle }: { name: string; subtitle: string }) {
 export default function HomeScreen() {
   const router = useRouter();
   const { role, name } = useAuth();
+  const { paleta } = useTema();
+  const palette = paleta;
 
   if (role === 'admin') {
     return (
@@ -58,6 +63,12 @@ export default function HomeScreen() {
             onPress={() => router.push('/(professor)/QuestionsManager')}
           >
             Gerenciar Questões
+          </AppButton>
+          <AppButton
+            backgroundColor={palette.primaryBlue}
+            onPress={() => router.push('/(admin)/QuestaoViewer')}
+          >
+            Visualizador de Questões
           </AppButton>
           <AppButton
             backgroundColor={palette.darkBlue}

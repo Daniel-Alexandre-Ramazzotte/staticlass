@@ -6,6 +6,9 @@ from ..services.user_service import (
     update_own_profile_service, delete_own_account_service,
     get_all_professors_service, create_professor_service, get_all_alunos_service,
 )
+from ..services.resultado_service import (
+    salvar_resultado_service, buscar_historico_service, buscar_ranking_service,
+)
 
 bp = Blueprint('users', __name__, url_prefix='/users')
 
@@ -79,3 +82,38 @@ def create_professor():
 @require_role('admin')
 def get_all_alunos():
     return jsonify([dict(row) for row in get_all_alunos_service()]), 200
+
+
+# ─── Ranking ────────────────────────────────────────────────────────────────
+
+@bp.route('/ranking', methods=['GET'])
+def get_ranking():
+    """Retorna top 10 alunos por pontuação. Público — não exige autenticação."""
+    return jsonify(buscar_ranking_service()), 200
+
+
+# ─── Histórico e Resultado do Quiz ──────────────────────────────────────────
+
+@bp.route('/historico', methods=['GET'])
+@jwt_required()
+def get_historico():
+    """Retorna os últimos 10 resultados de quiz do aluno logado."""
+    usuario_id = get_jwt_identity()
+    return jsonify(buscar_historico_service(usuario_id)), 200
+
+
+@bp.route('/salvar-resultado', methods=['POST'])
+@jwt_required()
+def salvar_resultado():
+    """Salva o resultado de um quiz e adiciona pontos ao score do aluno.
+
+    Corpo esperado (JSON):
+        acertos    (int) — número de questões corretas
+        total      (int) — total de questões do quiz
+        capitulo_id (int, opcional)
+        dificuldade (int, opcional) — 1, 2 ou 3
+    """
+    usuario_id = get_jwt_identity()
+    dados = request.get_json() or {}
+    resposta, status = salvar_resultado_service(usuario_id, dados)
+    return jsonify(resposta), status

@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { TamaguiProvider } from 'tamagui';
 import { tamaguiConfig } from '../tamagui.config';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
+import { ThemeProvider, useTema } from '../src/context/ThemeContext';
 
 function InitialLayout() {
   const { session, isLoading } = useAuth(); //  Pegamos os dados do contexto
@@ -53,18 +54,14 @@ function InitialLayout() {
     );
   }
 
+  // Passa o tema efetivo ao Tamagui (light/dark)
+  const { temaEfetivo } = useTema();
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <TamaguiProvider config={tamaguiConfig}>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-          }}
-        >
-          <Stack.Screen
-            name="(public)/login"
-            options={{ headerShown: false }}
-          />
+      <TamaguiProvider config={tamaguiConfig} defaultTheme={temaEfetivo === 'escuro' ? 'dark' : 'light'}>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(public)/login" options={{ headerShown: false }} />
         </Stack>
       </TamaguiProvider>
     </GestureHandlerRootView>
@@ -73,8 +70,10 @@ function InitialLayout() {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <InitialLayout />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <InitialLayout />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

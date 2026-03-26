@@ -51,17 +51,20 @@ def create_app(testing: bool = False):
     mail.init_app(app)
     db.init_app(app)
     
-    from .routes import auth, questions, users
+    from .routes import auth, questions, users, admin
     app.register_blueprint(auth.bp)
     app.register_blueprint(questions.bp)
     app.register_blueprint(users.bp)
+    app.register_blueprint(admin.bp)
 
    
 
     
     with app.app_context():
-        from .models import chapters  # noqa: F401
+        from .models import chapters       # noqa: F401
         from .models import questions as question_models  # noqa: F401
+        from .models import quiz_resultado  # noqa: F401
+        from .models import questao_diaria  # noqa: F401
         db.create_all()
     return app
 

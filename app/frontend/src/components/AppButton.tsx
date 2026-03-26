@@ -1,5 +1,6 @@
 import { Button, styled } from 'tamagui';
 import { palette } from '../constants/style';
+export { useLayout } from '../constants/layout';
 
 export const AppButton = styled(Button, {
   borderRadius: 25,
@@ -58,6 +59,15 @@ export const AppButton = styled(Button, {
         minHeight: 64,
         fontSize: 22,
         lineHeight: 30,
+      },
+      // Tamanho para desktop/web wide — fonte maior, altura generosa
+      wide: {
+        px: '$8',
+        py: '$4',
+        minHeight: 72,
+        fontSize: 20,
+        lineHeight: 28,
+        borderRadius: 30,
       },
     },
   } as const,

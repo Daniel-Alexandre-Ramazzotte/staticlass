@@ -1,20 +1,47 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useRouter } from 'expo-router';
-import { YStack, XStack, Text, Image } from 'tamagui';
+import { useFocusEffect } from '@react-navigation/native';
+import { YStack, XStack, Text } from 'tamagui';
+import { ActivityIndicator } from 'react-native';
 import { Lightbulb, Menu } from '@tamagui/lucide-icons';
-import { palette, primaryFontA } from 'app/constants/style';
+import { palette as paletaEstatica, primaryFontA } from 'app/constants/style';
 import { useAuth } from 'app/context/AuthContext';
 import { AppButton } from 'app/components/AppButton';
+import api from 'app/services/api';
+import { useTema } from '../../src/context/ThemeContext';
 
 export default function DailyScreen() {
   const router = useRouter();
   const { name } = useAuth();
-  // TODO: buscar do backend se a questão diária já foi feita hoje
-  const [done] = useState(false);
+  const { paleta: palette } = useTema();
+
+  // Estado da questão diária: null = carregando, true = feita, false = disponível
+  const [feita, setFeita]         = useState<boolean | null>(null);
+  const [carregando, setCarregando] = useState(true);
+
+  // Verifica no backend se o aluno já fez a questão diária hoje.
+  // useFocusEffect garante que a checagem acontece sempre que a aba é aberta.
+  const verificarStatus = useCallback(() => {
+    setCarregando(true);
+    api.get('/questions/diaria/status')
+      .then((res) => setFeita(res.data.feita))
+      .catch(() => setFeita(false))  // em caso de erro, libera para tentar
+      .finally(() => setCarregando(false));
+  }, []);
+
+  useFocusEffect(verificarStatus);
+
+  // Navega para o quiz de 1 questão e, ao voltar, marca como concluída
+  const iniciarDiaria = () => {
+    router.push({
+      pathname: '/(app)/QuizInProgressScreen',
+      params: { qtd: '1', daily: 'true' },
+    });
+  };
 
   return (
     <YStack f={1} backgroundColor={palette.offWhite}>
-      {/* Header */}
+      {/* Cabeçalho */}
       <XStack
         backgroundColor={palette.primaryBlue}
         pt="$10"
@@ -46,9 +73,12 @@ export default function DailyScreen() {
         <Menu color={palette.white} size={28} />
       </XStack>
 
-      {/* Body */}
+      {/* Corpo */}
       <YStack f={1} jc="center" ai="center" px="$6">
-        {done ? (
+        {carregando ? (
+          <ActivityIndicator size="large" color={palette.primaryBlue} />
+        ) : feita ? (
+          /* Aluno já completou a questão diária hoje */
           <YStack
             backgroundColor={palette.primaryGreen}
             borderRadius={16}
@@ -62,8 +92,12 @@ export default function DailyScreen() {
               Você já fez a sua questão diária!
             </Text>
             <Text fontSize={48}>🏆</Text>
+            <Text color="rgba(255,255,255,0.85)" fontSize={13} textAlign="center">
+              Volte amanhã para uma nova questão.
+            </Text>
           </YStack>
         ) : (
+          /* Questão disponível */
           <YStack
             backgroundColor={palette.primaryGreen}
             borderRadius={16}
@@ -79,12 +113,7 @@ export default function DailyScreen() {
             </Text>
             <AppButton
               backgroundColor={palette.red}
-              onPress={() =>
-                router.push({
-                  pathname: '/(app)/QuizInProgressScreen',
-                  params: { qtd: '1', daily: 'true' },
-                })
-              }
+              onPress={iniciarDiaria}
             >
               Realizar
             </AppButton>
