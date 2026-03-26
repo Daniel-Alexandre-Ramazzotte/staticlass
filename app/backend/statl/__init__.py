@@ -67,6 +67,7 @@ def create_app(testing: bool = False):
 
     
     with app.app_context():
+        from .models import user           # noqa: F401
         from .models import chapters       # noqa: F401
         from .models import questions as question_models  # noqa: F401
         from .models import quiz_resultado  # noqa: F401
