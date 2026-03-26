@@ -12,7 +12,7 @@ class Question(db.Model):
     answer_d = db.Column(db.Text, nullable=True)
     answer_e = db.Column(db.Text, nullable=True)
     correct_answer = db.Column(db.String(1), nullable=True)
-    solution = db.Column(db.Text(length=4294967295), nullable=True)
+    solution = db.Column(db.Text, nullable=True)
     # Imagens (upload pelo professor)
     image_q = db.Column(db.String(500), nullable=True)
     image_s = db.Column(db.String(500), nullable=True)
