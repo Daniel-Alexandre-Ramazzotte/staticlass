@@ -18,8 +18,8 @@ RUN pip install --no-cache-dir gunicorn
 COPY . .
 
 # Porta padrão do Gunicorn
-EXPOSE 5000
+EXPOSE 8080
 
 # Produção: gunicorn com 4 workers
-# O .env deve ser montado via docker-compose (env_file ou secrets)
-CMD ["gunicorn", "--workers", "4", "--bind", "0.0.0.0:5000", "statl:create_app()"]
+# Porta 8080 para Fly.io (PORT env var), 5000 para docker-compose local
+CMD ["sh", "-c", "gunicorn --workers 4 --bind 0.0.0.0:${PORT:-5000} 'statl:create_app()'"]
