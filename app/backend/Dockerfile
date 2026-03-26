@@ -2,9 +2,9 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Instala dependências do sistema necessárias para psycopg2
+# Instala dependências do sistema necessárias para PyMySQL
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq-dev gcc \
+    default-libmysqlclient-dev gcc \
     && rm -rf /var/lib/apt/lists/*
 
 # Copia e instala dependências Python primeiro (aproveita cache do Docker)
@@ -18,8 +18,8 @@ RUN pip install --no-cache-dir gunicorn
 COPY . .
 
 # Porta padrão do Gunicorn
-EXPOSE 8080
+EXPOSE 5000
 
 # Produção: gunicorn com 4 workers
-# Porta 8080 para Fly.io (PORT env var), 5000 para docker-compose local
-CMD ["sh", "-c", "gunicorn --workers 4 --bind 0.0.0.0:${PORT:-5000} 'statl:create_app()'"]
+# O .env deve ser montado via docker-compose (env_file ou secrets)
+CMD ["gunicorn", "--workers", "4", "--bind", "0.0.0.0:5000", "statl:create_app()"]

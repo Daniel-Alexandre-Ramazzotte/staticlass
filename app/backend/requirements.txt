@@ -7,7 +7,6 @@ flask_sqlalchemy==3.1.1
 flask_wtf==1.2.2
 itsdangerous==2.2.0
 pymysql==1.1.2
-psycopg2-binary==2.9.10
 python-dotenv==1.2.1
 SQLAlchemy==2.0.45
 Werkzeug==3.1.5

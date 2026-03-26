@@ -28,10 +28,8 @@ def add_question_to_db(data: dict):
         "id_professor":   data.get("id_professor"),
     }
     try:
-        result = db.session.execute(
-            text(str(query) + " RETURNING id"), params
-        )
-        new_id = result.scalar()
+        db.session.execute(query, params)
+        new_id = db.session.execute(text("SELECT LAST_INSERT_ID()")).scalar()
         db.session.commit()
         return new_id
     except Exception as e:
@@ -41,11 +39,11 @@ def add_question_to_db(data: dict):
 
 def add_subject_to_db(subject_name: str):
     try:
-        result = db.session.execute(
-            text("INSERT INTO subjects (subject_name) VALUES (:subject_name) RETURNING id"),
+        db.session.execute(
+            text("INSERT INTO subjects (subject_name) VALUES (:subject_name)"),
             {"subject_name": subject_name},
         )
-        new_id = result.scalar()
+        new_id = db.session.execute(text("SELECT LAST_INSERT_ID()")).scalar()
         db.session.commit()
         return new_id
     except Exception as e:
@@ -81,7 +79,7 @@ def delete_question(question_id):
 
 
 def get_random_question(amount: int):
-    query = text("SELECT * FROM questions ORDER BY RANDOM() LIMIT :num_questoes")
+    query = text("SELECT * FROM questions ORDER BY RAND() LIMIT :num_questoes")
     return db.session.execute(query, {"num_questoes": amount})
 
 
@@ -126,7 +124,7 @@ def get_random_question_filtered(amount: int, chapter_id=None, topic_id=None, di
 
     where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
     return db.session.execute(
-        text(f"SELECT * FROM questions {where} ORDER BY RANDOM() LIMIT :num_questoes"),
+        text(f"SELECT * FROM questions {where} ORDER BY RAND() LIMIT :num_questoes"),
         params,
     )
 

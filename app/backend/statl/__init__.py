@@ -27,17 +27,10 @@ def create_app(testing: bool = False):
     app = Flask(__name__, instance_relative_config = True)
     app.config.from_object(Config)
 
-    database_url = os.getenv("DATABASE_URL")
-    if database_url:
-        # Render fornece postgres://, SQLAlchemy precisa de postgresql://
-        if database_url.startswith("postgres://"):
-            database_url = database_url.replace("postgres://", "postgresql://", 1)
-        app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-    else:
-        app.config["SQLALCHEMY_DATABASE_URI"] = (
-            f"mysql+pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}"
-            f"@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
-        )
+    app.config["SQLALCHEMY_DATABASE_URI"] = (
+        f"mysql+pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}"
+        f"@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
+    )
     app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.secret_key = os.getenv("SECRET_KEY")
