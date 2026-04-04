@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
-import { Home, Notebook, Calendar, Trophy, User } from '@tamagui/lucide-icons';
+import { Home, Notebook, Calendar, Trophy, User, BarChart2 } from '@tamagui/lucide-icons';
 import { Circle } from 'tamagui';
 import { palette } from 'app/constants/style';
 import { useAuth } from 'app/context/AuthContext';
@@ -21,6 +21,7 @@ export default function TabLayout() {
   const { role } = useAuth();
 
   const isAluno = role === 'aluno';
+  const isAdmin = role === 'admin';
   const isProfessor = role === 'professor';
 
   return (
@@ -52,12 +53,12 @@ export default function TabLayout() {
         }}
       />
 
-      {/* Aluno only */}
+      {/* Aluno + Admin */}
       <Tabs.Screen
         name="questions"
         options={{
-          title: 'Questões',
-          href: isAluno ? undefined : null,
+          title: isAdmin ? 'Quiz' : 'Questões',
+          href: (isAluno || isAdmin) ? undefined : null,
           tabBarIcon: ({ focused }) => <TabIcon Icon={Notebook} focused={focused} />,
         }}
       />
@@ -85,6 +86,16 @@ export default function TabLayout() {
           title: 'Listas',
           href: isProfessor ? undefined : null,
           tabBarIcon: ({ focused }) => <TabIcon Icon={Notebook} focused={focused} />,
+        }}
+      />
+
+      {/* Admin only */}
+      <Tabs.Screen
+        name="stats"
+        options={{
+          title: 'Estatísticas',
+          href: isAdmin ? undefined : null,
+          tabBarIcon: ({ focused }) => <TabIcon Icon={BarChart2} focused={focused} />,
         }}
       />
 

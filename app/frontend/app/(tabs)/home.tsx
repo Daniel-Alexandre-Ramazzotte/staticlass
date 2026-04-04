@@ -59,16 +59,10 @@ export default function HomeScreen() {
         <Header name={name || ''} subtitle="Administrador" />
         <YStack f={1} jc="center" ai="center" gap="$4" px="$8">
           <AppButton
-            backgroundColor={palette.primaryGreen}
-            onPress={() => router.push('/(professor)/QuestionsManager')}
-          >
-            Gerenciar Questões
-          </AppButton>
-          <AppButton
             backgroundColor={palette.primaryBlue}
             onPress={() => router.push('/(admin)/QuestaoViewer')}
           >
-            Visualizador de Questões
+            Gerenciar Questões
           </AppButton>
           <AppButton
             backgroundColor={palette.darkBlue}

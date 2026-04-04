@@ -1,19 +1,9 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { Alert, Platform, ToastAndroid } from 'react-native';
+import { useMemo, useEffect, useState } from 'react';
 import { YStack, XStack, Text, Input, Button } from 'tamagui';
 import { ChevronLeft } from 'lucide-react-native';
 import { palette, primaryFontA } from 'app/constants/style';
 import api from 'app/services/api';
-
-function notifySuccess(message: string, onClose: () => void) {
-  if (Platform.OS === 'android') {
-    ToastAndroid.show(message, ToastAndroid.LONG);
-    onClose();
-    return;
-  }
-  Alert.alert('Sucesso', message, [{ text: 'OK', onPress: onClose }]);
-}
 
 export default function AddProfessor() {
   const router = useRouter();
@@ -30,7 +20,14 @@ export default function AddProfessor() {
   const [email, setEmail] = useState(params.email ?? '');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!successMessage) return;
+    const timer = setTimeout(() => router.back(), 1500);
+    return () => clearTimeout(timer);
+  }, [successMessage, router]);
 
   const handleSubmit = async () => {
     if (!name.trim() || !email.trim()) {
@@ -39,6 +36,7 @@ export default function AddProfessor() {
     }
 
     setIsSubmitting(true);
+    setErrorMessage('');
     try {
       if (isEditing && professorId !== null) {
         await api.put(`/users/admin/professors/${professorId}`, {
@@ -46,8 +44,8 @@ export default function AddProfessor() {
           email: email.trim(),
           password: password.trim() || undefined,
         });
-        setErrorMessage('');
-        notifySuccess('Professor atualizado com sucesso.', () => router.back());
+        console.log(`[AddProfessor] Professor ${professorId} atualizado com sucesso.`);
+        setSuccessMessage('Professor atualizado com sucesso!');
         return;
       }
 
@@ -57,16 +55,18 @@ export default function AddProfessor() {
         password: password.trim() || undefined,
       });
 
-      setErrorMessage('');
       const temporaryPassword = response?.data?.temporary_password;
-      const successMessage = temporaryPassword
-        ? `Professor criado com sucesso. Senha temporária: ${temporaryPassword}`
-        : 'Professor criado com sucesso.';
+      const msg = temporaryPassword
+        ? `Professor criado! Senha temporária: ${temporaryPassword}`
+        : 'Professor criado com sucesso!';
 
-      notifySuccess(successMessage, () => router.back());
+      console.log(`[AddProfessor] Professor criado. ${msg}`);
+      setSuccessMessage(msg);
     } catch (error: any) {
-      const apiMessage = error?.response?.data?.error;
-      setErrorMessage(apiMessage || 'Não foi possível salvar o professor');
+      const status = error?.response?.status;
+      const apiMessage = error?.response?.data?.error || error?.response?.data?.message;
+      console.error('[AddProfessor] erro ao salvar:', status, error?.response?.data ?? error?.message);
+      setErrorMessage(apiMessage || `Erro ${status ?? 'de rede'}: não foi possível salvar o professor`);
     } finally {
       setIsSubmitting(false);
     }
@@ -187,7 +187,7 @@ export default function AddProfessor() {
               width="92%"
               alignSelf="flex-end"
               fontSize={24}
-              placeholder={isEditing ? 'Opcional' : 'Opcional'}
+              placeholder="Opcional"
               placeholderTextColor="rgba(255,255,255,0.7)"
             />
           </YStack>
@@ -195,11 +195,11 @@ export default function AddProfessor() {
           <YStack ai="center" pt="$3" gap="$2">
             <Button
               onPress={handleSubmit}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !!successMessage}
               width="74%"
               height={56}
               borderRadius={28}
-              backgroundColor="#4fb000"
+              backgroundColor={successMessage ? palette.primaryGreen : '#4fb000'}
               pressStyle={{ opacity: 0.9, scale: 0.99 }}
             >
               <Text
@@ -212,6 +212,12 @@ export default function AddProfessor() {
                 {isEditing ? 'Salvar' : 'Concluir'}
               </Text>
             </Button>
+
+            {!!successMessage && (
+              <Text color={palette.primaryGreen} fontSize={15} fontWeight="700" textAlign="center">
+                {successMessage}
+              </Text>
+            )}
 
             {!!errorMessage && (
               <Text color="#ff4c4c" fontSize={14} fontWeight="600">

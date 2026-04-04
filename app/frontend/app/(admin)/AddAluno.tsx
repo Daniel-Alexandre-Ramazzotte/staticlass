@@ -1,19 +1,9 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { Alert, Platform, ToastAndroid } from 'react-native';
+import { useMemo, useEffect, useState } from 'react';
 import { YStack, XStack, Text, Input, Button } from 'tamagui';
 import { ChevronLeft } from 'lucide-react-native';
 import { palette, primaryFontA } from 'app/constants/style';
 import api from 'app/services/api';
-
-function notifySuccess(message: string, onClose: () => void) {
-  if (Platform.OS === 'android') {
-    ToastAndroid.show(message, ToastAndroid.LONG);
-    onClose();
-    return;
-  }
-  Alert.alert('Sucesso', message, [{ text: 'OK', onPress: onClose }]);
-}
 
 export default function AddAluno() {
   const router = useRouter();
@@ -30,7 +20,14 @@ export default function AddAluno() {
   const [email, setEmail] = useState(params.email ?? '');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!successMessage) return;
+    const timer = setTimeout(() => router.back(), 1500);
+    return () => clearTimeout(timer);
+  }, [successMessage, router]);
 
   const handleSubmit = async () => {
     if (!name.trim() || !email.trim()) {
@@ -39,6 +36,7 @@ export default function AddAluno() {
     }
 
     setIsSubmitting(true);
+    setErrorMessage('');
     try {
       if (isEditing && alunoId !== null) {
         await api.put(`/users/admin/alunos/${alunoId}`, {
@@ -46,8 +44,8 @@ export default function AddAluno() {
           email: email.trim(),
           password: password.trim() || undefined,
         });
-        setErrorMessage('');
-        notifySuccess('Aluno atualizado com sucesso.', () => router.back());
+        console.log(`[AddAluno] Aluno ${alunoId} atualizado com sucesso.`);
+        setSuccessMessage('Aluno atualizado com sucesso!');
         return;
       }
 
@@ -57,16 +55,18 @@ export default function AddAluno() {
         password: password.trim() || undefined,
       });
 
-      setErrorMessage('');
       const temporaryPassword = response?.data?.temporary_password;
-      const successMessage = temporaryPassword
-        ? `Aluno criado com sucesso. Senha temporária: ${temporaryPassword}`
-        : 'Aluno criado com sucesso.';
+      const msg = temporaryPassword
+        ? `Aluno criado! Senha temporária: ${temporaryPassword}`
+        : 'Aluno criado com sucesso!';
 
-      notifySuccess(successMessage, () => router.back());
+      console.log(`[AddAluno] Aluno criado. ${msg}`);
+      setSuccessMessage(msg);
     } catch (error: any) {
-      const apiMessage = error?.response?.data?.error;
-      setErrorMessage(apiMessage || 'Não foi possível salvar o aluno');
+      const status = error?.response?.status;
+      const apiMessage = error?.response?.data?.error || error?.response?.data?.message;
+      console.error('[AddAluno] erro ao salvar:', status, error?.response?.data ?? error?.message);
+      setErrorMessage(apiMessage || `Erro ${status ?? 'de rede'}: não foi possível salvar o aluno`);
     } finally {
       setIsSubmitting(false);
     }
@@ -195,11 +195,11 @@ export default function AddAluno() {
           <YStack ai="center" pt="$3" gap="$2">
             <Button
               onPress={handleSubmit}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !!successMessage}
               width="74%"
               height={56}
               borderRadius={28}
-              backgroundColor="#4fb000"
+              backgroundColor={successMessage ? palette.primaryGreen : '#4fb000'}
               pressStyle={{ opacity: 0.9, scale: 0.99 }}
             >
               <Text
@@ -212,6 +212,12 @@ export default function AddAluno() {
                 {isEditing ? 'Salvar' : 'Concluir'}
               </Text>
             </Button>
+
+            {!!successMessage && (
+              <Text color={palette.primaryGreen} fontSize={15} fontWeight="700" textAlign="center">
+                {successMessage}
+              </Text>
+            )}
 
             {!!errorMessage && (
               <Text color="#ff4c4c" fontSize={14} fontWeight="600">

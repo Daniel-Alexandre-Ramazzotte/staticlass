@@ -9,10 +9,10 @@ def add_question_to_db(data: dict):
         f"""
         INSERT INTO {TABLE_NAME}
             (issue, correct_answer, solution, image_q, image_s,
-             section, difficulty, needs_fix, chapter_id, topic_id, professor_id)
+             section, source, difficulty, needs_fix, chapter_id, topic_id, professor_id)
         VALUES
             (:issue, :correct_answer, :solution, :image_q, :image_s,
-             :section, :difficulty, :needs_fix, :chapter_id, :topic_id, :professor_id)
+             :section, :source, :difficulty, :needs_fix, :chapter_id, :topic_id, :professor_id)
         RETURNING id
     """
     )
@@ -23,6 +23,7 @@ def add_question_to_db(data: dict):
         "image_q": data.get("image_q"),
         "image_s": data.get("image_s"),
         "section": data.get("section"),
+        "source": data.get("source"),
         "difficulty": data.get("difficulty"),
         "needs_fix": bool(data.get("needs_fix", False)),
         "chapter_id": data.get("chapter_id"),
@@ -62,6 +63,7 @@ _ALLOWED_QUESTION_UPDATE_FIELDS = {
     "image_q",
     "image_s",
     "section",
+    "source",
     "difficulty",
     "needs_fix",
     "chapter_id",
@@ -163,23 +165,52 @@ def get_question_details(question_id: int):
     ).mappings().fetchone()
 
 
-def get_random_question_filtered(amount: int, chapter_id=None, topic_id=None, difficulty=None):
+def get_random_question_filtered(
+    amount: int,
+    chapter_id=None,   # int | list[int] | None
+    topic_id=None,     # int | list[int] | None
+    difficulty=None,   # int | list[int] | None
+    source=None,       # str | list[str] | None
+):
     conditions = []
     params = {"num_questoes": amount}
 
-    if chapter_id is not None:
-        conditions.append("chapter_id = :chapter_id")
-        params["chapter_id"] = chapter_id
-    if topic_id is not None:
-        conditions.append("topic_id = :topic_id")
-        params["topic_id"] = topic_id
-    if difficulty is not None:
-        conditions.append("difficulty = :difficulty")
-        params["difficulty"] = difficulty
+    def _in(col: str, val, prefix: str):
+        """Adds an IN clause for either a scalar or a list value."""
+        vals = val if isinstance(val, list) else [val]
+        ph = ", ".join([f":{prefix}{i}" for i in range(len(vals))])
+        for i, v in enumerate(vals):
+            params[f"{prefix}{i}"] = v
+        return f"{col} IN ({ph})"
 
-    where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+    if chapter_id is not None:
+        conditions.append(_in("chapter_id", chapter_id, "cid"))
+    if topic_id is not None:
+        conditions.append(_in("topic_id", topic_id, "tid"))
+    if difficulty is not None:
+        conditions.append(_in("difficulty", difficulty, "dif"))
+    if source is not None:
+        conditions.append(_in("source", source, "src"))
+
+    # Sempre exclui questões sem alternativas cadastradas
+    conditions.append(
+        "EXISTS (SELECT 1 FROM alternatives a WHERE a.question_id = questions.id)"
+    )
+    where = f"WHERE {' AND '.join(conditions)}"
     return db.session.execute(
-        text(f"SELECT * FROM questions {where} ORDER BY RANDOM() LIMIT :num_questoes"),
+        text(f"""
+            SELECT
+                q.*,
+                c.name   AS chapter_name,
+                c.number AS chapter_number,
+                t.name   AS topic_name
+            FROM questions q
+            LEFT JOIN chapters c ON c.id = q.chapter_id
+            LEFT JOIN topics   t ON t.id = q.topic_id
+            {where}
+            ORDER BY RANDOM()
+            LIMIT :num_questoes
+        """),
         params,
     ).mappings().all()
 

@@ -123,13 +123,14 @@ export default function AddNewQuestion() {
 
       if (response.status === 200 || response.status === 201) {
         alert(isEditing ? 'Questão atualizada com sucesso!' : 'Questão adicionada com sucesso!');
-        router.back();
+        router.replace('/(professor)/QuestionsManager');
       } else {
         alert('Erro ao salvar questão. Tente novamente.');
       }
-    } catch (error) {
-      console.error('Erro ao salvar questão:', error);
-      alert('Erro ao salvar questão. Tente novamente.');
+    } catch (error: any) {
+      const apiError = error?.response?.data?.error;
+      console.error('Erro ao salvar questão:', error?.response?.data ?? error);
+      alert(apiError ? `Erro: ${apiError}` : 'Erro ao salvar questão. Tente novamente.');
     }
   };
 
@@ -285,17 +286,32 @@ export default function AddNewQuestion() {
               >
                 Dificuldade:
               </Text>
-              <Input
-                width="94%"
-                alignSelf="flex-end"
-                marginTop="$1"
-                keyboardType="numeric"
-                value={difficulty}
-                onChangeText={setDifficulty}
-                backgroundColor={palette.backgroundLight}
-                opacity={0.3}
-                color={palette.offWhite}
-              />
+              <XStack width="94%" alignSelf="flex-end" marginTop="$1" gap="$2">
+                {[
+                  { value: '1', label: 'Fácil' },
+                  { value: '2', label: 'Médio' },
+                  { value: '3', label: 'Difícil' },
+                ].map(({ value, label }) => (
+                  <Button
+                    key={value}
+                    flex={1}
+                    size="$3"
+                    backgroundColor={difficulty === value ? palette.primaryGreen : palette.backgroundLight}
+                    borderWidth={1}
+                    borderColor={difficulty === value ? palette.primaryGreen : palette.darkBlue}
+                    pressStyle={{ opacity: 0.7 }}
+                    onPress={() => setDifficulty(value)}
+                  >
+                    <Text
+                      color={difficulty === value ? palette.offWhite : palette.darkBlue}
+                      fontWeight="bold"
+                      fontSize="$4"
+                    >
+                      {label}
+                    </Text>
+                  </Button>
+                ))}
+              </XStack>
             </YStack>
 
             <YStack width="100%" gap={0}>
@@ -312,17 +328,28 @@ export default function AddNewQuestion() {
               >
                 Resposta correta:
               </Text>
-              <Input
-                width="94%"
-                alignSelf="flex-end"
-                marginTop="$1"
-                value={correctAlt}
-                onChangeText={setCorrectAlt}
-                backgroundColor={palette.backgroundLight}
-                opacity={0.3}
-                color={palette.offWhite}
-                autoCapitalize="characters"
-              />
+              <XStack width="94%" alignSelf="flex-end" marginTop="$1" gap="$2">
+                {['A', 'B', 'C', 'D', 'E'].map((letter) => (
+                  <Button
+                    key={letter}
+                    flex={1}
+                    size="$3"
+                    backgroundColor={correctAlt === letter ? palette.primaryGreen : palette.backgroundLight}
+                    borderWidth={1}
+                    borderColor={correctAlt === letter ? palette.primaryGreen : palette.darkBlue}
+                    pressStyle={{ opacity: 0.7 }}
+                    onPress={() => setCorrectAlt(letter)}
+                  >
+                    <Text
+                      color={correctAlt === letter ? palette.offWhite : palette.darkBlue}
+                      fontWeight="bold"
+                      fontSize="$5"
+                    >
+                      {letter}
+                    </Text>
+                  </Button>
+                ))}
+              </XStack>
             </YStack>
 
             <YStack width="100%" gap={0}>

@@ -25,27 +25,39 @@ def visualizar_questoes():
         page        — número da página (padrão: 1)
         per_page    — itens por página (padrão: 20, máx: 100)
     """
-    layout     = request.args.get('layout', 'avulsa')
-    chapter_id = request.args.get('chapter_id', type=int)
-    topic_id   = request.args.get('topic_id', type=int)
-    difficulty = request.args.get('difficulty', type=int)
-    page       = max(1, request.args.get('page', 1, type=int))
-    per_page   = min(100, request.args.get('per_page', 20, type=int))
-    offset     = (page - 1) * per_page
+    layout       = request.args.get('layout', 'avulsa')
+    chapter_ids  = request.args.getlist('chapter_id', type=int)
+    topic_ids    = request.args.getlist('topic_id', type=int)
+    difficulties = request.args.getlist('difficulty', type=int)
+    sources      = [s for s in request.args.getlist('source') if s]
+    page         = max(1, request.args.get('page', 1, type=int))
+    per_page     = min(100, request.args.get('per_page', 20, type=int))
+    offset       = (page - 1) * per_page
 
     # Monta cláusula WHERE dinamicamente
     filtros = []
     params: dict = {}
 
-    if chapter_id:
-        filtros.append("q.chapter_id = :chapter_id")
-        params["chapter_id"] = chapter_id
-    if topic_id:
-        filtros.append("q.topic_id = :topic_id")
-        params["topic_id"] = topic_id
-    if difficulty:
-        filtros.append("q.difficulty = :difficulty")
-        params["difficulty"] = difficulty
+    if chapter_ids:
+        ph = ', '.join([f':cid{i}' for i in range(len(chapter_ids))])
+        filtros.append(f"q.chapter_id IN ({ph})")
+        for i, v in enumerate(chapter_ids):
+            params[f'cid{i}'] = v
+    if topic_ids:
+        ph = ', '.join([f':tid{i}' for i in range(len(topic_ids))])
+        filtros.append(f"q.topic_id IN ({ph})")
+        for i, v in enumerate(topic_ids):
+            params[f'tid{i}'] = v
+    if difficulties:
+        ph = ', '.join([f':dif{i}' for i in range(len(difficulties))])
+        filtros.append(f"q.difficulty IN ({ph})")
+        for i, v in enumerate(difficulties):
+            params[f'dif{i}'] = v
+    if sources:
+        ph = ', '.join([f':src{i}' for i in range(len(sources))])
+        filtros.append(f"q.source IN ({ph})")
+        for i, v in enumerate(sources):
+            params[f'src{i}'] = v
 
     where = ("WHERE " + " AND ".join(filtros)) if filtros else ""
     params["limit"]  = per_page
@@ -59,6 +71,7 @@ def visualizar_questoes():
             q.solution,
             q.difficulty,
             q.section,
+            q.source,
             q.image_q,
             q.image_s,
             c.name  AS capitulo,
@@ -95,6 +108,7 @@ def visualizar_questoes():
             "secao":            q["section"],
             "imagem_q":         q["image_q"],
             "imagem_s":         q["image_s"],
+            "source":           q["source"],
             "capitulo":         q["capitulo"],
             "capitulo_numero":  q["capitulo_numero"],
             "topico":           q["topico"],
@@ -109,6 +123,49 @@ def visualizar_questoes():
         "per_page":  per_page,
         "pages":     (total + per_page - 1) // per_page,
     }), 200
+
+
+# ─── Estatísticas dos Alunos ────────────────────────────────────────────────
+
+@bp.route('/stats/alunos', methods=['GET'])
+@require_role('admin')
+def stats_alunos():
+    """Retorna todos os alunos com suas estatísticas de quiz."""
+    rows = db.session.execute(text("""
+        SELECT
+            u.id,
+            u.name,
+            u.email,
+            COALESCE(u.score, 0)                                          AS score,
+            COUNT(qr.id)                                                  AS total_quizzes,
+            COALESCE(SUM(qr.acertos), 0)                                  AS total_acertos,
+            COALESCE(SUM(qr.total), 0)                                    AS total_questoes,
+            ROUND(
+                COALESCE(SUM(qr.acertos) * 100.0 / NULLIF(SUM(qr.total), 0), 0), 1
+            )                                                             AS media_pct
+        FROM users u
+        LEFT JOIN quiz_resultados qr ON qr.usuario_id = u.id
+        WHERE u.role = 'aluno'
+        GROUP BY u.id, u.name, u.email, u.score
+        ORDER BY score DESC
+    """)).mappings().all()
+    return jsonify([dict(r) for r in rows]), 200
+
+
+@bp.route('/stats/aluno/<int:user_id>', methods=['GET'])
+@require_role('admin')
+def stats_aluno_detalhe(user_id):
+    """Retorna o histórico de quizzes de um aluno específico."""
+    historico = db.session.execute(text("""
+        SELECT qr.id, qr.acertos, qr.total, qr.dificuldade, qr.criado_em,
+               c.name AS capitulo_nome
+        FROM quiz_resultados qr
+        LEFT JOIN chapters c ON c.id = qr.capitulo_id
+        WHERE qr.usuario_id = :uid
+        ORDER BY qr.criado_em DESC
+        LIMIT 50
+    """), {"uid": user_id}).mappings().all()
+    return jsonify([dict(r) for r in historico]), 200
 
 
 # ─── SQL Viewer (somente leitura) ────────────────────────────────────────────

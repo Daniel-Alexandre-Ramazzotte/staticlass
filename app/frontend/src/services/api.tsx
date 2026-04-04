@@ -17,6 +17,17 @@ const BASE_URL =
 
 const api = axios.create({
   baseURL: BASE_URL,
+  paramsSerializer: (params) => {
+    const search = new URLSearchParams();
+    for (const [key, value] of Object.entries(params)) {
+      if (Array.isArray(value)) {
+        for (const v of value) search.append(key, String(v));
+      } else if (value != null) {
+        search.append(key, String(value));
+      }
+    }
+    return search.toString();
+  },
 });
 
 // Adiciona um interceptor para incluir o token de autenticação em cada requisição

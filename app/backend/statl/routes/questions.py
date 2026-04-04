@@ -41,12 +41,18 @@ def get_question_rand(num=NUM_QUESTIONS):
 
 @bp.route("/filtered", methods=["GET"])
 def get_questions_filtered():
-    num        = request.args.get("num", NUM_QUESTIONS, type=int)
-    chapter_id = request.args.get("chapter_id", type=int)
-    topic_id   = request.args.get("topic_id", type=int)
-    difficulty = request.args.get("difficulty", type=int)
-    questions  = random_question_filtered(num, chapter_id=chapter_id,
-                                          topic_id=topic_id, difficulty=difficulty)
+    num         = request.args.get("num", NUM_QUESTIONS, type=int)
+    chapter_ids = request.args.getlist("chapter_id", type=int) or None
+    topic_ids   = request.args.getlist("topic_id", type=int) or None
+    difficulties = request.args.getlist("difficulty", type=int) or None
+    sources     = [s for s in request.args.getlist("source") if s] or None
+    questions   = random_question_filtered(
+        num,
+        chapter_id=chapter_ids,
+        topic_id=topic_ids,
+        difficulty=difficulties,
+        source=sources,
+    )
     return jsonify(questions), 200
 
 

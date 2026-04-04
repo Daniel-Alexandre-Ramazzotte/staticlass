@@ -1,12 +1,26 @@
 import { useEffect, useCallback, useState, useRef } from 'react';
-import { ActivityIndicator, Animated, Image } from 'react-native';
+import { ActivityIndicator, Animated, Image, StyleSheet } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
 import styles, { palette } from 'app/constants/style';
+import { CAP_NOMES } from 'app/constants/names';
 import api from 'app/services/api';
 import { ChevronLeft } from 'lucide-react-native';
 import { ScrollView, XStack, YStack, Text, View, Button, Progress } from 'tamagui';
 import { AppButton } from 'app/components/AppButton';
+import { MathText } from 'app/components/MathText';
+
+function QuizTag({ label, color }: { label: string; color: string }) {
+  return (
+    <View style={[tagStyles.tag, { backgroundColor: color }]}>
+      <Text color="#fff" fontSize={11} fontWeight="bold">{label}</Text>
+    </View>
+  );
+}
+
+const tagStyles = StyleSheet.create({
+  tag: { borderRadius: 12, paddingHorizontal: 8, paddingVertical: 3 },
+});
 
 interface Alternative {
   letter: string;
@@ -22,10 +36,28 @@ interface QuizQuestion {
   solution: string | null;
   image_q: string | null;
   image_s: string | null;
+  difficulty: number | null;
+  chapter_name: string | null;
+  chapter_number: number | null;
+  topic_name: string | null;
+  source: string | null;
+}
+
+// Expo Router encodes array params as repeated keys → arrives as string[] or string
+function parseIds(val: string | string[] | undefined): number[] | null {
+  if (!val) return null;
+  const arr = Array.isArray(val) ? val : [val];
+  const nums = arr.map(Number).filter((n) => !isNaN(n));
+  return nums.length ? nums : null;
+}
+function parseStrs(val: string | string[] | undefined): string[] | null {
+  if (!val) return null;
+  const arr = (Array.isArray(val) ? val : [val]).filter(Boolean);
+  return arr.length ? arr : null;
 }
 
 const QuizInProgressScreen = () => {
-  const { qtd, chapter_id, difficulty, daily } = useLocalSearchParams();
+  const { qtd, chapter_id, topic_id, difficulty, daily, source } = useLocalSearchParams();
   const router = useRouter();
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,7 +67,6 @@ const QuizInProgressScreen = () => {
   const [userResponses, setUserResponses] = useState<any[]>([]);
   const [currentImageBase64, setCurrentImageBase64] = useState<string | null>(null);
   const [imageLoading, setImageLoading] = useState(false);
-  const [selected, setSelected] = useState(null);
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const fetchQuestions = async () => {
@@ -43,8 +74,14 @@ const QuizInProgressScreen = () => {
       setLoading(true);
       setError(null);
       const params: Record<string, any> = { num: qtd };
-      if (chapter_id) params.chapter_id = chapter_id;
-      if (difficulty) params.difficulty = difficulty;
+      const cids = parseIds(chapter_id as string | string[]);
+      const tids = parseIds(topic_id as string | string[]);
+      const difs = parseIds(difficulty as string | string[]);
+      const srcs = parseStrs(source as string | string[]);
+      if (cids) params.chapter_id = cids;
+      if (tids) params.topic_id = tids;
+      if (difs) params.difficulty = difs;
+      if (srcs) params.source = srcs;
       const response = await api.get('/questions/filtered', { params });
       if (response.status !== 200) throw new Error('Erro ao buscar as questões');
       setQuestions(response.data);
@@ -92,7 +129,6 @@ const QuizInProgressScreen = () => {
   );
 
   useEffect(() => {
-    setSelected(null);
     scaleAnim.setValue(1);
   }, [counter]);
 
@@ -172,11 +208,31 @@ const QuizInProgressScreen = () => {
 
           {/* Enunciado */}
           <YStack minHeight={400} px="$5" pt="$8" gap="$6">
-            <Text fontSize={22} fontWeight="900" color={palette.offBlack}>
-              QUESTÃO {counter + 1}
-            </Text>
+            <XStack ai="center" jc="space-between" flexWrap="wrap" gap="$2">
+              <Text fontSize={22} fontWeight="900" color={palette.offBlack}>
+                QUESTÃO {counter + 1}
+              </Text>
+              <Text fontSize={12} color="#999">#{current.id}</Text>
+            </XStack>
+            <XStack flexWrap="wrap" gap="$2">
+              {current.chapter_name && (
+                <QuizTag label={current.chapter_number ? (CAP_NOMES[current.chapter_number] ?? `Cap. ${current.chapter_number}`) : current.chapter_name} color={palette.darkBlue} />
+              )}
+              {current.topic_name && (
+                <QuizTag label={current.topic_name} color="#5c7a9e" />
+              )}
+              {current.difficulty && (
+                <QuizTag
+                  label={current.difficulty === 1 ? 'Fácil' : current.difficulty === 2 ? 'Médio' : 'Difícil'}
+                  color={current.difficulty === 1 ? '#388e3c' : current.difficulty === 2 ? '#f57c00' : '#c62828'}
+                />
+              )}
+              {current.source && (
+                <QuizTag label={current.source.toUpperCase()} color="#7b1fa2" />
+              )}
+            </XStack>
             <YStack gap="$4" ai="center">
-              <Text style={styles.issueText}>{current.issue}</Text>
+              <MathText fontSize={16} color="#1a1a1a" style={styles.issueText}>{current.issue}</MathText>
               {current.image_q && current.image_q !== 'null' && (
                 <View style={styles.image}>
                   {imageLoading ? (
@@ -211,19 +267,13 @@ const QuizInProgressScreen = () => {
                     userAnswer === alt.letter ? palette.lightBlue : palette.darkBlue
                   }
                 >
-                  <XStack f={1} ai="center" w="100%" px="$4">
-                    <Text fontWeight="bold" fontSize={18}>
-                      {alt.letter}
-                      {')  '}
+                  <XStack f={1} ai="flex-start" w="100%" px="$4" gap="$2">
+                    <Text color={palette.offWhite} fontWeight="bold" fontSize={18}>
+                      {alt.letter}{')'}
                     </Text>
-                    <Text
-                      color={selected ? palette.darkBlue : palette.offWhite}
-                      fontWeight="bold"
-                      fontSize={18}
-                      width="100%"
-                    >
+                    <MathText fontSize={16} color={palette.offWhite} style={{ flex: 1 }}>
                       {alt.text}
-                    </Text>
+                    </MathText>
                   </XStack>
                 </Button>
               ))}

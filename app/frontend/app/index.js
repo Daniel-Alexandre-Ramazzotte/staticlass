@@ -1,6 +1,17 @@
-import { View } from 'react-native';
+import { Redirect } from 'expo-router';
+import { ActivityIndicator, View } from 'react-native';
+import { useAuth } from 'app/context/AuthContext';
 
-// Root index — _layout.tsx handles auth redirects away from this screen.
 export default function Index() {
-  return <View />;
+  const { session, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#6200ee" />
+      </View>
+    );
+  }
+
+  return <Redirect href={session ? '/(tabs)/home' : '/(public)/login'} />;
 }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
-import { PersonalizarAccordion, Chapter } from 'app/components/CustomAccordion';
+import { PersonalizarAccordion, Chapter, Topic } from 'app/components/CustomAccordion';
 import { XStack, YStack, Text } from 'tamagui';
 import { palette, primaryFontA } from 'app/constants/style';
 import { AppButton } from 'app/components/AppButton';
@@ -14,17 +14,23 @@ export default function QuestionsScreen() {
   const { isWide, fs, pad, btnH, maxW } = useLayout();
   const [qtdQuestoes, setQtdQuestoes] = useState('5');
   const [chapters, setChapters] = useState<Chapter[]>([]);
-  const [chapterId, setChapterId] = useState<number | null>(null);
-  const [difficulty, setDifficulty] = useState<number | null>(null);
+  const [allTopics, setAllTopics] = useState<Topic[]>([]);
+  const [chapterIds, setChapterIds] = useState<number[]>([]);
+  const [topicIds, setTopicIds] = useState<number[]>([]);
+  const [difficulties, setDifficulties] = useState<number[]>([]);
+  const [sources, setSources] = useState<string[]>([]);
 
   useEffect(() => {
     api.get('/questions/chapters').then((res) => setChapters(res.data)).catch(() => {});
+    api.get('/questions/topics').then((res) => setAllTopics(res.data)).catch(() => {});
   }, []);
 
   const handleStartQuiz = () => {
     const params: Record<string, any> = { qtd: qtdQuestoes };
-    if (chapterId !== null) params.chapter_id = chapterId;
-    if (difficulty !== null) params.difficulty = difficulty;
+    if (chapterIds.length) params.chapter_id = chapterIds;
+    if (topicIds.length) params.topic_id = topicIds;
+    if (difficulties.length) params.difficulty = difficulties;
+    if (sources.length) params.source = sources;
     router.push({ pathname: '/(app)/QuizInProgressScreen', params });
   };
 
@@ -44,7 +50,6 @@ export default function QuestionsScreen() {
         </Text>
       </XStack>
 
-      {/* Em wide: centraliza o conteúdo numa coluna com largura máxima */}
       <YStack f={1} jc="center" ai="center" gap="$4" alignSelf="center" width="100%" maxWidth={maxW ?? '100%'} px={pad(16)}>
         <AppButton
           type="primary"
@@ -61,10 +66,15 @@ export default function QuestionsScreen() {
           num={qtdQuestoes}
           setNum={setQtdQuestoes}
           chapters={chapters}
-          chapterId={chapterId}
-          setChapterId={setChapterId}
-          difficulty={difficulty}
-          setDifficulty={setDifficulty}
+          chapterIds={chapterIds}
+          setChapterIds={setChapterIds}
+          topics={allTopics}
+          topicIds={topicIds}
+          setTopicIds={setTopicIds}
+          difficulties={difficulties}
+          setDifficulties={setDifficulties}
+          sources={sources}
+          setSources={setSources}
         />
       </YStack>
     </YStack>

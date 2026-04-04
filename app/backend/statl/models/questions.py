@@ -11,6 +11,7 @@ class Question(db.Model):
     image_s = db.Column(db.String(500), nullable=True)
     original_id = db.Column(db.String(50), nullable=True)
     section = db.Column(db.String(30), nullable=True)
+    source = db.Column(db.String(20), nullable=True)  # 'apostila' | 'concurso' | None
     difficulty = db.Column(db.SmallInteger, nullable=True)
     needs_fix = db.Column(db.Boolean, nullable=False, default=False)
     chapter_id = db.Column(db.Integer, db.ForeignKey("chapters.id"), nullable=True)

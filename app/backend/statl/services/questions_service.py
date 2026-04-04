@@ -3,6 +3,7 @@ import os
 
 from flask import current_app, jsonify
 
+from ..utils.normalize import normalize_numbering
 from ..repositories.questions_repository import (
     add_question_to_db,
     delete_question,
@@ -53,9 +54,23 @@ def check_answer(data):
     return jsonify({"message": "incorrect", "correct_answer": question.correct_answer})
 
 
+_VALID_SOURCES = {"apostila", "concurso", "avulsa", "vestibular", "enem"}
+
+
+def _normalize_source(value):
+    if value in (None, "", "null"):
+        return None
+    v = str(value).strip().lower()
+    if v not in _VALID_SOURCES:
+        raise ValueError(f"source inválido: use {sorted(_VALID_SOURCES)} ou deixe em branco")
+    return v
+
+
 def _normalize_alternatives(alternatives, correct_answer):
     if not isinstance(alternatives, list) or len(alternatives) < 2:
         raise ValueError("é necessário informar pelo menos duas alternativas")
+    if len(alternatives) > 5:
+        raise ValueError("máximo de 5 alternativas permitidas")
     normalized = []
     seen_letters = set()
     correct_letter = (correct_answer or "").upper()
@@ -63,7 +78,7 @@ def _normalize_alternatives(alternatives, correct_answer):
         if not isinstance(alternative, dict):
             raise ValueError("alternativas inválidas")
         letter = (alternative.get("letter") or "").strip().upper()
-        text = (alternative.get("text") or "").strip()
+        text = normalize_numbering((alternative.get("text") or "").strip())
         if not letter or not text:
             raise ValueError("cada alternativa precisa de letra e texto")
         if letter in seen_letters:
@@ -112,12 +127,13 @@ def _normalize_question_payload(data, professor_id=None):
         raise ValueError("issue e correct_answer são obrigatórios")
 
     normalized = {
-        "issue": issue,
+        "issue": normalize_numbering(issue),
         "correct_answer": correct_answer,
-        "solution": solution or None,
+        "solution": normalize_numbering(solution) or None,
         "image_q": data.get("image_q"),
         "image_s": data.get("image_s"),
         "section": (data.get("section") or "").strip() or None,
+        "source": _normalize_source(data.get("source")),
         "difficulty": _coerce_optional_int(data.get("difficulty")),
         "needs_fix": _coerce_optional_bool(data.get("needs_fix")),
         "chapter_id": _coerce_optional_int(data.get("chapter_id")),
@@ -155,6 +171,7 @@ def update_question_service(data):
             "image_q": data.get("image_q", current.image_q),
             "image_s": data.get("image_s", current.image_s),
             "section": data.get("section", current.section),
+            "source": data.get("source", current.source),
             "difficulty": data.get("difficulty", current.difficulty),
             "needs_fix": data.get("needs_fix", current.needs_fix),
             "chapter_id": data.get("chapter_id", current.chapter_id),
@@ -223,12 +240,13 @@ def delete_question_service(question_id: int):
         return jsonify({"error": str(e)}), 500
 
 
-def random_question_filtered(num, chapter_id=None, topic_id=None, difficulty=None):
+def random_question_filtered(num, chapter_id=None, topic_id=None, difficulty=None, source=None):
     result = get_random_question_filtered(
         num,
         chapter_id=chapter_id,
         topic_id=topic_id,
         difficulty=difficulty,
+        source=source,
     )
     output = []
     for q in result:

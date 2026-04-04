@@ -1,9 +1,9 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useMemo, useState } from 'react';
-import { Alert } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { XStack, YStack, Button, Text, ScrollView, Input } from 'tamagui';
 import { palette, primaryFontA } from 'app/constants/style';
-import { ChevronLeft, Pencil, Search, Trash2 } from 'lucide-react-native';
+import { ChevronLeft, Pencil, Search, Trash2, Check, X } from 'lucide-react-native';
 import { AppButton } from 'app/components/AppButton';
 import api from 'app/services/api';
 import { useAuth } from 'app/context/AuthContext';
@@ -22,84 +22,57 @@ export default function AlunoManager() {
   const [searchValue, setSearchValue] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
-  useEffect(() => {
-    if (isAuthLoading) {
-      return;
-    }
-
+  const fetchStudents = useCallback(async () => {
+    if (isAuthLoading) return;
     if (!userId) {
       setIsLoading(false);
       setErrorMessage('Usuario nao autenticado. Faca login novamente.');
       return;
     }
-
-    setIsLoading(true);
-
-    const fetchStudents = async () => {
-      try {
-        const result = await api.get('/users/admin/alunos');
-        setStudents(result.data as Student[]);
-        setErrorMessage(null);
-      } catch (error) {
-        console.error('Erro ao buscar alunos:', error);
-        setErrorMessage('Nao foi possivel carregar os alunos.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchStudents();
-  }, [userId, isAuthLoading]);
-
-  const reloadStudents = async () => {
     setIsLoading(true);
     try {
       const result = await api.get('/users/admin/alunos');
       setStudents(result.data as Student[]);
       setErrorMessage(null);
     } catch (error) {
-      console.error('Erro ao recarregar alunos:', error);
+      console.error('Erro ao buscar alunos:', error);
       setErrorMessage('Nao foi possivel carregar os alunos.');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userId, isAuthLoading]);
 
-  const handleDeleteStudent = (student: Student) => {
-    Alert.alert(
-      'Excluir aluno',
-      `Deseja remover ${student.name}?`,
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Excluir',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await api.delete(`/users/admin/alunos/${student.id}`);
-              await reloadStudents();
-            } catch (error: any) {
-              const apiMessage = error?.response?.data?.error;
-              setErrorMessage(apiMessage || 'Nao foi possivel excluir o aluno.');
-            }
-          },
-        },
-      ]
-    );
+  useEffect(() => {
+    fetchStudents();
+  }, [fetchStudents]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchStudents();
+    }, [fetchStudents])
+  );
+
+  const handleDeleteStudent = async (id: number) => {
+    try {
+      await api.delete(`/users/admin/alunos/${id}`);
+      setConfirmDeleteId(null);
+      await fetchStudents();
+    } catch (error: any) {
+      const apiMessage = error?.response?.data?.error;
+      setErrorMessage(apiMessage || 'Nao foi possivel excluir o aluno.');
+      setConfirmDeleteId(null);
+    }
   };
 
   const filteredStudents = useMemo(() => {
     const normalizedSearch = searchValue.trim().toLowerCase();
-
-    if (!normalizedSearch) {
-      return students;
-    }
-
+    if (!normalizedSearch) return students;
     return students.filter(
-      (student) =>
-        student.name.toLowerCase().includes(normalizedSearch) ||
-        student.email.toLowerCase().includes(normalizedSearch)
+      (s) =>
+        s.name.toLowerCase().includes(normalizedSearch) ||
+        s.email.toLowerCase().includes(normalizedSearch)
     );
   }, [searchValue, students]);
 
@@ -123,23 +96,12 @@ export default function AlunoManager() {
           onPress={() => router.back()}
           icon={<ChevronLeft color={palette.white} size={28} />}
         />
-        <Text
-          f={1}
-          color={palette.white}
-          fontSize="$8"
-          fontWeight="bold"
-          textAlign="center"
-          mr="$6"
-        >
+        <Text f={1} color={palette.white} fontSize="$8" fontWeight="bold" textAlign="center" mr="$6">
           Gerenciar Alunos
         </Text>
       </XStack>
 
-      <ScrollView
-        f={1}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 36 }}
-      >
+      <ScrollView f={1} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 36 }}>
         <YStack px="$4" pt="$7" pb="$4" ai="center" gap="$4">
           <AppButton
             width={240}
@@ -150,13 +112,7 @@ export default function AlunoManager() {
             backgroundColor="#3f6f92"
             onPress={() => router.push('/(admin)/AddAluno')}
           >
-            <Text
-              color={palette.offWhite}
-              fontFamily={primaryFontA}
-              fontSize={20}
-              lineHeight={20}
-              mt={2}
-            >
+            <Text color={palette.offWhite} fontFamily={primaryFontA} fontSize={20} lineHeight={20} mt={2}>
               Adicionar Aluno
             </Text>
           </AppButton>
@@ -197,41 +153,19 @@ export default function AlunoManager() {
             gap="$2"
           >
             {isLoading && (
-              <Text color="#24506e" textAlign="center" py="$2">
-                Carregando alunos...
-              </Text>
+              <Text color="#24506e" textAlign="center" py="$2">Carregando alunos...</Text>
             )}
-
             {!isLoading && errorMessage && (
-              <Text color="#8f1f1f" textAlign="center" py="$2">
-                {errorMessage}
-              </Text>
+              <Text color="#8f1f1f" textAlign="center" py="$2">{errorMessage}</Text>
             )}
-
             {!isLoading && !errorMessage && filteredStudents.length === 0 && (
-              <Text color="#24506e" textAlign="center" py="$2">
-                Nenhum aluno encontrado.
-              </Text>
+              <Text color="#24506e" textAlign="center" py="$2">Nenhum aluno encontrado.</Text>
             )}
 
-            {!isLoading &&
-              !errorMessage &&
-              filteredStudents.map((student) => (
-                <XStack
-                  key={student.id}
-                  ai="center"
-                  jc="space-between"
-                  gap="$3"
-                  mb="$2"
-                >
-                  <XStack
-                    backgroundColor="#4f7ea0"
-                    px="$2"
-                    py="$1"
-                    flex={1}
-                    minHeight={32}
-                    ai="center"
-                  >
+            {!isLoading && !errorMessage && filteredStudents.map((student) => (
+              <YStack key={student.id} mb="$2" gap="$1">
+                <XStack ai="center" jc="space-between" gap="$3">
+                  <XStack backgroundColor="#4f7ea0" px="$2" py="$1" flex={1} minHeight={32} ai="center">
                     <Text
                       color={palette.offWhite}
                       fontFamily={primaryFontA}
@@ -252,11 +186,7 @@ export default function AlunoManager() {
                       onPress={() =>
                         router.push({
                           pathname: '/(admin)/AddAluno',
-                          params: {
-                            id: String(student.id),
-                            name: student.name,
-                            email: student.email,
-                          },
+                          params: { id: String(student.id), name: student.name, email: student.email },
                         })
                       }
                       icon={<Pencil color="#3c6b89" size={20} />}
@@ -266,12 +196,37 @@ export default function AlunoManager() {
                       circular
                       backgroundColor="transparent"
                       pressStyle={{ opacity: 0.7 }}
-                      onPress={() => handleDeleteStudent(student)}
+                      onPress={() => setConfirmDeleteId(student.id)}
                       icon={<Trash2 color="#3c6b89" size={20} />}
                     />
                   </XStack>
                 </XStack>
-              ))}
+
+                {confirmDeleteId === student.id && (
+                  <XStack ai="center" gap="$2" backgroundColor="#fdecea" px="$2" py="$1" borderRadius={6}>
+                    <Text color="#8f1f1f" fontSize={13} flex={1}>Excluir {student.name}?</Text>
+                    <Button
+                      size="$2"
+                      backgroundColor={palette.red}
+                      borderRadius={6}
+                      onPress={() => handleDeleteStudent(student.id)}
+                      icon={<Check color="#fff" size={14} />}
+                    >
+                      <Text color="#fff" fontSize={12}>Confirmar</Text>
+                    </Button>
+                    <Button
+                      size="$2"
+                      backgroundColor="#aaa"
+                      borderRadius={6}
+                      onPress={() => setConfirmDeleteId(null)}
+                      icon={<X color="#fff" size={14} />}
+                    >
+                      <Text color="#fff" fontSize={12}>Cancelar</Text>
+                    </Button>
+                  </XStack>
+                )}
+              </YStack>
+            ))}
           </YStack>
         </YStack>
       </ScrollView>

@@ -11,9 +11,12 @@ import argparse
 import os
 import sqlite3
 from pathlib import Path
+from dotenv import load_dotenv
+from statl.utils.normalize import normalize_numbering
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
-_DEFAULT_DB = _SCRIPT_DIR.parent.parent.parent.parent / "Estatistica-Basica" / "banco_questoes" / "questoes.db"
+load_dotenv(_SCRIPT_DIR.parent / ".env")
+_DEFAULT_DB = _SCRIPT_DIR.parent.parent.parent / "banco_questoes" / "questoes.db"
 
 
 def _get_sqlite_data(sqlite_path: Path):
@@ -70,6 +73,10 @@ def run_migration(sqlite_path: Path):
         print(f"Importando {len(questions)} questões...")
         imported = skipped = 0
         for q in questions:
+            if not q["answer_key"]:
+                skipped += 1
+                continue
+
             exists = conn.execute(
                 text("SELECT id FROM questions WHERE original_id = :oid"),
                 {"oid": q["original_id"]},
@@ -92,9 +99,9 @@ def run_migration(sqlite_path: Path):
                     """
                 ),
                 {
-                    "issue": q["statement"],
+                    "issue": normalize_numbering(q["statement"]),
                     "correct_answer": q["answer_key"],
-                    "solution": q["explanation"] or "",
+                    "solution": normalize_numbering(q["explanation"] or ""),
                     "original_id": q["original_id"],
                     "section": q["section"],
                     "difficulty": q["difficulty"],
@@ -131,7 +138,7 @@ def run_migration(sqlite_path: Path):
                 {
                     "question_id": pg_qid,
                     "letter": alt["letter"],
-                    "text": alt["text"],
+                    "text": normalize_numbering(alt["text"]),
                     "is_correct": bool(alt["is_correct"]),
                 },
             )

@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request as flask_request
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import os
@@ -47,6 +47,22 @@ def create_app(testing: bool = False):
     app.config["JWT_SECRET_KEY"] = os.getenv("SECRET_KEY")
     
     CORS(app, origins='*')
+
+    @app.before_request
+    def handle_preflight():
+        if flask_request.method == 'OPTIONS':
+            res = jsonify({})
+            res.headers['Access-Control-Allow-Origin'] = '*'
+            res.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
+            res.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS, PATCH'
+            return res, 200
+
+    @app.after_request
+    def add_cors_headers(response):
+        response.headers['Access-Control-Allow-Origin'] = '*'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
+        response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS, PATCH'
+        return response
     jwt = JWTManager(app)
     login_manager.init_app(app)
     

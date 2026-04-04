@@ -1,6 +1,6 @@
 from ..repositories.resultado_repository import (
     salvar_resultado, incrementar_score,
-    buscar_historico, buscar_ranking,
+    buscar_historico, buscar_ranking, buscar_estatisticas,
     verificar_diaria, marcar_diaria,
 )
 
@@ -44,6 +44,26 @@ def buscar_historico_service(usuario_id):
         }
         for r in registros
     ]
+
+
+def buscar_estatisticas_service(usuario_id):
+    """Retorna estatísticas agregadas do aluno."""
+    r = buscar_estatisticas(usuario_id)
+    if not r:
+        return {
+            "total_quizzes": 0,
+            "total_acertos": 0,
+            "total_questoes": 0,
+            "media_pct": 0,
+            "capitulo_favorito": None,
+        }
+    return {
+        "total_quizzes":     int(r["total_quizzes"]),
+        "total_acertos":     int(r["total_acertos"]),
+        "total_questoes":    int(r["total_questoes"]),
+        "media_pct":         float(r["media_pct"] or 0),
+        "capitulo_favorito": r["capitulo_favorito"],
+    }
 
 
 def buscar_ranking_service():

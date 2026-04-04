@@ -48,6 +48,33 @@ def buscar_historico(usuario_id, limite=10):
     ).mappings().all()
 
 
+def buscar_estatisticas(usuario_id):
+    """Retorna estatísticas agregadas de quiz do usuário."""
+    return db.session.execute(
+        text("""
+            SELECT
+                COUNT(*)                                          AS total_quizzes,
+                COALESCE(SUM(qr.acertos), 0)                     AS total_acertos,
+                COALESCE(SUM(qr.total), 0)                       AS total_questoes,
+                ROUND(
+                    COALESCE(SUM(qr.acertos) * 100.0 / NULLIF(SUM(qr.total), 0), 0), 1
+                )                                                 AS media_pct,
+                (
+                    SELECT c2.name
+                    FROM quiz_resultados qr2
+                    JOIN chapters c2 ON c2.id = qr2.capitulo_id
+                    WHERE qr2.usuario_id = :uid AND qr2.capitulo_id IS NOT NULL
+                    GROUP BY c2.name
+                    ORDER BY COUNT(*) DESC
+                    LIMIT 1
+                )                                                 AS capitulo_favorito
+            FROM quiz_resultados qr
+            WHERE qr.usuario_id = :uid
+        """),
+        {"uid": usuario_id},
+    ).mappings().fetchone()
+
+
 def buscar_ranking(limite=10):
     """Retorna os alunos com maior pontuação, em ordem decrescente."""
     return db.session.execute(

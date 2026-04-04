@@ -1,8 +1,10 @@
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert } from 'react-native';
 import { XStack, YStack, Button, Text, ScrollView, Input } from 'tamagui';
 import { palette } from 'app/constants/style';
+import { CAP_NOMES } from 'app/constants/names';
 import { ChevronLeft, Eye, Pencil, Search, Trash2 } from 'lucide-react-native';
 import { useAuth } from 'app/context/AuthContext';
 import api from 'app/services/api';
@@ -45,19 +47,35 @@ type Chapter = {
   number: number;
 };
 
+type Topic = {
+  id: number;
+  name: string;
+  chapter_id: number;
+};
+
+function toggleN(arr: number[], val: number): number[] {
+  return arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val];
+}
+
 export default function QuestionsManager() {
   const router = useRouter();
   const { userId, isLoading: isAuthLoading, role } = useAuth();
   const [questions, setQuestions] = useState<QuestionListItem[]>([]);
   const [chapters, setChapters] = useState<Chapter[]>([]);
+  const [allTopics, setAllTopics] = useState<Topic[]>([]);
   const [searchValue, setSearchValue] = useState('');
   const [selectedQuestionId, setSelectedQuestionId] = useState<number | null>(null);
   const [selectedQuestion, setSelectedQuestion] = useState<QuestionDetail | null>(null);
-  const [chapterId, setChapterId] = useState<number | null>(null);
-  const [difficulty, setDifficulty] = useState<number | null>(null);
+  const [chapterIds, setChapterIds] = useState<number[]>([]);
+  const [topicIds, setTopicIds] = useState<number[]>([]);
+  const [difficulties, setDifficulties] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const topicsVisible = chapterIds.length > 0
+    ? allTopics.filter((t) => chapterIds.includes(t.chapter_id))
+    : allTopics;
 
   const fetchQuestions = useCallback(async () => {
     if (!userId) {
@@ -67,9 +85,10 @@ export default function QuestionsManager() {
     setIsLoading(true);
     try {
       if (role === 'admin') {
-        const params: Record<string, number> = { page: 1, per_page: 100 };
-        if (chapterId !== null) params.chapter_id = chapterId;
-        if (difficulty !== null) params.difficulty = difficulty;
+        const params: Record<string, any> = { page: 1, per_page: 100 };
+        if (chapterIds.length) params.chapter_id = chapterIds;
+        if (topicIds.length) params.topic_id = topicIds;
+        if (difficulties.length) params.difficulty = difficulties;
         const result = await api.get('/admin/questoes', { params });
         setQuestions(result.data.questoes as QuestionListItem[]);
       } else {
@@ -83,10 +102,11 @@ export default function QuestionsManager() {
     } finally {
       setIsLoading(false);
     }
-  }, [chapterId, difficulty, role, userId]);
+  }, [chapterIds, topicIds, difficulties, role, userId]);
 
   useEffect(() => {
     api.get('/questions/chapters').then((result) => setChapters(result.data as Chapter[])).catch(() => {});
+    api.get('/questions/topics').then((result) => setAllTopics(result.data as Topic[])).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -100,6 +120,14 @@ export default function QuestionsManager() {
     }
     fetchQuestions();
   }, [userId, isAuthLoading, fetchQuestions]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!isAuthLoading && userId) {
+        fetchQuestions();
+      }
+    }, [fetchQuestions, isAuthLoading, userId])
+  );
 
   const handleViewQuestion = async (questionId: number) => {
     if (selectedQuestionId === questionId) {
@@ -232,44 +260,69 @@ export default function QuestionsManager() {
 
           {role === 'admin' && (
             <XStack width="100%" maxWidth={420} gap="$2" flexWrap="wrap">
-              <Button
-                size="$2"
-                backgroundColor={chapterId === null ? palette.primaryBlue : palette.darkBlue}
-                color={palette.offWhite}
-                onPress={() => setChapterId(null)}
-              >
-                Todos capítulos
-              </Button>
               {chapters.map((chapter) => (
                 <Button
                   key={chapter.id}
                   size="$2"
-                  backgroundColor={chapterId === chapter.id ? palette.primaryBlue : palette.darkBlue}
+                  backgroundColor={chapterIds.includes(chapter.id) ? palette.primaryBlue : palette.darkBlue}
                   color={palette.offWhite}
-                  onPress={() => setChapterId(chapterId === chapter.id ? null : chapter.id)}
+                  onPress={() => setChapterIds((ids) => toggleN(ids, chapter.id))}
                 >
-                  {`Cap. ${chapter.number}`}
+                  {CAP_NOMES[chapter.number] ?? `Cap. ${chapter.number}`}
                 </Button>
               ))}
-              <Button
-                size="$2"
-                backgroundColor={difficulty === null ? palette.primaryGreen : palette.darkBlue}
-                color={palette.offWhite}
-                onPress={() => setDifficulty(null)}
-              >
-                Todas dificuldades
-              </Button>
+              {chapterIds.length > 0 && (
+                <Button size="$2" backgroundColor={palette.red} color={palette.offWhite}
+                  onPress={() => { setChapterIds([]); setTopicIds([]); }}>
+                  ✕ Cap.
+                </Button>
+              )}
+
+              {topicsVisible.length > 0 && topicsVisible.map((topic) => (
+                <Button
+                  key={topic.id}
+                  size="$2"
+                  backgroundColor={topicIds.includes(topic.id) ? palette.primaryBlue : '#3a6a8c'}
+                  color={palette.offWhite}
+                  onPress={() => setTopicIds((ids) => toggleN(ids, topic.id))}
+                >
+                  {topic.name}
+                </Button>
+              ))}
+              {topicIds.length > 0 && (
+                <Button size="$2" backgroundColor={palette.red} color={palette.offWhite}
+                  onPress={() => setTopicIds([])}>
+                  ✕ Top.
+                </Button>
+              )}
+
               {[1, 2, 3].map((level) => (
                 <Button
                   key={level}
                   size="$2"
-                  backgroundColor={difficulty === level ? palette.primaryGreen : palette.darkBlue}
+                  backgroundColor={difficulties.includes(level) ? palette.primaryGreen : palette.darkBlue}
                   color={palette.offWhite}
-                  onPress={() => setDifficulty(difficulty === level ? null : level)}
+                  onPress={() => setDifficulties((ds) => toggleN(ds, level))}
                 >
                   {level === 1 ? 'Fácil' : level === 2 ? 'Médio' : 'Difícil'}
                 </Button>
               ))}
+              {difficulties.length > 0 && (
+                <Button size="$2" backgroundColor={palette.red} color={palette.offWhite}
+                  onPress={() => setDifficulties([])}>
+                  ✕ Dif.
+                </Button>
+              )}
+
+              {(chapterIds.length > 0 || topicIds.length > 0 || difficulties.length > 0) && (
+                <AppButton
+                  backgroundColor={palette.primaryBlue}
+                  onPress={fetchQuestions}
+                  style={{ marginTop: 4, width: '100%' }}
+                >
+                  Aplicar filtros
+                </AppButton>
+              )}
             </XStack>
           )}
 

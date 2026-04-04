@@ -16,7 +16,8 @@ from ..services.user_service import (
     update_user_service,
 )
 from ..services.resultado_service import (
-    salvar_resultado_service, buscar_historico_service, buscar_ranking_service,
+    salvar_resultado_service, buscar_historico_service,
+    buscar_ranking_service, buscar_estatisticas_service,
 )
 
 bp = Blueprint('users', __name__, url_prefix='/users')
@@ -83,14 +84,19 @@ def list_professors():
 @bp.route('/admin/professors', methods=['POST'])
 @require_role('admin')
 def create_professor_v2():
-    result, error, status = create_managed_user_service(request.json, 'professor')
-    if error:
-        return error, status
-    return jsonify({
-        "message": "professor criado com sucesso",
-        "id": result["id"],
-        "temporary_password": result["temporary_password"],
-    }), 201
+    from flask import current_app
+    try:
+        result, error, status = create_managed_user_service(request.json, 'professor')
+        if error:
+            return error, status
+        return jsonify({
+            "message": "professor criado com sucesso",
+            "id": result["id"],
+            "temporary_password": result["temporary_password"],
+        }), 201
+    except Exception as e:
+        current_app.logger.exception("Erro ao criar professor")
+        return jsonify({"error": str(e)}), 500
 
 
 @bp.route('/admin/professors/<int:user_id>', methods=['PUT'])
@@ -164,6 +170,14 @@ def get_ranking():
 
 
 # ─── Histórico e Resultado do Quiz ──────────────────────────────────────────
+
+@bp.route('/estatisticas', methods=['GET'])
+@jwt_required()
+def get_estatisticas():
+    """Retorna estatísticas agregadas de quiz do aluno logado."""
+    usuario_id = get_jwt_identity()
+    return jsonify(buscar_estatisticas_service(usuario_id)), 200
+
 
 @bp.route('/historico', methods=['GET'])
 @jwt_required()

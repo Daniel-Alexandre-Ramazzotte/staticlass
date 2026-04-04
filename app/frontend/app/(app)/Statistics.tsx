@@ -8,7 +8,14 @@ import { palette as paletaEstatica, primaryFontA } from 'app/constants/style';
 import { useTema } from '../../src/context/ThemeContext';
 import api from 'app/services/api';
 
-// Tipo que representa uma tentativa de quiz salva no backend
+type Estatisticas = {
+  total_quizzes:     number;
+  total_acertos:     number;
+  total_questoes:    number;
+  media_pct:         number;
+  capitulo_favorito: string | null;
+};
+
 type Tentativa = {
   id:          number;
   acertos:     number;
@@ -29,24 +36,58 @@ function formatarData(isoString: string): string {
   return data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
+function CardResumo({
+  label,
+  valor,
+  cor,
+  palette,
+}: {
+  label: string;
+  valor: string;
+  cor: string;
+  palette: any;
+}) {
+  return (
+    <YStack
+      f={1}
+      backgroundColor={palette.white}
+      borderRadius={12}
+      p="$3"
+      ai="center"
+      style={{ elevation: 2, shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 4 }}
+    >
+      <Text fontSize={22} fontWeight="900" color={cor}>{valor}</Text>
+      <Text fontSize={11} color="rgba(0,0,0,0.5)" textAlign="center" mt="$1">{label}</Text>
+    </YStack>
+  );
+}
+
 export default function StatisticsScreen() {
   const router = useRouter();
   const { paleta: palette } = useTema();
-  const [historico, setHistorico]    = useState<Tentativa[]>([]);
-  const [carregando, setCarregando]  = useState(true);
-  const [erro, setErro]              = useState<string | null>(null);
 
-  // Busca o histórico sempre que a tela recebe foco
-  const buscarHistorico = useCallback(() => {
+  const [stats, setStats]         = useState<Estatisticas | null>(null);
+  const [historico, setHistorico] = useState<Tentativa[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro]            = useState<string | null>(null);
+
+  const buscarDados = useCallback(() => {
     setCarregando(true);
     setErro(null);
-    api.get('/users/historico')
-      .then((res) => setHistorico(res.data))
-      .catch(() => setErro('Não foi possível carregar o histórico.'))
+
+    Promise.all([
+      api.get('/users/estatisticas'),
+      api.get('/users/historico'),
+    ])
+      .then(([resStats, resHist]) => {
+        setStats(resStats.data);
+        setHistorico(resHist.data);
+      })
+      .catch(() => setErro('Não foi possível carregar as estatísticas.'))
       .finally(() => setCarregando(false));
   }, []);
 
-  useFocusEffect(buscarHistorico);
+  useFocusEffect(buscarDados);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: palette.offWhite }}>
@@ -64,11 +105,10 @@ export default function StatisticsScreen() {
           Estatísticas
         </Text>
         <Text color="rgba(255,255,255,0.75)" fontSize={13}>
-          Últimas 10 tentativas
+          Seu desempenho no Staticlass
         </Text>
       </YStack>
 
-      {/* Conteúdo */}
       {carregando ? (
         <YStack f={1} jc="center" ai="center">
           <ActivityIndicator size="large" color={palette.primaryBlue} />
@@ -77,54 +117,119 @@ export default function StatisticsScreen() {
         <YStack f={1} jc="center" ai="center" px="$6">
           <Text color={palette.red} fontSize={15} textAlign="center">{erro}</Text>
         </YStack>
-      ) : historico.length === 0 ? (
-        <YStack f={1} jc="center" ai="center" px="$6">
-          <Text fontSize={16} textAlign="center" color={palette.offBlack}>
-            Nenhuma tentativa registrada ainda.{'\n'}Complete um quiz para ver seu histórico!
-          </Text>
-        </YStack>
       ) : (
         <ScrollView contentContainerStyle={{ padding: 16, gap: 12 }}>
-          {historico.map((tentativa, indice) => {
-            const porcentagem = Math.round((tentativa.acertos / tentativa.total) * 100);
-            const corPlacar   = porcentagem >= 70 ? palette.primaryGreen : palette.red;
 
-            return (
-              <YStack
-                key={tentativa.id}
-                backgroundColor={palette.white}
-                borderRadius={12}
-                px="$4"
-                py="$3"
-                style={{ elevation: 2, shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 4 }}
-              >
-                <XStack jc="space-between" ai="center" mb="$1">
-                  <Text fontSize={13} color="rgba(0,0,0,0.5)">
-                    #{indice + 1} — {formatarData(tentativa.criado_em)}
-                  </Text>
-                  <Text fontSize={20} fontWeight="bold" color={corPlacar}>
-                    {tentativa.acertos}/{tentativa.total}
-                  </Text>
-                </XStack>
+          {/* Cards de resumo */}
+          {stats && (
+            <>
+              <XStack gap="$3" mb="$1">
+                <CardResumo
+                  label="Quizzes feitos"
+                  valor={String(stats.total_quizzes)}
+                  cor={palette.primaryBlue}
+                  palette={palette}
+                />
+                <CardResumo
+                  label="Média de acertos"
+                  valor={`${stats.media_pct}%`}
+                  cor={stats.media_pct >= 70 ? palette.primaryGreen : palette.red}
+                  palette={palette}
+                />
+              </XStack>
 
-                <XStack gap="$3" flexWrap="wrap">
-                  {tentativa.capitulo && (
-                    <Text fontSize={12} color={palette.primaryBlue} fontWeight="bold">
-                      📚 {tentativa.capitulo}
+              <XStack gap="$3" mb="$3">
+                <CardResumo
+                  label="Questões respondidas"
+                  valor={String(stats.total_questoes)}
+                  cor={palette.darkBlue}
+                  palette={palette}
+                />
+                <CardResumo
+                  label="Total de acertos"
+                  valor={String(stats.total_acertos)}
+                  cor={palette.primaryGreen}
+                  palette={palette}
+                />
+              </XStack>
+
+              {stats.capitulo_favorito && (
+                <YStack
+                  backgroundColor={palette.primaryBlue}
+                  borderRadius={12}
+                  px="$4"
+                  py="$3"
+                  mb="$3"
+                  flexDirection="row"
+                  ai="center"
+                  gap="$2"
+                >
+                  <Text fontSize={18}>📚</Text>
+                  <YStack>
+                    <Text color="rgba(255,255,255,0.75)" fontSize={11}>Capítulo mais praticado</Text>
+                    <Text color={palette.white} fontSize={15} fontWeight="bold">
+                      {stats.capitulo_favorito}
                     </Text>
-                  )}
-                  {tentativa.dificuldade && (
-                    <Text fontSize={12} color={palette.darkBlue}>
-                      🎯 {ROTULO_DIFICULDADE[tentativa.dificuldade] ?? tentativa.dificuldade}
+                  </YStack>
+                </YStack>
+              )}
+            </>
+          )}
+
+          {/* Histórico */}
+          <Text fontSize={14} fontWeight="bold" color={palette.darkBlue} mb="$1">
+            Últimas tentativas
+          </Text>
+
+          {historico.length === 0 ? (
+            <YStack jc="center" ai="center" py="$6">
+              <Text fontSize={15} textAlign="center" color={palette.offBlack}>
+                Nenhuma tentativa ainda.{'\n'}Complete um quiz para ver seu histórico!
+              </Text>
+            </YStack>
+          ) : (
+            historico.map((tentativa, indice) => {
+              const porcentagem = Math.round((tentativa.acertos / tentativa.total) * 100);
+              const corPlacar   = porcentagem >= 70 ? palette.primaryGreen : palette.red;
+
+              return (
+                <YStack
+                  key={tentativa.id}
+                  backgroundColor={palette.white}
+                  borderRadius={12}
+                  px="$4"
+                  py="$3"
+                  mb="$2"
+                  style={{ elevation: 2, shadowColor: '#000', shadowOpacity: 0.07, shadowRadius: 4 }}
+                >
+                  <XStack jc="space-between" ai="center" mb="$1">
+                    <Text fontSize={13} color="rgba(0,0,0,0.5)">
+                      #{indice + 1} — {formatarData(tentativa.criado_em)}
                     </Text>
-                  )}
-                  <Text fontSize={12} color={corPlacar} fontWeight="bold">
-                    {porcentagem}% de acerto
-                  </Text>
-                </XStack>
-              </YStack>
-            );
-          })}
+                    <Text fontSize={20} fontWeight="bold" color={corPlacar}>
+                      {tentativa.acertos}/{tentativa.total}
+                    </Text>
+                  </XStack>
+
+                  <XStack gap="$3" flexWrap="wrap">
+                    {tentativa.capitulo && (
+                      <Text fontSize={12} color={palette.primaryBlue} fontWeight="bold">
+                        📚 {tentativa.capitulo}
+                      </Text>
+                    )}
+                    {tentativa.dificuldade && (
+                      <Text fontSize={12} color={palette.darkBlue}>
+                        🎯 {ROTULO_DIFICULDADE[tentativa.dificuldade] ?? tentativa.dificuldade}
+                      </Text>
+                    )}
+                    <Text fontSize={12} color={corPlacar} fontWeight="bold">
+                      {porcentagem}% de acerto
+                    </Text>
+                  </XStack>
+                </YStack>
+              );
+            })
+          )}
         </ScrollView>
       )}
 

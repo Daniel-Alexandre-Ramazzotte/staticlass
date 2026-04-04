@@ -4,20 +4,22 @@
  *   1. Visualização — questões com filtros e layouts (ENEM, Vestibular, Avulsa)
  *   2. Banco de dados — SQL viewer read-only
  */
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   ScrollView, View, TextInput, TouchableOpacity,
-  ActivityIndicator, StyleSheet, Platform,
+  ActivityIndicator, StyleSheet, Platform, Alert,
 } from 'react-native';
 import { YStack, XStack, Text } from 'tamagui';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, Stack } from 'expo-router';
-import { ChevronLeft } from '@tamagui/lucide-icons';
+import { ChevronLeft, Pencil, Trash2, Search } from '@tamagui/lucide-icons';
 import { palette, primaryFontA } from 'app/constants/style';
 import api from 'app/services/api';
 import { useLayout } from '../../src/constants/layout';
 
 type Alternativa = { letter: string; text: string; is_correct: boolean };
+type Capitulo = { id: number; name: string; number: number };
+type Topico = { id: number; name: string; chapter_id: number };
 type Questao = {
   id: number;
   enunciado: string;
@@ -38,8 +40,12 @@ type ResultadoSQL = {
   limitado: boolean;
 };
 
-const LAYOUTS = ['avulsa', 'enem', 'vestibular'] as const;
-type TipoLayout = typeof LAYOUTS[number];
+const CAP_NOMES: Record<number, string> = {
+  1: 'Estatística Básica',
+  2: 'Probabilidade',
+  3: 'Introdução à Inferência',
+  4: 'Introdução à Regressão',
+};
 
 const DIFICULDADES = [
   { label: 'Todas', value: null },
@@ -59,22 +65,52 @@ function BadgeDificuldade({ dif }: { dif: number | null }) {
   );
 }
 
-function QuestaoAvulsa({ q, num }: { q: Questao; num: number }) {
+function fonteLabel(source: string | null): string {
+  if (!source || source === 'avulsa') return 'Apostila';
+  if (source === 'apostila') return 'Apostila';
+  if (source === 'concurso') return 'Concurso';
+  if (source === 'enem') return 'ENEM';
+  if (source === 'vestibular') return 'Vestibular';
+  return source;
+}
+
+function QuestaoVestibular({ q, num }: { q: Questao; num: number }) {
+  const capNome = q.capitulo_numero ? CAP_NOMES[q.capitulo_numero] ?? q.capitulo : q.capitulo;
   return (
-    <View style={s.cartao}>
-      <XStack jc="space-between" ai="center" mb={8}>
-        <Text fontSize={13} color="#888">Questão {num} — #{q.id}</Text>
-        <BadgeDificuldade dif={q.dificuldade} />
+    <View style={[s.cartao, s.cartaoVest]}>
+      <XStack ai="center" jc="space-between" mb={4}>
+        <Text fontSize={13} color={palette.darkBlue} fontWeight="bold">
+          Questão {num} — <Text fontSize={12} color="#888">#{q.id}</Text>
+        </Text>
+        <XStack gap={6} ai="center">
+          <BadgeDificuldade dif={q.dificuldade} />
+        </XStack>
       </XStack>
-      {q.capitulo && <Text fontSize={12} color={palette.primaryBlue} mb={4}>📚 {q.capitulo}{q.topico ? ` › ${q.topico}` : ''}</Text>}
-      <Text fontSize={15} color={palette.offBlack} mb={12} style={{ lineHeight: 22 }}>{q.enunciado}</Text>
+
+      <XStack gap={8} mb={10} flexWrap="wrap">
+        {capNome && (
+          <Text fontSize={11} color={palette.primaryBlue} fontWeight="bold">📚 {capNome}</Text>
+        )}
+        {q.topico && (
+          <Text fontSize={11} color="#555">› {q.topico}</Text>
+        )}
+        {q.layout && (
+          <Text fontSize={11} color="#999">· {fonteLabel(q.layout)}</Text>
+        )}
+      </XStack>
+
+      <Text fontSize={15} color={palette.offBlack} mb={14} style={{ lineHeight: 24 }}>{q.enunciado}</Text>
+
       {q.alternativas.map((a) => (
-        <View key={a.letter} style={[s.alt, a.is_correct && s.altCorreta]}>
-          <Text fontSize={14} fontWeight={a.is_correct ? 'bold' : 'normal'} color={a.is_correct ? '#2e7d32' : palette.offBlack}>
-            {a.letter}) {a.text}
+        <View key={a.letter} style={[s.altVest, a.is_correct && s.altVestCorreta]}>
+          <Text fontSize={14} color={a.is_correct ? palette.primaryGreen : palette.offBlack}>
+            ({a.letter}) {a.text}
           </Text>
         </View>
       ))}
+
+      {q.secao && <Text fontSize={11} color="#aaa" mt={8}>Seção: {q.secao}</Text>}
+
       {q.solucao && (
         <View style={s.solucao}>
           <Text fontSize={12} color="#555" fontWeight="bold">Resolução:</Text>
@@ -85,73 +121,51 @@ function QuestaoAvulsa({ q, num }: { q: Questao; num: number }) {
   );
 }
 
-function QuestaoENEM({ q, num }: { q: Questao; num: number }) {
-  return (
-    <View style={[s.cartao, s.cartaoEnem]}>
-      <View style={s.cabecalhoEnem}>
-        <Text color="#fff" fontSize={13} fontWeight="bold">ENEM — Estatística Básica</Text>
-        <Text color="rgba(255,255,255,0.8)" fontSize={12}>{q.capitulo ?? 'Geral'}</Text>
-      </View>
-      <XStack ai="center" gap={8} my={8}>
-        <View style={s.numEnem}><Text color="#fff" fontSize={15} fontWeight="900">{String(num).padStart(2, '0')}</Text></View>
-        <BadgeDificuldade dif={q.dificuldade} />
-      </XStack>
-      <Text fontSize={15} color={palette.offBlack} mb={12} style={{ lineHeight: 22 }}>{q.enunciado}</Text>
-      {q.alternativas.map((a) => (
-        <View key={a.letter} style={[s.altEnem, a.is_correct && s.altEnemCorreta]}>
-          <View style={s.letraCirculo}><Text fontSize={13} fontWeight="bold" color={a.is_correct ? '#fff' : palette.darkBlue}>{a.letter}</Text></View>
-          <Text fontSize={14} color={a.is_correct ? '#2e7d32' : palette.offBlack} f={1}>{a.text}</Text>
-        </View>
-      ))}
-    </View>
-  );
-}
+const FONTES = [
+  { label: 'Apostila', value: 'apostila' },
+  { label: 'Concurso', value: 'concurso' },
+  { label: 'Vestibular', value: 'vestibular' },
+  { label: 'ENEM', value: 'enem' },
+];
 
-function QuestaoVestibular({ q, num }: { q: Questao; num: number }) {
-  return (
-    <View style={[s.cartao, s.cartaoVest]}>
-      <XStack ai="center" jc="space-between" mb={8}>
-        <Text fontSize={13} color={palette.darkBlue} fontWeight="bold">
-          Questão {num}
-        </Text>
-        <XStack gap={6}>
-          {q.topico && <Text fontSize={11} color="#888">{q.topico}</Text>}
-          <BadgeDificuldade dif={q.dificuldade} />
-        </XStack>
-      </XStack>
-      <Text fontSize={15} color={palette.offBlack} mb={14} style={{ lineHeight: 24, fontStyle: 'italic' }}>{q.enunciado}</Text>
-      {q.alternativas.map((a) => (
-        <View key={a.letter} style={[s.altVest, a.is_correct && s.altVestCorreta]}>
-          <Text fontSize={14} color={a.is_correct ? palette.primaryGreen : palette.offBlack}>
-            ({a.letter}) {a.text}
-          </Text>
-        </View>
-      ))}
-      {q.secao && <Text fontSize={11} color="#aaa" mt={8}>Seção: {q.secao}</Text>}
-    </View>
-  );
+function toggleN(arr: number[], val: number): number[] {
+  return arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val];
 }
-
-function renderQuestao(q: Questao, idx: number, layout: TipoLayout) {
-  const num = idx + 1;
-  if (layout === 'enem') return <QuestaoENEM key={q.id} q={q} num={num} />;
-  if (layout === 'vestibular') return <QuestaoVestibular key={q.id} q={q} num={num} />;
-  return <QuestaoAvulsa key={q.id} q={q} num={num} />;
+function toggleS(arr: string[], val: string): string[] {
+  return arr.includes(val) ? arr.filter((x) => x !== val) : [...arr, val];
 }
 
 function AbaVisualizador() {
   const { maxW, fs } = useLayout();
-  const [layout, setLayout] = useState<TipoLayout>('avulsa');
-  const [dificuldade, setDif] = useState<number | null>(null);
+  const router = useRouter();
+  const [capituloIds, setCapIds] = useState<number[]>([]);
+  const [topicoIds, setTopIds] = useState<number[]>([]);
+  const [dificuldades, setDifs] = useState<number[]>([]);
+  const [fontes, setFontes] = useState<string[]>([]);
+  const [capitulos, setCapitulos] = useState<Capitulo[]>([]);
+  const [todosTopicos, setTodosTopicos] = useState<Topico[]>([]);
   const [questoes, setQuestoes] = useState<Questao[]>([]);
   const [carregando, setCarreg] = useState(false);
   const [pagina, setPagina] = useState(1);
   const [totalPages, setTotalPag] = useState(1);
+  const [buscaId, setBuscaId] = useState('');
+
+  useEffect(() => {
+    api.get('/questions/chapters').then((r) => setCapitulos(r.data as Capitulo[])).catch(() => {});
+    api.get('/questions/topics').then((r) => setTodosTopicos(r.data as Topico[])).catch(() => {});
+  }, []);
+
+  const topicosVisiveis = capituloIds.length > 0
+    ? todosTopicos.filter((t) => capituloIds.includes(t.chapter_id))
+    : todosTopicos;
 
   const buscar = useCallback((pag = 1) => {
     setCarreg(true);
-    const params: any = { layout, page: pag, per_page: 20 };
-    if (dificuldade) params.difficulty = dificuldade;
+    const params: any = { page: pag, per_page: 20 };
+    if (dificuldades.length) params.difficulty = dificuldades;
+    if (capituloIds.length) params.chapter_id = capituloIds;
+    if (topicoIds.length) params.topic_id = topicoIds;
+    if (fontes.length) params.source = fontes;
     api.get('/admin/questoes', { params })
       .then((r) => {
         setQuestoes(r.data.questoes);
@@ -159,30 +173,96 @@ function AbaVisualizador() {
         setPagina(pag);
       })
       .finally(() => setCarreg(false));
-  }, [layout, dificuldade]);
+  }, [dificuldades, capituloIds, topicoIds, fontes]);
+
+  const handleDelete = (q: Questao) => {
+    Alert.alert('Excluir questão', `Excluir questão #${q.id}?`, [
+      { text: 'Cancelar', style: 'cancel' },
+      {
+        text: 'Excluir', style: 'destructive',
+        onPress: () => {
+          api.delete(`/questions/${q.id}`)
+            .then(() => buscar(pagina))
+            .catch(() => Alert.alert('Erro', 'Não foi possível excluir.'));
+        },
+      },
+    ]);
+  };
+
+  const questoesFiltradas = buscaId.trim()
+    ? questoes.filter((q) => String(q.id).includes(buscaId.trim()))
+    : questoes;
 
   return (
     <ScrollView contentContainerStyle={{ padding: 16, alignItems: 'center' }}>
       <View style={{ width: '100%', maxWidth: maxW ?? 860 }}>
         <View style={s.filtrosBox}>
-          <Text fontSize={fs(13)} color={palette.darkBlue} fontWeight="bold" mb={6}>Layout de exibição</Text>
+          <Text fontSize={fs(13)} color={palette.darkBlue} fontWeight="bold" mb={6}>
+            Capítulo {capituloIds.length > 0 && <Text fontSize={fs(11)} color={palette.primaryBlue}> ({capituloIds.length} selecionado(s))</Text>}
+          </Text>
           <XStack gap={8} mb={12} flexWrap="wrap">
-            {LAYOUTS.map((l) => (
-              <TouchableOpacity key={l} onPress={() => setLayout(l)} style={[s.chip, layout === l && s.chipAtivo]}>
-                <Text fontSize={fs(13)} color={layout === l ? '#fff' : palette.darkBlue} fontWeight="bold">
-                  {l.toUpperCase()}
-                </Text>
+            {capitulos.map((c) => (
+              <TouchableOpacity key={c.id} onPress={() => setCapIds((ids) => toggleN(ids, c.id))} style={[s.chip, capituloIds.includes(c.id) && s.chipAtivo]}>
+                <Text fontSize={fs(13)} color={capituloIds.includes(c.id) ? '#fff' : palette.darkBlue}>{CAP_NOMES[c.number] ?? `Cap. ${c.number}`}</Text>
               </TouchableOpacity>
             ))}
+            {capituloIds.length > 0 && (
+              <TouchableOpacity onPress={() => { setCapIds([]); setTopIds([]); }} style={s.chipLimpar}>
+                <Text fontSize={fs(12)} color={palette.red}>✕ Limpar</Text>
+              </TouchableOpacity>
+            )}
           </XStack>
 
-          <Text fontSize={fs(13)} color={palette.darkBlue} fontWeight="bold" mb={6}>Dificuldade</Text>
+          {topicosVisiveis.length > 0 && (
+            <>
+              <Text fontSize={fs(13)} color={palette.darkBlue} fontWeight="bold" mb={6}>
+                Tópico {topicoIds.length > 0 && <Text fontSize={fs(11)} color={palette.primaryBlue}> ({topicoIds.length} selecionado(s))</Text>}
+              </Text>
+              <XStack gap={8} mb={12} flexWrap="wrap">
+                {topicosVisiveis.map((t) => (
+                  <TouchableOpacity key={t.id} onPress={() => setTopIds((ids) => toggleN(ids, t.id))} style={[s.chip, topicoIds.includes(t.id) && s.chipAtivo]}>
+                    <Text fontSize={fs(12)} color={topicoIds.includes(t.id) ? '#fff' : palette.darkBlue}>{t.name}</Text>
+                  </TouchableOpacity>
+                ))}
+                {topicoIds.length > 0 && (
+                  <TouchableOpacity onPress={() => setTopIds([])} style={s.chipLimpar}>
+                    <Text fontSize={fs(12)} color={palette.red}>✕ Limpar</Text>
+                  </TouchableOpacity>
+                )}
+              </XStack>
+            </>
+          )}
+
+          <Text fontSize={fs(13)} color={palette.darkBlue} fontWeight="bold" mb={6}>
+            Dificuldade {dificuldades.length > 0 && <Text fontSize={fs(11)} color={palette.primaryBlue}> ({dificuldades.length} selecionada(s))</Text>}
+          </Text>
           <XStack gap={8} mb={12} flexWrap="wrap">
-            {DIFICULDADES.map((d) => (
-              <TouchableOpacity key={String(d.value)} onPress={() => setDif(d.value)} style={[s.chip, dificuldade === d.value && s.chipAtivo]}>
-                <Text fontSize={fs(13)} color={dificuldade === d.value ? '#fff' : palette.darkBlue}>{d.label}</Text>
+            {DIFICULDADES.filter((d) => d.value !== null).map((d) => (
+              <TouchableOpacity key={String(d.value)} onPress={() => setDifs((ds) => toggleN(ds, d.value as number))} style={[s.chip, dificuldades.includes(d.value as number) && s.chipAtivo]}>
+                <Text fontSize={fs(13)} color={dificuldades.includes(d.value as number) ? '#fff' : palette.darkBlue}>{d.label}</Text>
               </TouchableOpacity>
             ))}
+            {dificuldades.length > 0 && (
+              <TouchableOpacity onPress={() => setDifs([])} style={s.chipLimpar}>
+                <Text fontSize={fs(12)} color={palette.red}>✕ Limpar</Text>
+              </TouchableOpacity>
+            )}
+          </XStack>
+
+          <Text fontSize={fs(13)} color={palette.darkBlue} fontWeight="bold" mb={6}>
+            Fonte {fontes.length > 0 && <Text fontSize={fs(11)} color={palette.primaryBlue}> ({fontes.length} selecionada(s))</Text>}
+          </Text>
+          <XStack gap={8} mb={12} flexWrap="wrap">
+            {FONTES.map((f) => (
+              <TouchableOpacity key={f.value} onPress={() => setFontes((fs_) => toggleS(fs_, f.value))} style={[s.chip, fontes.includes(f.value) && s.chipAtivo]}>
+                <Text fontSize={fs(13)} color={fontes.includes(f.value) ? '#fff' : palette.darkBlue}>{f.label}</Text>
+              </TouchableOpacity>
+            ))}
+            {fontes.length > 0 && (
+              <TouchableOpacity onPress={() => setFontes([])} style={s.chipLimpar}>
+                <Text fontSize={fs(12)} color={palette.red}>✕ Limpar</Text>
+              </TouchableOpacity>
+            )}
           </XStack>
 
           <TouchableOpacity style={s.btnBuscar} onPress={() => buscar(1)}>
@@ -190,9 +270,39 @@ function AbaVisualizador() {
           </TouchableOpacity>
         </View>
 
+        {/* Busca por número */}
+        <View style={s.buscaIdBox}>
+          <Search color={palette.darkBlue} size={16} style={{ marginRight: 6 }} />
+          <TextInput
+            value={buscaId}
+            onChangeText={setBuscaId}
+            placeholder="Filtrar por nº da questão..."
+            placeholderTextColor="#aaa"
+            keyboardType="numeric"
+            style={s.buscaIdInput}
+          />
+        </View>
+
         {carregando && <ActivityIndicator color={palette.primaryBlue} size="large" style={{ marginTop: 24 }} />}
 
-        {questoes.map((q, i) => renderQuestao(q, i + (pagina - 1) * 20, layout))}
+        {questoesFiltradas.map((q, i) => (
+          <View key={q.id}>
+            <QuestaoVestibular q={q} num={i + (pagina - 1) * 20 + 1} />
+            <XStack gap={8} mb={8} mt={-8} jc="flex-end" px={4}>
+              <TouchableOpacity
+                style={s.acaoBtnEditar}
+                onPress={() => router.push({ pathname: '/(professor)/AddNewQuestion', params: { id: String(q.id) } })}
+              >
+                <Pencil color="#fff" size={14} />
+                <Text color="#fff" fontSize={12} fontWeight="bold" ml={4}>Editar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={s.acaoBtnExcluir} onPress={() => handleDelete(q)}>
+                <Trash2 color="#fff" size={14} />
+                <Text color="#fff" fontSize={12} fontWeight="bold" ml={4}>Excluir</Text>
+              </TouchableOpacity>
+            </XStack>
+          </View>
+        ))}
 
         {questoes.length > 0 && (
           <XStack jc="center" gap={12} mt={16} mb={32}>
@@ -355,6 +465,11 @@ const s = StyleSheet.create({
   filtrosBox: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 16, elevation: 2 },
   chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: palette.darkBlue, backgroundColor: '#f0f4f8' },
   chipAtivo: { backgroundColor: palette.primaryBlue, borderColor: palette.primaryBlue },
+  chipLimpar: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor: palette.red, backgroundColor: '#fdecea' },
+  buscaIdBox: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 12, elevation: 1 },
+  buscaIdInput: { flex: 1, fontSize: 14, color: palette.offBlack },
+  acaoBtnEditar: { flexDirection: 'row', alignItems: 'center', backgroundColor: palette.primaryBlue, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
+  acaoBtnExcluir: { flexDirection: 'row', alignItems: 'center', backgroundColor: palette.red, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
   btnBuscar: { backgroundColor: palette.primaryBlue, borderRadius: 10, padding: 12, alignItems: 'center', marginTop: 8 },
   pagBtn: { backgroundColor: palette.primaryBlue, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 },
   pagBtnDis: { backgroundColor: '#b0bec5' },
