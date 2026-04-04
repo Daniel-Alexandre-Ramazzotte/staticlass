@@ -1,21 +1,18 @@
 import { useRouter } from 'expo-router';
 import { XStack, YStack, Button, Text, ScrollView, Input } from 'tamagui';
 import { palette, primaryFontA } from 'app/constants/style';
-import { ChevronLeft, Search, Trash2 } from 'lucide-react-native';
+import { Alert } from 'react-native';
+import { ChevronLeft, Pencil, Search, Trash2 } from 'lucide-react-native';
 import { useAuth } from 'app/context/AuthContext';
 import api from 'app/services/api';
 import { useEffect, useState } from 'react';
 import { AppButton } from 'app/components/AppButton';
 
-// esse gerenciador ainda nao esta funcionando, apenas tem o visual aplicado
-// O que falta:
-// - Listar as questoes disponiveis (fazer a requisicao para o backend)
-// - Implementar a funcionalidade dos botoes de editar, visualizar e excluir (fazer as requisicoes para o backend)
-
 type Professor = {
   id: number;
   name: string;
   email: string;
+  active?: boolean;
 };
 
 export default function ProfessorManager() {
@@ -41,7 +38,7 @@ export default function ProfessorManager() {
 
     const fetchProfessors = async () => {
       try {
-        const result = await api.get(`/users/admin/get-all-professors`);
+        const result = await api.get('/users/admin/professors');
 
         setProfessors(result.data as Professor[]);
         setErrorMessage(null);
@@ -55,6 +52,43 @@ export default function ProfessorManager() {
 
     fetchProfessors();
   }, [userId, isAuthLoading]);
+
+  const reloadProfessors = async () => {
+    setIsLoading(true);
+    try {
+      const result = await api.get('/users/admin/professors');
+      setProfessors(result.data as Professor[]);
+      setErrorMessage(null);
+    } catch (error) {
+      console.error('Erro ao recarregar professores:', error);
+      setErrorMessage('Nao foi possivel carregar os professores.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteProfessor = (professor: Professor) => {
+    Alert.alert(
+      'Excluir professor',
+      `Deseja remover ${professor.name}?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await api.delete(`/users/admin/professors/${professor.id}`);
+              await reloadProfessors();
+            } catch (error: any) {
+              const apiMessage = error?.response?.data?.error;
+              setErrorMessage(apiMessage || 'Nao foi possivel excluir o professor.');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const filteredProfessors = professors.filter((professor) => {
     const normalizedSearch = searchValue.trim().toLowerCase();
@@ -213,13 +247,33 @@ export default function ProfessorManager() {
                     </Text>
                   </XStack>
 
-                  <Button
-                    size="$2"
-                    circular
-                    backgroundColor="transparent"
-                    pressStyle={{ opacity: 0.7 }}
-                    icon={<Trash2 color="#3c6b89" size={20} />}
-                  />
+                  <XStack gap="$1">
+                    <Button
+                      size="$2"
+                      circular
+                      backgroundColor="transparent"
+                      pressStyle={{ opacity: 0.7 }}
+                      onPress={() =>
+                        router.push({
+                          pathname: '/(admin)/AddProfessor',
+                          params: {
+                            id: String(professor.id),
+                            name: professor.name,
+                            email: professor.email,
+                          },
+                        })
+                      }
+                      icon={<Pencil color="#3c6b89" size={20} />}
+                    />
+                    <Button
+                      size="$2"
+                      circular
+                      backgroundColor="transparent"
+                      pressStyle={{ opacity: 0.7 }}
+                      onPress={() => handleDeleteProfessor(professor)}
+                      icon={<Trash2 color="#3c6b89" size={20} />}
+                    />
+                  </XStack>
                 </XStack>
               ))}
           </YStack>

@@ -15,7 +15,7 @@ function notifySuccess(message: string, onClose: () => void) {
   Alert.alert('Sucesso', message, [{ text: 'OK', onPress: onClose }]);
 }
 
-export default function AddProfessor() {
+export default function AddAluno() {
   const router = useRouter();
   const params = useLocalSearchParams<{
     id?: string;
@@ -23,8 +23,8 @@ export default function AddProfessor() {
     email?: string;
   }>();
 
-  const professorId = params.id ? Number(params.id) : null;
-  const isEditing = useMemo(() => professorId !== null && !Number.isNaN(professorId), [professorId]);
+  const alunoId = params.id ? Number(params.id) : null;
+  const isEditing = useMemo(() => alunoId !== null && !Number.isNaN(alunoId), [alunoId]);
 
   const [name, setName] = useState(params.name ?? '');
   const [email, setEmail] = useState(params.email ?? '');
@@ -40,18 +40,18 @@ export default function AddProfessor() {
 
     setIsSubmitting(true);
     try {
-      if (isEditing && professorId !== null) {
-        await api.put(`/users/admin/professors/${professorId}`, {
+      if (isEditing && alunoId !== null) {
+        await api.put(`/users/admin/alunos/${alunoId}`, {
           name: name.trim(),
           email: email.trim(),
           password: password.trim() || undefined,
         });
         setErrorMessage('');
-        notifySuccess('Professor atualizado com sucesso.', () => router.back());
+        notifySuccess('Aluno atualizado com sucesso.', () => router.back());
         return;
       }
 
-      const response = await api.post('/users/admin/professors', {
+      const response = await api.post('/users/admin/alunos', {
         name: name.trim(),
         email: email.trim(),
         password: password.trim() || undefined,
@@ -60,13 +60,13 @@ export default function AddProfessor() {
       setErrorMessage('');
       const temporaryPassword = response?.data?.temporary_password;
       const successMessage = temporaryPassword
-        ? `Professor criado com sucesso. Senha temporária: ${temporaryPassword}`
-        : 'Professor criado com sucesso.';
+        ? `Aluno criado com sucesso. Senha temporária: ${temporaryPassword}`
+        : 'Aluno criado com sucesso.';
 
       notifySuccess(successMessage, () => router.back());
     } catch (error: any) {
       const apiMessage = error?.response?.data?.error;
-      setErrorMessage(apiMessage || 'Não foi possível salvar o professor');
+      setErrorMessage(apiMessage || 'Não foi possível salvar o aluno');
     } finally {
       setIsSubmitting(false);
     }
@@ -100,7 +100,7 @@ export default function AddProfessor() {
           textAlign="center"
           mr="$6"
         >
-          {isEditing ? 'Editar Professor' : 'Adicionar Professor'}
+          {isEditing ? 'Editar Aluno' : 'Adicionar Aluno'}
         </Text>
       </XStack>
 
@@ -187,7 +187,7 @@ export default function AddProfessor() {
               width="92%"
               alignSelf="flex-end"
               fontSize={24}
-              placeholder={isEditing ? 'Opcional' : 'Opcional'}
+              placeholder="Opcional"
               placeholderTextColor="rgba(255,255,255,0.7)"
             />
           </YStack>

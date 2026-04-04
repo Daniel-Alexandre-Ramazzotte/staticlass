@@ -13,7 +13,7 @@ export default function AdminMenu() {
         backgroundColor={palette.primaryGreen}
         onPress={() => router.push('/(professor)/QuestionsManager')}
       >
-        Gerenciar Questões
+        Gerenciar e Visualizar Questões
       </AppButton>
       <AppButton
         backgroundColor={palette.darkBlue}

@@ -2,9 +2,18 @@ from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from statl.utils.auth_middleware import require_role
 from ..services.user_service import (
-    update_user_service, delete_user_service, get_user_by_email_service,
-    update_own_profile_service, delete_own_account_service,
-    get_all_professors_service, create_professor_service, get_all_alunos_service,
+    create_managed_user_service,
+    create_professor_service,
+    delete_managed_user_service,
+    delete_own_account_service,
+    delete_user_service,
+    get_all_alunos_service,
+    get_all_professors_service,
+    get_user_by_email_service,
+    get_users_by_role_service,
+    update_managed_user_service,
+    update_own_profile_service,
+    update_user_service,
 )
 from ..services.resultado_service import (
     salvar_resultado_service, buscar_historico_service, buscar_ranking_service,
@@ -65,6 +74,37 @@ def get_all_professors():
     return jsonify([dict(row) for row in get_all_professors_service()]), 200
 
 
+@bp.route('/admin/professors', methods=['GET'])
+@require_role('admin')
+def list_professors():
+    return jsonify([dict(row) for row in get_users_by_role_service('professor')]), 200
+
+
+@bp.route('/admin/professors', methods=['POST'])
+@require_role('admin')
+def create_professor_v2():
+    result, error, status = create_managed_user_service(request.json, 'professor')
+    if error:
+        return error, status
+    return jsonify({
+        "message": "professor criado com sucesso",
+        "id": result["id"],
+        "temporary_password": result["temporary_password"],
+    }), 201
+
+
+@bp.route('/admin/professors/<int:user_id>', methods=['PUT'])
+@require_role('admin')
+def update_professor(user_id):
+    return update_managed_user_service(user_id, request.json or {}, 'professor')
+
+
+@bp.route('/admin/professors/<int:user_id>', methods=['DELETE'])
+@require_role('admin')
+def delete_professor(user_id):
+    return delete_managed_user_service(user_id, 'professor')
+
+
 @bp.route('/admin/create-professor', methods=['POST'])
 @require_role('admin')
 def create_professor():
@@ -82,6 +122,37 @@ def create_professor():
 @require_role('admin')
 def get_all_alunos():
     return jsonify([dict(row) for row in get_all_alunos_service()]), 200
+
+
+@bp.route('/admin/alunos', methods=['GET'])
+@require_role('admin')
+def list_alunos():
+    return jsonify([dict(row) for row in get_users_by_role_service('aluno')]), 200
+
+
+@bp.route('/admin/alunos', methods=['POST'])
+@require_role('admin')
+def create_aluno():
+    result, error, status = create_managed_user_service(request.json, 'aluno')
+    if error:
+        return error, status
+    return jsonify({
+        "message": "aluno criado com sucesso",
+        "id": result["id"],
+        "temporary_password": result["temporary_password"],
+    }), 201
+
+
+@bp.route('/admin/alunos/<int:user_id>', methods=['PUT'])
+@require_role('admin')
+def update_aluno(user_id):
+    return update_managed_user_service(user_id, request.json or {}, 'aluno')
+
+
+@bp.route('/admin/alunos/<int:user_id>', methods=['DELETE'])
+@require_role('admin')
+def delete_aluno(user_id):
+    return delete_managed_user_service(user_id, 'aluno')
 
 
 # ─── Ranking ────────────────────────────────────────────────────────────────

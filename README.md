@@ -46,8 +46,7 @@ staticlass/
 │           ├── context/      # AuthContext (JWT)
 │           └── services/     # Axios (api.tsx), serviços de auth
 ├── uploads/              # Imagens de questões (servidas pelo Flask)
-├── docker-compose.yml    # MySQL via Docker
-└── propet.sql            # Schema SQL de referência
+└── docker-compose.yml    # PostgreSQL + backend + nginx via Docker
 ```
 
 ---
@@ -57,17 +56,14 @@ staticlass/
 ### Pré-requisitos
 
 - Python 3.10+
-- MySQL (ou Docker)
+- PostgreSQL (ou Docker)
 
 ### Configuração
 
 Crie o arquivo `app/backend/.env`:
 
 ```env
-DB_HOST=localhost
-DB_USER=flask_user
-DB_PASS=staticlass123
-DB_NAME=staticlass
+DATABASE_URL=postgresql://staticlass:staticlass123@localhost:5432/staticlass
 SECRET_KEY=sua_chave_secreta_aqui
 ```
 
@@ -85,7 +81,7 @@ pip install -r requirements.txt
 flask --app statl run
 ```
 
-O banco é criado automaticamente pelo `db.create_all()` na inicialização — incluindo as tabelas `quiz_resultados` e `questao_diaria_historico`.
+O banco é criado automaticamente pelo `db.create_all()` na inicialização — incluindo `users`, `questions`, `alternatives`, `chapters`, `topics`, `quiz_resultados` e `questao_diaria_historico`.
 
 ### Rodar testes
 
@@ -94,7 +90,7 @@ cd app/backend
 pytest
 ```
 
-Os testes usam SQLite em memória (`create_app(testing=True)`).
+Os testes usam SQLite em memória (`create_app(testing=True)`) apenas como ambiente isolado de teste. Em runtime, o backend suporta somente PostgreSQL.
 
 ### Arquitetura do Backend
 
@@ -200,13 +196,13 @@ Cada acerto vale **10 pontos**, acumulados no campo `score` do usuário. O ranki
 
 ## Banco de Questões
 
-O app importa 230 questões únicas do projeto [Estatistica-Basica](https://github.com/Daniel-Alexandre-Ramazzotte/Estatistica-Basica), organizadas em:
+O app importa questões do projeto [Estatistica-Basica](https://github.com/Daniel-Alexandre-Ramazzotte/Estatistica-Basica), organizadas em:
 
 - **4 capítulos**: Estatística Descritiva, Probabilidade, Inferência, Regressão
 - **17 tópicos** distribuídos pelos capítulos
 - **Dificuldade** de 1 (Fácil) a 3 (Difícil)
 
-### Importar questões
+### Importar questões no PostgreSQL
 
 ```bash
 cd app/backend
@@ -215,7 +211,7 @@ python -m statl.migrate_questoes
 python -m statl.migrate_questoes --db-path /caminho/para/questoes.db
 ```
 
-O script é idempotente — pula questões já importadas (detecta pelo `original_id`).
+O script é idempotente — pula questões já importadas com base em `original_id`.
 
 ---
 

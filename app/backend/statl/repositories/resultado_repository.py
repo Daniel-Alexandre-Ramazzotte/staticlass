@@ -10,7 +10,7 @@ def salvar_resultado(usuario_id, acertos, total, capitulo_id=None, dificuldade=N
     db.session.execute(
         text("""
             INSERT INTO quiz_resultados (usuario_id, acertos, total, capitulo_id, dificuldade, criado_em)
-            VALUES (:usuario_id, :acertos, :total, :capitulo_id, :dificuldade, NOW())
+            VALUES (:usuario_id, :acertos, :total, :capitulo_id, :dificuldade, CURRENT_TIMESTAMP)
         """),
         {
             "usuario_id":  usuario_id,
@@ -82,8 +82,9 @@ def marcar_diaria(usuario_id):
     try:
         db.session.execute(
             text("""
-                INSERT IGNORE INTO questao_diaria_historico (usuario_id, data)
+                INSERT INTO questao_diaria_historico (usuario_id, data)
                 VALUES (:usuario_id, :hoje)
+                ON CONFLICT (usuario_id, data) DO NOTHING
             """),
             {"usuario_id": usuario_id, "hoje": date.today()},
         )

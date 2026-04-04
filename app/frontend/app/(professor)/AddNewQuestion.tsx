@@ -1,5 +1,5 @@
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Input,
   YStack,
@@ -15,9 +15,30 @@ import { AppButton } from 'app/components/AppButton';
 import { ChevronLeft } from 'lucide-react-native';
 import { useAuth } from 'app/context/AuthContext';
 
+type Alternative = {
+  letter: string;
+  text: string;
+  is_correct: boolean;
+};
+
+type QuestionDetail = {
+  id: number;
+  issue: string;
+  correct_answer: string;
+  solution: string | null;
+  difficulty: number | null;
+  section: string | null;
+  alternatives: Alternative[];
+};
+
 export default function AddNewQuestion() {
-  const [isSelected, setIsSelected] = useState(false);
   const router = useRouter();
+  const params = useLocalSearchParams<{ id?: string }>();
+  const { userId } = useAuth();
+
+  const questionId = params.id ? Number(params.id) : null;
+  const isEditing = useMemo(() => questionId !== null && !Number.isNaN(questionId), [questionId]);
+
   const [issue, setIssue] = useState('');
   const [altA, setAltA] = useState('');
   const [altB, setAltB] = useState('');
@@ -25,10 +46,46 @@ export default function AddNewQuestion() {
   const [altD, setAltD] = useState('');
   const [altE, setAltE] = useState('');
   const [correctAlt, setCorrectAlt] = useState('');
-  const [subject, setSubject] = useState('');
+  const [section, setSection] = useState('');
   const [difficulty, setDifficulty] = useState('');
   const [solution, setSolution] = useState('');
-  const { userId } = useAuth();
+  const [loadingQuestion, setLoadingQuestion] = useState(false);
+
+  useEffect(() => {
+    if (!isEditing || questionId === null) {
+      return;
+    }
+
+    const loadQuestion = async () => {
+      setLoadingQuestion(true);
+      try {
+        const response = await api.get(`/questions/${questionId}`);
+        const question = response.data as QuestionDetail;
+        setIssue(question.issue || '');
+        setCorrectAlt(question.correct_answer || '');
+        setSection(question.section || '');
+        setDifficulty(question.difficulty ? String(question.difficulty) : '');
+        setSolution(question.solution || '');
+
+        const alternativesByLetter = new Map(
+          (question.alternatives || []).map((alternative) => [alternative.letter, alternative.text])
+        );
+        setAltA(alternativesByLetter.get('A') || '');
+        setAltB(alternativesByLetter.get('B') || '');
+        setAltC(alternativesByLetter.get('C') || '');
+        setAltD(alternativesByLetter.get('D') || '');
+        setAltE(alternativesByLetter.get('E') || '');
+      } catch (error) {
+        console.error('Erro ao carregar questão:', error);
+        alert('Nao foi possivel carregar a questao.');
+        router.back();
+      } finally {
+        setLoadingQuestion(false);
+      }
+    };
+
+    loadQuestion();
+  }, [isEditing, questionId, router]);
 
   const handleQuestionSubmit = async () => {
     if (!userId) {
@@ -36,53 +93,44 @@ export default function AddNewQuestion() {
       return;
     }
 
-    if (
-      !issue ||
-      !altA ||
-      !altB ||
-      !altC ||
-      !altD ||
-      !altE ||
-      !correctAlt ||
-      !subject ||
-      !solution
-    ) {
+    if (!issue || !altA || !altB || !altC || !altD || !altE || !correctAlt || !solution) {
       alert('Por favor, preencha todos os campos.');
       return;
     }
 
     try {
-      const formData = new FormData();
-      formData.append('issue', issue);
-      formData.append('answer_a', altA);
-      formData.append('answer_b', altB);
-      formData.append('answer_c', altC);
-      formData.append('answer_d', altD);
-      formData.append('answer_e', altE);
-      formData.append('correct_answer', correctAlt);
-      formData.append('subject', subject);
-      //formData.append('difficulty', difficulty);
-      formData.append('solution', solution);
-      formData.append('id_professor', userId);
+      const payload = {
+        id: questionId ?? undefined,
+        issue,
+        correct_answer: correctAlt.toUpperCase(),
+        solution,
+        section: section || undefined,
+        difficulty: difficulty ? Number(difficulty) : undefined,
+        alternatives: [
+          { letter: 'A', text: altA },
+          { letter: 'B', text: altB },
+          { letter: 'C', text: altC },
+          { letter: 'D', text: altD },
+          { letter: 'E', text: altE },
+        ],
+      };
 
-      const response = await api.post('/questions/add', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-      console.log('Enviando dados:', formData);
-      if (response.status === 201) {
-        alert('Questão adicionada com sucesso!');
+      const response = isEditing
+        ? await api.put('/questions/update', payload)
+        : await api.post('/questions/add', payload, {
+            headers: { 'Content-Type': 'application/json' },
+          });
+
+      if (response.status === 200 || response.status === 201) {
+        alert(isEditing ? 'Questão atualizada com sucesso!' : 'Questão adicionada com sucesso!');
         router.back();
       } else {
-        alert('Erro ao adicionar questão. Tente novamente.');
+        alert('Erro ao salvar questão. Tente novamente.');
       }
     } catch (error) {
-      console.error('Erro ao adicionar questão:', error);
-      alert('Erro ao adicionar questão. Tente novamente.');
+      console.error('Erro ao salvar questão:', error);
+      alert('Erro ao salvar questão. Tente novamente.');
     }
-  };
-
-  const handlePress = () => {
-    setIsSelected((prev) => !prev);
   };
 
   return (
@@ -103,24 +151,22 @@ export default function AddNewQuestion() {
         contentContainerStyle={{ paddingBottom: 24 }}
       >
         <YStack>
-          {/*Header*/}
           <XStack
             backgroundColor={palette.primaryBlue}
-            pt="$8" // Testar melhor
+            pt="$8"
             pb="$4"
             px="$4"
-            ai="center" // Alinhamento vertical
-            jc="space-between" // Espaço entre os itens
-            width={'100%'}
+            ai="center"
+            jc="space-between"
+            width="100%"
           >
-            {/*Botão de Voltar*/}
             <Button
-              size="$3" // Testar tamanhos
+              size="$3"
               circular
               backgroundColor="transparent"
               pressStyle={{ opacity: 0.7 }}
               onPress={() => router.back()}
-              icon={<ChevronLeft color={palette.white} size={28} />} // Ícone de seta para esquerda, Testar tamanhos
+              icon={<ChevronLeft color={palette.white} size={28} />}
             />
             <Text
               f={1}
@@ -130,11 +176,16 @@ export default function AddNewQuestion() {
               textAlign="center"
               mr="$6"
             >
-              Gerenciar Questões
+              {isEditing ? 'Editar Questão' : 'Gerenciar Questões'}
             </Text>
           </XStack>
-          <YStack ai="center" gap="$4" width={'70%'} alignSelf="center" py="$4">
-            <YStack width={'100%'} gap={0}>
+
+          <YStack ai="center" gap="$4" width="70%" alignSelf="center" py="$4">
+            {loadingQuestion && (
+              <Text color={palette.darkBlue}>Carregando questão...</Text>
+            )}
+
+            <YStack width="100%" gap={0}>
               <Text
                 backgroundColor={palette.darkBlue}
                 color={palette.offWhite}
@@ -146,20 +197,21 @@ export default function AddNewQuestion() {
                 textAlign="left"
                 fontWeight="bold"
               >
-                Tema:
+                Seção:
               </Text>
               <Input
-                width={'94%'}
+                width="94%"
                 alignSelf="flex-end"
                 marginTop="$1"
-                onChangeText={setSubject}
+                value={section}
+                onChangeText={setSection}
                 backgroundColor={palette.backgroundLight}
                 opacity={0.3}
                 color={palette.offWhite}
               />
             </YStack>
 
-            <YStack width={'100%'} gap={0}>
+            <YStack width="100%" gap={0}>
               <Text
                 backgroundColor={palette.darkBlue}
                 color={palette.offWhite}
@@ -174,9 +226,10 @@ export default function AddNewQuestion() {
                 Enunciado:
               </Text>
               <Input
-                width={'94%'}
+                width="94%"
                 alignSelf="flex-end"
                 marginTop="$1"
+                value={issue}
                 onChangeText={setIssue}
                 backgroundColor={palette.backgroundLight}
                 opacity={0.3}
@@ -184,7 +237,41 @@ export default function AddNewQuestion() {
               />
             </YStack>
 
-            <YStack width={'100%'} gap={0}>
+            {[
+              ['Alternativa A:', altA, setAltA],
+              ['Alternativa B:', altB, setAltB],
+              ['Alternativa C:', altC, setAltC],
+              ['Alternativa D:', altD, setAltD],
+              ['Alternativa E:', altE, setAltE],
+            ].map(([label, value, setter]) => (
+              <YStack width="100%" gap={0} key={label}>
+                <Text
+                  backgroundColor={palette.darkBlue}
+                  color={palette.offWhite}
+                  padding="$1"
+                  width="40%"
+                  borderRadius={4}
+                  alignSelf="flex-start"
+                  marginLeft="$1"
+                  textAlign="left"
+                  fontWeight="bold"
+                >
+                  {label}
+                </Text>
+                <Input
+                  width="94%"
+                  alignSelf="flex-end"
+                  marginTop="$1"
+                  value={value as string}
+                  onChangeText={setter as (value: string) => void}
+                  backgroundColor={palette.backgroundLight}
+                  opacity={0.3}
+                  color={palette.offWhite}
+                />
+              </YStack>
+            ))}
+
+            <YStack width="100%" gap={0}>
               <Text
                 backgroundColor={palette.darkBlue}
                 color={palette.offWhite}
@@ -196,20 +283,22 @@ export default function AddNewQuestion() {
                 textAlign="left"
                 fontWeight="bold"
               >
-                Alternativa A:
+                Dificuldade:
               </Text>
               <Input
-                width={'94%'}
+                width="94%"
                 alignSelf="flex-end"
                 marginTop="$1"
-                onChangeText={setAltA}
+                keyboardType="numeric"
+                value={difficulty}
+                onChangeText={setDifficulty}
                 backgroundColor={palette.backgroundLight}
                 opacity={0.3}
                 color={palette.offWhite}
               />
             </YStack>
 
-            <YStack width={'100%'} gap={0}>
+            <YStack width="100%" gap={0}>
               <Text
                 backgroundColor={palette.darkBlue}
                 color={palette.offWhite}
@@ -221,20 +310,22 @@ export default function AddNewQuestion() {
                 textAlign="left"
                 fontWeight="bold"
               >
-                Alternativa B:
+                Resposta correta:
               </Text>
               <Input
-                width={'94%'}
+                width="94%"
                 alignSelf="flex-end"
                 marginTop="$1"
-                onChangeText={setAltB}
+                value={correctAlt}
+                onChangeText={setCorrectAlt}
                 backgroundColor={palette.backgroundLight}
                 opacity={0.3}
                 color={palette.offWhite}
+                autoCapitalize="characters"
               />
             </YStack>
 
-            <YStack width={'100%'} gap={0}>
+            <YStack width="100%" gap={0}>
               <Text
                 backgroundColor={palette.darkBlue}
                 color={palette.offWhite}
@@ -246,87 +337,13 @@ export default function AddNewQuestion() {
                 textAlign="left"
                 fontWeight="bold"
               >
-                Alternativa C:
+                Solução:
               </Text>
               <Input
-                width={'94%'}
+                width="94%"
                 alignSelf="flex-end"
                 marginTop="$1"
-                onChangeText={setAltC}
-                backgroundColor={palette.backgroundLight}
-                opacity={0.3}
-                color={palette.offWhite}
-              />
-            </YStack>
-
-            <YStack width={'100%'} gap={0}>
-              <Text
-                backgroundColor={palette.darkBlue}
-                color={palette.offWhite}
-                padding="$1"
-                width="40%"
-                borderRadius={4}
-                alignSelf="flex-start"
-                marginLeft="$1"
-                textAlign="left"
-                fontWeight="bold"
-              >
-                Alternativa D:
-              </Text>
-              <Input
-                width={'94%'}
-                alignSelf="flex-end"
-                marginTop="$1"
-                onChangeText={setAltD}
-                backgroundColor={palette.backgroundLight}
-                opacity={0.3}
-                color={palette.offWhite}
-              />
-            </YStack>
-
-            <YStack width={'100%'} gap={0}>
-              <Text
-                backgroundColor={palette.darkBlue}
-                color={palette.offWhite}
-                padding="$1"
-                width="40%"
-                borderRadius={4}
-                alignSelf="flex-start"
-                marginLeft="$1"
-                textAlign="left"
-                fontWeight="bold"
-              >
-                Alternativa E:
-              </Text>
-              <Input
-                width={'94%'}
-                alignSelf="flex-end"
-                marginTop="$1"
-                onChangeText={setAltE}
-                backgroundColor={palette.backgroundLight}
-                opacity={0.3}
-                color={palette.offWhite}
-              />
-            </YStack>
-
-            <YStack width={'100%'} gap={0}>
-              <Text
-                backgroundColor={palette.darkBlue}
-                color={palette.offWhite}
-                padding="$1"
-                width="40%"
-                borderRadius={4}
-                alignSelf="flex-start"
-                marginLeft="$1"
-                textAlign="left"
-                fontWeight="bold"
-              >
-                Solucao:
-              </Text>
-              <Input
-                width={'94%'}
-                alignSelf="flex-end"
-                marginTop="$1"
+                value={solution}
                 onChangeText={setSolution}
                 backgroundColor={palette.backgroundLight}
                 opacity={0.3}
@@ -334,36 +351,11 @@ export default function AddNewQuestion() {
               />
             </YStack>
 
-            <YStack width={'100%'} gap={0}>
-              <Text
-                backgroundColor={palette.darkBlue}
-                color={palette.offWhite}
-                padding="$1"
-                width="40%"
-                borderRadius={4}
-                alignSelf="flex-start"
-                marginLeft="$1"
-                textAlign="left"
-                fontWeight="bold"
-              >
-                Alternativa Correta:
-              </Text>
-              <Input
-                width={'94%'}
-                alignSelf="flex-end"
-                marginTop="$1"
-                onChangeText={setCorrectAlt}
-                backgroundColor={palette.backgroundLight}
-                opacity={0.3}
-                color={palette.offWhite}
-              />
-            </YStack>
-
             <AppButton
+              backgroundColor={palette.darkBlue}
               onPress={handleQuestionSubmit}
-              backgroundColor={palette.primaryGreen}
             >
-              Salvar Questão
+              {isEditing ? 'Salvar Alterações' : 'Adicionar Nova Questão'}
             </AppButton>
           </YStack>
         </YStack>

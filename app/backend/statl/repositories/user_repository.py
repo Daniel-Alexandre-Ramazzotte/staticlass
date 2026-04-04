@@ -32,9 +32,18 @@ def create_user(email, password_hash, name):
 
 
 def create_professor(email, password_hash, name):
+    return create_user_with_role(email, password_hash, name, "professor")
+
+
+def create_user_with_role(email, password_hash, name, role):
     db.session.execute(
-        text("INSERT INTO users (email, password_hash, name, role) VALUES (:email, :password_hash, :name, 'professor')"),
-        {"email": email, "password_hash": password_hash, "name": name},
+        text(
+            """
+            INSERT INTO users (email, password_hash, name, role)
+            VALUES (:email, :password_hash, :name, :role)
+            """
+        ),
+        {"email": email, "password_hash": password_hash, "name": name, "role": role},
     )
     db.session.commit()
     user = db.session.execute(
@@ -89,4 +98,18 @@ def get_all_alunos():
     return db.session.execute(
         text("SELECT id, name, email FROM users WHERE role = :role ORDER BY name ASC"),
         {"role": "aluno"},
+    ).mappings().all()
+
+
+def get_users_by_role(role):
+    return db.session.execute(
+        text(
+            """
+            SELECT id, name, email, active, score
+            FROM users
+            WHERE role = :role
+            ORDER BY name ASC
+            """
+        ),
+        {"role": role},
     ).mappings().all()

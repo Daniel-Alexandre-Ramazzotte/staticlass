@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
+import { Alert } from 'react-native';
 import { XStack, YStack, Button, Text, ScrollView, Input } from 'tamagui';
 import { palette, primaryFontA } from 'app/constants/style';
-import { ChevronLeft, Search, Trash2 } from 'lucide-react-native';
+import { ChevronLeft, Pencil, Search, Trash2 } from 'lucide-react-native';
 import { AppButton } from 'app/components/AppButton';
 import api from 'app/services/api';
 import { useAuth } from 'app/context/AuthContext';
@@ -11,6 +12,7 @@ type Student = {
   id: number;
   name: string;
   email: string;
+  active?: boolean;
 };
 
 export default function AlunoManager() {
@@ -36,7 +38,7 @@ export default function AlunoManager() {
 
     const fetchStudents = async () => {
       try {
-        const result = await api.get('/users/admin/get-all-alunos');
+        const result = await api.get('/users/admin/alunos');
         setStudents(result.data as Student[]);
         setErrorMessage(null);
       } catch (error) {
@@ -49,6 +51,43 @@ export default function AlunoManager() {
 
     fetchStudents();
   }, [userId, isAuthLoading]);
+
+  const reloadStudents = async () => {
+    setIsLoading(true);
+    try {
+      const result = await api.get('/users/admin/alunos');
+      setStudents(result.data as Student[]);
+      setErrorMessage(null);
+    } catch (error) {
+      console.error('Erro ao recarregar alunos:', error);
+      setErrorMessage('Nao foi possivel carregar os alunos.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteStudent = (student: Student) => {
+    Alert.alert(
+      'Excluir aluno',
+      `Deseja remover ${student.name}?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await api.delete(`/users/admin/alunos/${student.id}`);
+              await reloadStudents();
+            } catch (error: any) {
+              const apiMessage = error?.response?.data?.error;
+              setErrorMessage(apiMessage || 'Nao foi possivel excluir o aluno.');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   const filteredStudents = useMemo(() => {
     const normalizedSearch = searchValue.trim().toLowerCase();
@@ -102,7 +141,6 @@ export default function AlunoManager() {
         contentContainerStyle={{ paddingBottom: 36 }}
       >
         <YStack px="$4" pt="$7" pb="$4" ai="center" gap="$4">
-          {/*}
           <AppButton
             width={240}
             height={52}
@@ -110,7 +148,7 @@ export default function AlunoManager() {
             buttonSize="default"
             borderRadius={28}
             backgroundColor="#3f6f92"
-            onPress={() => {}}
+            onPress={() => router.push('/(admin)/AddAluno')}
           >
             <Text
               color={palette.offWhite}
@@ -121,7 +159,7 @@ export default function AlunoManager() {
             >
               Adicionar Aluno
             </Text>
-          </AppButton>*/}
+          </AppButton>
 
           <XStack
             width="100%"
@@ -205,13 +243,33 @@ export default function AlunoManager() {
                     </Text>
                   </XStack>
 
-                  <Button
-                    size="$2"
-                    circular
-                    backgroundColor="transparent"
-                    pressStyle={{ opacity: 0.7 }}
-                    icon={<Trash2 color="#3c6b89" size={20} />}
-                  />
+                  <XStack gap="$1">
+                    <Button
+                      size="$2"
+                      circular
+                      backgroundColor="transparent"
+                      pressStyle={{ opacity: 0.7 }}
+                      onPress={() =>
+                        router.push({
+                          pathname: '/(admin)/AddAluno',
+                          params: {
+                            id: String(student.id),
+                            name: student.name,
+                            email: student.email,
+                          },
+                        })
+                      }
+                      icon={<Pencil color="#3c6b89" size={20} />}
+                    />
+                    <Button
+                      size="$2"
+                      circular
+                      backgroundColor="transparent"
+                      pressStyle={{ opacity: 0.7 }}
+                      onPress={() => handleDeleteStudent(student)}
+                      icon={<Trash2 color="#3c6b89" size={20} />}
+                    />
+                  </XStack>
                 </XStack>
               ))}
           </YStack>

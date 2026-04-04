@@ -1,22 +1,20 @@
 services:
 
-  # ─── Banco de dados MySQL ────────────────────────────────────────────────
+  # ─── Banco de dados PostgreSQL ───────────────────────────────────────────
   db:
-    image: mysql:8.4
+    image: postgres:17-alpine
     container_name: staticlass-db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: staticlass123
-      MYSQL_DATABASE: staticlass
-      MYSQL_USER: flask_user
-      MYSQL_PASSWORD: staticlass123
+      POSTGRES_DB: staticlass
+      POSTGRES_USER: staticlass
+      POSTGRES_PASSWORD: staticlass123
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - staticlass_db_data:/var/lib/mysql
-      - ./propet.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - staticlass_db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "flask_user", "-pstaticlass123"]
+      test: ["CMD-SHELL", "pg_isready -U staticlass -d staticlass"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -29,9 +27,9 @@ services:
     container_name: staticlass-backend
     restart: unless-stopped
     env_file:
-      - ./app/backend/.env        # DB_HOST, DB_USER, DB_PASS, DB_NAME, SECRET_KEY, etc.
+      - ./app/backend/.env        # DATABASE_URL, SECRET_KEY, etc.
     environment:
-      DB_HOST: db                 # aponta para o serviço "db" acima
+      DATABASE_URL: postgresql://staticlass:staticlass123@db:5432/staticlass
     ports:
       - "5000:5000"
     volumes:

@@ -21,10 +21,7 @@ npm install -g expo-cli eas-cli
 ### Backend — `app/backend/.env`
 
 ```env
-DB_HOST=db              # "db" dentro do Docker; "localhost" para dev local
-DB_USER=flask_user
-DB_PASS=staticlass123
-DB_NAME=staticlass
+DATABASE_URL=postgresql://staticlass:staticlass123@db:5432/staticlass
 SECRET_KEY=troque-por-uma-chave-longa-e-aleatoria
 
 # Configuração de e-mail (recuperação de senha)
@@ -182,7 +179,7 @@ adb install app-release.apk
 
 ```
 ┌──────────────┐     ┌─────────────────┐     ┌──────────────┐
-│  nginx :80   │────▶│  Flask :5000    │────▶│  MySQL :3306 │
+│  nginx :80   │────▶│  Flask :5000    │────▶│ PostgreSQL :5432 │
 │  (web)       │     │  (backend)      │     │  (db)        │
 └──────────────┘     └─────────────────┘     └──────────────┘
        ▲
@@ -204,7 +201,7 @@ docker compose logs -f backend
 docker compose restart backend
 
 # Acessar o banco via CLI
-docker compose exec db mysql -u flask_user -pstaticlass123 staticlass
+docker compose exec db psql -U staticlass -d staticlass
 
 # Parar tudo
 docker compose down

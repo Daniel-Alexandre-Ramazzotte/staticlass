@@ -12,6 +12,7 @@ function InitialLayout() {
   const { session, isLoading } = useAuth(); //  Pegamos os dados do contexto
   const segments = useSegments(); // Para saber em qual tela estamos
   const router = useRouter(); // Para navegar
+  const { temaEfetivo } = useTema();
 
   const [fontsLoaded] = useFonts({
     Inter: require('@tamagui/font-inter/otf/Inter-Medium.otf'),
@@ -53,9 +54,6 @@ function InitialLayout() {
       </View>
     );
   }
-
-  // Passa o tema efetivo ao Tamagui (light/dark)
-  const { temaEfetivo } = useTema();
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

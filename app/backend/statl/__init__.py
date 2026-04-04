@@ -27,21 +27,6 @@ def create_app(testing: bool = False):
     app = Flask(__name__, instance_relative_config = True)
     app.config.from_object(Config)
 
-    database_url = os.getenv("DATABASE_URL")
-    if database_url:
-        if database_url.startswith("postgres://"):
-            database_url = database_url.replace("postgres://", "postgresql://", 1)
-        app.config["SQLALCHEMY_DATABASE_URI"] = database_url
-    else:
-        app.config["SQLALCHEMY_DATABASE_URI"] = (
-            f"mysql+pymysql://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}"
-            f"@{os.getenv('DB_HOST')}/{os.getenv('DB_NAME')}"
-        )
-    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.secret_key = os.getenv("SECRET_KEY")
-    app.config["JWT_SECRET_KEY"] = os.getenv("SECRET_KEY")
-
     if testing:
         app.config["TESTING"] = True
         app.config["WTF_CSRF_ENABLED"] = False
@@ -49,6 +34,17 @@ def create_app(testing: bool = False):
         app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///:memory:"
     else:
         app.config["WTF_CSRF_ENABLED"] = True
+        database_url = os.getenv("DATABASE_URL")
+        if not database_url:
+            raise RuntimeError("DATABASE_URL não definida. O backend agora suporta apenas PostgreSQL.")
+        if database_url.startswith("postgres://"):
+            database_url = database_url.replace("postgres://", "postgresql://", 1)
+        app.config["SQLALCHEMY_DATABASE_URI"] = database_url
+
+    app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+    app.secret_key = os.getenv("SECRET_KEY")
+    app.config["JWT_SECRET_KEY"] = os.getenv("SECRET_KEY")
     
     CORS(app, origins='*')
     jwt = JWTManager(app)
