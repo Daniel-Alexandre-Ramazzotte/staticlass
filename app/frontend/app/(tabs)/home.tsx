@@ -62,7 +62,13 @@ export default function HomeScreen() {
             backgroundColor={palette.primaryGreen}
             onPress={() => router.push('/(professor)/QuestionsManager')}
           >
-            Gerenciar e Visualizar Questões
+            Gerenciar Questões
+          </AppButton>
+          <AppButton
+            backgroundColor={palette.primaryBlue}
+            onPress={() => router.push('/(admin)/QuestaoViewer')}
+          >
+            Visualizador de Questões
           </AppButton>
           <AppButton
             backgroundColor={palette.darkBlue}
