@@ -3,12 +3,9 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from statl.utils.auth_middleware import require_role
 from ..services.user_service import (
     create_managed_user_service,
-    create_professor_service,
     delete_managed_user_service,
     delete_own_account_service,
     delete_user_service,
-    get_all_alunos_service,
-    get_all_professors_service,
     get_user_by_email_service,
     get_users_by_role_service,
     update_managed_user_service,
@@ -16,189 +13,141 @@ from ..services.user_service import (
     update_user_service,
 )
 from ..services.resultado_service import (
-    salvar_resultado_service, buscar_historico_service,
-    buscar_ranking_service, buscar_estatisticas_service,
+    salvar_resultado_service,
+    buscar_historico_service,
+    buscar_ranking_service,
+    buscar_estatisticas_service,
 )
 
 bp = Blueprint('users', __name__, url_prefix='/users')
 
 
-@bp.route('/update/<int:user_id>', methods=['PUT'])
-@require_role('admin')
-def update_user_route(user_id):
-    return update_user_service(user_id, request.json)
-
+# ── Perfil próprio ─────────────────────────────────────────────────────────
 
 @bp.route('/update-me', methods=['PUT'])
 @jwt_required()
-def update_me():
-    user, error, status = update_own_profile_service(get_jwt_identity(), request.json)
-    if error:
-        return error, status
-    return jsonify({"message": "dados atualizados com sucesso"}), 200
-
-
-@bp.route('/delete/<int:user_id>', methods=['DELETE'])
-@require_role('admin')
-def delete_user_route(user_id):
-    return delete_user_service(user_id)
+def atualizar_perfil():
+    _, erro, status = update_own_profile_service(get_jwt_identity(), request.json)
+    if erro:
+        return erro, status
+    return jsonify({"message": "dados atualizados"}), 200
 
 
 @bp.route('/delete-me', methods=['DELETE'])
 @jwt_required()
-def delete_me():
-    data = request.json or {}
-    password = data.get("password")
-    if not password:
-        return jsonify({"error": "a senha é necessária para excluir a conta"}), 400
-    result, status = delete_own_account_service(get_jwt_identity(), password)
-    return jsonify(result), status
+def deletar_conta():
+    senha = (request.json or {}).get("password")
+    if not senha:
+        return jsonify({"error": "senha é necessária para excluir a conta"}), 400
+    resultado, status = delete_own_account_service(get_jwt_identity(), senha)
+    return jsonify(resultado), status
 
 
 @bp.route('/profile/<email>', methods=['GET'])
 @jwt_required()
-def get_profile(email):
-    user = get_user_by_email_service(email)
-    if not user:
+def perfil(email):
+    usuario = get_user_by_email_service(email)
+    if not usuario:
         return jsonify({"message": "usuário não encontrado"}), 404
-    return jsonify({
-        "id":    user.id,
-        "name":  user.name,
-        "email": user.email,
-        "score": user.score,
-    }), 200
+    return jsonify({"id": usuario.id, "name": usuario.name,
+                    "email": usuario.email, "score": usuario.score}), 200
 
 
-@bp.route('/admin/get-all-professors', methods=['GET'])
-@require_role('admin')
-def get_all_professors():
-    return jsonify([dict(row) for row in get_all_professors_service()]), 200
-
+# ── Gestão de professores (admin) ──────────────────────────────────────────
 
 @bp.route('/admin/professors', methods=['GET'])
 @require_role('admin')
-def list_professors():
-    return jsonify([dict(row) for row in get_users_by_role_service('professor')]), 200
+def listar_professores():
+    return jsonify([dict(r) for r in get_users_by_role_service('professor')]), 200
 
 
 @bp.route('/admin/professors', methods=['POST'])
 @require_role('admin')
-def create_professor_v2():
-    from flask import current_app
-    try:
-        result, error, status = create_managed_user_service(request.json, 'professor')
-        if error:
-            return error, status
-        return jsonify({
-            "message": "professor criado com sucesso",
-            "id": result["id"],
-            "temporary_password": result["temporary_password"],
-        }), 201
-    except Exception as e:
-        current_app.logger.exception("Erro ao criar professor")
-        return jsonify({"error": str(e)}), 500
+def criar_professor():
+    resultado, erro, status = create_managed_user_service(request.json, 'professor')
+    if erro:
+        return erro, status
+    return jsonify({"message": "professor criado", **resultado}), 201
 
 
-@bp.route('/admin/professors/<int:user_id>', methods=['PUT'])
+@bp.route('/admin/professors/<int:usuario_id>', methods=['PUT'])
 @require_role('admin')
-def update_professor(user_id):
-    return update_managed_user_service(user_id, request.json or {}, 'professor')
+def atualizar_professor(usuario_id):
+    return update_managed_user_service(usuario_id, request.json or {}, 'professor')
 
 
-@bp.route('/admin/professors/<int:user_id>', methods=['DELETE'])
+@bp.route('/admin/professors/<int:usuario_id>', methods=['DELETE'])
 @require_role('admin')
-def delete_professor(user_id):
-    return delete_managed_user_service(user_id, 'professor')
+def deletar_professor(usuario_id):
+    return delete_managed_user_service(usuario_id, 'professor')
 
 
-@bp.route('/admin/create-professor', methods=['POST'])
-@require_role('admin')
-def create_professor():
-    result, error, status = create_professor_service(request.json)
-    if error:
-        return error, status
-    return jsonify({
-        "message":            "professor criado com sucesso",
-        "id":                 result["id"],
-        "temporary_password": result["temporary_password"],
-    }), 201
-
-
-@bp.route('/admin/get-all-alunos', methods=['GET'])
-@require_role('admin')
-def get_all_alunos():
-    return jsonify([dict(row) for row in get_all_alunos_service()]), 200
-
+# ── Gestão de alunos (admin) ───────────────────────────────────────────────
 
 @bp.route('/admin/alunos', methods=['GET'])
 @require_role('admin')
-def list_alunos():
-    return jsonify([dict(row) for row in get_users_by_role_service('aluno')]), 200
+def listar_alunos():
+    return jsonify([dict(r) for r in get_users_by_role_service('aluno')]), 200
 
 
 @bp.route('/admin/alunos', methods=['POST'])
 @require_role('admin')
-def create_aluno():
-    result, error, status = create_managed_user_service(request.json, 'aluno')
-    if error:
-        return error, status
-    return jsonify({
-        "message": "aluno criado com sucesso",
-        "id": result["id"],
-        "temporary_password": result["temporary_password"],
-    }), 201
+def criar_aluno():
+    resultado, erro, status = create_managed_user_service(request.json, 'aluno')
+    if erro:
+        return erro, status
+    return jsonify({"message": "aluno criado", **resultado}), 201
 
 
-@bp.route('/admin/alunos/<int:user_id>', methods=['PUT'])
+@bp.route('/admin/alunos/<int:usuario_id>', methods=['PUT'])
 @require_role('admin')
-def update_aluno(user_id):
-    return update_managed_user_service(user_id, request.json or {}, 'aluno')
+def atualizar_aluno(usuario_id):
+    return update_managed_user_service(usuario_id, request.json or {}, 'aluno')
 
 
-@bp.route('/admin/alunos/<int:user_id>', methods=['DELETE'])
+@bp.route('/admin/alunos/<int:usuario_id>', methods=['DELETE'])
 @require_role('admin')
-def delete_aluno(user_id):
-    return delete_managed_user_service(user_id, 'aluno')
+def deletar_aluno(usuario_id):
+    return delete_managed_user_service(usuario_id, 'aluno')
 
 
-# ─── Ranking ────────────────────────────────────────────────────────────────
+# ── Rotas legadas (mantidas para compatibilidade com frontend antigo) ───────
+
+@bp.route('/update/<int:usuario_id>', methods=['PUT'])
+@require_role('admin')
+def atualizar_usuario(usuario_id):
+    return update_user_service(usuario_id, request.json)
+
+
+@bp.route('/delete/<int:usuario_id>', methods=['DELETE'])
+@require_role('admin')
+def deletar_usuario(usuario_id):
+    return delete_user_service(usuario_id)
+
+
+# ── Ranking e resultados ───────────────────────────────────────────────────
 
 @bp.route('/ranking', methods=['GET'])
-def get_ranking():
-    """Retorna top 10 alunos por pontuação. Público — não exige autenticação."""
+def ranking():
     return jsonify(buscar_ranking_service()), 200
 
 
-# ─── Histórico e Resultado do Quiz ──────────────────────────────────────────
-
 @bp.route('/estatisticas', methods=['GET'])
 @jwt_required()
-def get_estatisticas():
-    """Retorna estatísticas agregadas de quiz do aluno logado."""
-    usuario_id = get_jwt_identity()
-    return jsonify(buscar_estatisticas_service(usuario_id)), 200
+def estatisticas():
+    return jsonify(buscar_estatisticas_service(get_jwt_identity())), 200
 
 
 @bp.route('/historico', methods=['GET'])
 @jwt_required()
-def get_historico():
-    """Retorna os últimos 10 resultados de quiz do aluno logado."""
-    usuario_id = get_jwt_identity()
-    return jsonify(buscar_historico_service(usuario_id)), 200
+def historico():
+    return jsonify(buscar_historico_service(get_jwt_identity())), 200
 
 
 @bp.route('/salvar-resultado', methods=['POST'])
 @jwt_required()
 def salvar_resultado():
-    """Salva o resultado de um quiz e adiciona pontos ao score do aluno.
-
-    Corpo esperado (JSON):
-        acertos    (int) — número de questões corretas
-        total      (int) — total de questões do quiz
-        capitulo_id (int, opcional)
-        dificuldade (int, opcional) — 1, 2 ou 3
-    """
-    usuario_id = get_jwt_identity()
-    dados = request.get_json() or {}
-    resposta, status = salvar_resultado_service(usuario_id, dados)
+    resposta, status = salvar_resultado_service(
+        get_jwt_identity(), request.get_json() or {}
+    )
     return jsonify(resposta), status

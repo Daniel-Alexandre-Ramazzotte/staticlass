@@ -2,263 +2,242 @@ import json
 import os
 
 from flask import current_app, jsonify
+from werkzeug.utils import secure_filename
 
 from ..utils.normalize import normalize_numbering
 from ..repositories.questions_repository import (
-    add_question_to_db,
-    delete_question,
-    get_all_chapters,
-    get_all_questions,
-    get_alternatives_by_question,
-    get_professor_questions,
-    get_question_by_id,
-    get_question_details,
-    get_random_question,
-    get_random_question_filtered,
-    get_topics_by_chapter,
-    update_question,
+    adicionar_questao,
+    atualizar_questao,
+    deletar_questao,
+    buscar_capitulos,
+    buscar_detalhes_questao,
+    buscar_questao_por_id,
+    buscar_questoes_aleatorias,
+    buscar_questoes_filtradas,
+    buscar_questoes_professor,
+    buscar_todas_questoes,
+    buscar_topicos,
+    buscar_alternativas_por_questao,
+    _buscar_alternativas_em_lote,
 )
-from werkzeug.utils import secure_filename
 
-NUM_QUESTIONS = 5
-
-
-def random_question(num=NUM_QUESTIONS):
-    random_questions = get_random_question(num)
-    output = []
-    for question in random_questions:
-        item = dict(question)
-        item["alternatives"] = [
-            dict(alternative) for alternative in get_alternatives_by_question(item["id"])
-        ]
-        output.append(item)
-    return jsonify(output)
+NUM_QUESTOES_PADRAO = 5
+_FONTES_VALIDAS = {"apostila", "concurso", "avulsa", "vestibular", "enem"}
 
 
-def check_answer(data):
-    if not data:
-        return jsonify({"error": "dados inválidos"}), 400
+# ── Helpers de normalização ─────────────────────────────────────────────────
 
-    question_id = data.get("question_id")
-    answer = data.get("answer", "").upper()
-
-    if not question_id or not answer:
-        return jsonify({"error": "question_id e answer são obrigatórios"}), 400
-
-    question = get_question_by_id(question_id)
-    if not question:
-        return jsonify({"error": "questão não encontrada"}), 404
-
-    if answer == question.correct_answer:
-        return jsonify({"message": "correct"})
-    return jsonify({"message": "incorrect", "correct_answer": question.correct_answer})
-
-
-_VALID_SOURCES = {"apostila", "concurso", "avulsa", "vestibular", "enem"}
-
-
-def _normalize_source(value):
-    if value in (None, "", "null"):
+def _normalizar_fonte(valor):
+    if valor in (None, "", "null"):
         return None
-    v = str(value).strip().lower()
-    if v not in _VALID_SOURCES:
-        raise ValueError(f"source inválido: use {sorted(_VALID_SOURCES)} ou deixe em branco")
+    v = str(valor).strip().lower()
+    if v not in _FONTES_VALIDAS:
+        raise ValueError(f"fonte inválida — use {sorted(_FONTES_VALIDAS)} ou deixe em branco")
     return v
 
 
-def _normalize_alternatives(alternatives, correct_answer):
-    if not isinstance(alternatives, list) or len(alternatives) < 2:
-        raise ValueError("é necessário informar pelo menos duas alternativas")
-    if len(alternatives) > 5:
-        raise ValueError("máximo de 5 alternativas permitidas")
-    normalized = []
-    seen_letters = set()
-    correct_letter = (correct_answer or "").upper()
-    for alternative in alternatives:
-        if not isinstance(alternative, dict):
+def _normalizar_alternativas(alternativas, resposta_correta):
+    if not isinstance(alternativas, list) or len(alternativas) < 2:
+        raise ValueError("informe pelo menos duas alternativas")
+    if len(alternativas) > 5:
+        raise ValueError("máximo de 5 alternativas")
+
+    letra_correta = (resposta_correta or "").upper()
+    letras_vistas = set()
+    normalizadas = []
+
+    for alt in alternativas:
+        if not isinstance(alt, dict):
             raise ValueError("alternativas inválidas")
-        letter = (alternative.get("letter") or "").strip().upper()
-        text = normalize_numbering((alternative.get("text") or "").strip())
-        if not letter or not text:
+        letra = (alt.get("letter") or "").strip().upper()
+        texto = normalize_numbering((alt.get("text") or "").strip())
+        if not letra or not texto:
             raise ValueError("cada alternativa precisa de letra e texto")
-        if letter in seen_letters:
-            raise ValueError("letras de alternativas duplicadas")
-        seen_letters.add(letter)
-        normalized.append(
-            {
-                "letter": letter,
-                "text": text,
-                "is_correct": letter == correct_letter,
-            }
-        )
-    if correct_letter not in seen_letters:
-        raise ValueError("a resposta correta precisa existir entre as alternativas")
-    return normalized
+        if letra in letras_vistas:
+            raise ValueError("letras duplicadas nas alternativas")
+        letras_vistas.add(letra)
+        normalizadas.append({"letter": letra, "text": texto, "is_correct": letra == letra_correta})
+
+    if letra_correta not in letras_vistas:
+        raise ValueError("a resposta correta deve estar entre as alternativas")
+    return normalizadas
 
 
-def _coerce_optional_int(value):
-    if value in (None, "", "null"):
-        return None
-    return int(value)
+def _para_int_opcional(valor):
+    return None if valor in (None, "", "null") else int(valor)
 
 
-def _coerce_optional_bool(value):
-    if isinstance(value, bool):
-        return value
-    if value in (None, "", "null"):
+def _para_bool_opcional(valor):
+    if isinstance(valor, bool):
+        return valor
+    if valor in (None, "", "null"):
         return False
-    if isinstance(value, str):
-        return value.strip().lower() in {"1", "true", "t", "yes", "sim"}
-    return bool(value)
+    if isinstance(valor, str):
+        return valor.strip().lower() in {"1", "true", "t", "yes", "sim"}
+    return bool(valor)
 
 
-def _normalize_question_payload(data, professor_id=None):
-    if not data:
+def _normalizar_payload(dados, professor_id=None):
+    if not dados:
         raise ValueError("dados inválidos")
 
-    issue = (data.get("issue") or "").strip()
-    correct_answer = (data.get("correct_answer") or "").strip().upper()
-    solution = (data.get("solution") or "").strip()
-    raw_alternatives = data.get("alternatives")
-    if isinstance(raw_alternatives, str):
-        raw_alternatives = json.loads(raw_alternatives)
+    enunciado       = (dados.get("issue") or "").strip()
+    resposta_correta = (dados.get("correct_answer") or "").strip().upper()
+    if not enunciado or not resposta_correta:
+        raise ValueError("enunciado e resposta correta são obrigatórios")
 
-    if not issue or not correct_answer:
-        raise ValueError("issue e correct_answer são obrigatórios")
+    alternativas_raw = dados.get("alternatives")
+    if isinstance(alternativas_raw, str):
+        alternativas_raw = json.loads(alternativas_raw)
 
-    normalized = {
-        "issue": normalize_numbering(issue),
-        "correct_answer": correct_answer,
-        "solution": normalize_numbering(solution) or None,
-        "image_q": data.get("image_q"),
-        "image_s": data.get("image_s"),
-        "section": (data.get("section") or "").strip() or None,
-        "source": _normalize_source(data.get("source")),
-        "difficulty": _coerce_optional_int(data.get("difficulty")),
-        "needs_fix": _coerce_optional_bool(data.get("needs_fix")),
-        "chapter_id": _coerce_optional_int(data.get("chapter_id")),
-        "topic_id": _coerce_optional_int(data.get("topic_id")),
-        "professor_id": professor_id,
-        "alternatives": _normalize_alternatives(raw_alternatives, correct_answer),
+    return {
+        "issue":          normalize_numbering(enunciado),
+        "correct_answer": resposta_correta,
+        "solution":       normalize_numbering((dados.get("solution") or "").strip()) or None,
+        "image_q":        dados.get("image_q"),
+        "image_s":        dados.get("image_s"),
+        "section":        (dados.get("section") or "").strip() or None,
+        "source":         _normalizar_fonte(dados.get("source")),
+        "difficulty":     _para_int_opcional(dados.get("difficulty")),
+        "needs_fix":      _para_bool_opcional(dados.get("needs_fix")),
+        "chapter_id":     _para_int_opcional(dados.get("chapter_id")),
+        "topic_id":       _para_int_opcional(dados.get("topic_id")),
+        "professor_id":   professor_id,
+        "alternatives":   _normalizar_alternativas(alternativas_raw, resposta_correta),
     }
-    return normalized
 
 
-def add_question_service(data, professor_id=None):
+def _embutir_alternativas(questoes: list[dict]) -> list[dict]:
+    """Adiciona 'alternatives' a cada questão com uma única query."""
+    mapa = _buscar_alternativas_em_lote([q["id"] for q in questoes])
+    for q in questoes:
+        q["alternatives"] = mapa.get(q["id"], [])
+    return questoes
+
+
+# ── Serviços públicos ───────────────────────────────────────────────────────
+
+def random_question(num=NUM_QUESTOES_PADRAO):
+    questoes = [dict(q) for q in buscar_questoes_aleatorias(num)]
+    return jsonify(_embutir_alternativas(questoes))
+
+
+def check_answer(dados):
+    if not dados:
+        return jsonify({"error": "dados inválidos"}), 400
+
+    questao_id = dados.get("question_id")
+    resposta   = (dados.get("answer") or "").upper()
+    if not questao_id or not resposta:
+        return jsonify({"error": "question_id e answer são obrigatórios"}), 400
+
+    questao = buscar_questao_por_id(questao_id)
+    if not questao:
+        return jsonify({"error": "questão não encontrada"}), 404
+
+    if resposta == questao.correct_answer:
+        return jsonify({"message": "correct"})
+    return jsonify({"message": "incorrect", "correct_answer": questao.correct_answer})
+
+
+def add_question_service(dados, professor_id=None):
     try:
-        normalized = _normalize_question_payload(data, professor_id=professor_id)
+        payload = _normalizar_payload(dados, professor_id=professor_id)
     except (ValueError, TypeError, json.JSONDecodeError) as e:
         return jsonify({"error": str(e)}), 400
-
     try:
-        new_id = add_question_to_db(normalized)
-        return jsonify({"message": "questão adicionada com sucesso", "id": new_id}), 201
+        novo_id = adicionar_questao(payload)
+        return jsonify({"message": "questão adicionada", "id": novo_id}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
-def update_question_service(data):
-    if not data or "id" not in data:
-        return jsonify({"error": "dados inválidos ou id ausente"}), 400
+def update_question_service(dados):
+    if not dados or "id" not in dados:
+        return jsonify({"error": "id ausente"}), 400
     try:
-        current = get_question_by_id(int(data["id"]))
-        if not current:
+        atual = buscar_questao_por_id(int(dados["id"]))
+        if not atual:
             return jsonify({"error": "questão não encontrada"}), 404
+
+        # Mescla valores enviados com os atuais (sem sobrescrever com None)
         merged = {
-            "issue": data.get("issue", current.issue),
-            "correct_answer": data.get("correct_answer", current.correct_answer),
-            "solution": data.get("solution", current.solution),
-            "image_q": data.get("image_q", current.image_q),
-            "image_s": data.get("image_s", current.image_s),
-            "section": data.get("section", current.section),
-            "source": data.get("source", current.source),
-            "difficulty": data.get("difficulty", current.difficulty),
-            "needs_fix": data.get("needs_fix", current.needs_fix),
-            "chapter_id": data.get("chapter_id", current.chapter_id),
-            "topic_id": data.get("topic_id", current.topic_id),
-            "professor_id": data.get("professor_id", current.professor_id),
-            "alternatives": data.get("alternatives"),
+            "issue":          dados.get("issue",          atual.issue),
+            "correct_answer": dados.get("correct_answer", atual.correct_answer),
+            "solution":       dados.get("solution",       atual.solution),
+            "image_q":        dados.get("image_q",        atual.image_q),
+            "image_s":        dados.get("image_s",        atual.image_s),
+            "section":        dados.get("section",        atual.section),
+            "source":         dados.get("source",         atual.source),
+            "difficulty":     dados.get("difficulty",     atual.difficulty),
+            "needs_fix":      dados.get("needs_fix",      atual.needs_fix),
+            "chapter_id":     dados.get("chapter_id",     atual.chapter_id),
+            "topic_id":       dados.get("topic_id",       atual.topic_id),
+            "professor_id":   dados.get("professor_id",   atual.professor_id),
+            "alternatives":   dados.get("alternatives")
+                              or [dict(a) for a in buscar_alternativas_por_questao(int(dados["id"]))],
         }
-        if merged["alternatives"] is None:
-            merged["alternatives"] = [
-                dict(alternative)
-                for alternative in get_alternatives_by_question(int(data["id"]))
-            ]
-        normalized = _normalize_question_payload(
-            merged,
-            professor_id=merged.get("professor_id"),
-        )
-        normalized["id"] = int(data["id"])
-        update_question(normalized)
-        return jsonify({"message": "questão atualizada com sucesso"})
+        payload = _normalizar_payload(merged, professor_id=merged["professor_id"])
+        payload["id"] = int(dados["id"])
+        atualizar_questao(payload)
+        return jsonify({"message": "questão atualizada"})
     except (ValueError, TypeError, json.JSONDecodeError) as e:
         return jsonify({"error": str(e)}), 400
 
 
-def process_upload(file_obj):
-    if not file_obj or file_obj.filename == "":
+def process_upload(arquivo):
+    if not arquivo or arquivo.filename == "":
         return None
-    filename = secure_filename(file_obj.filename)
-    caminho = os.path.join(current_app.config["UPLOAD_FOLDER"], filename)
+    nome = secure_filename(arquivo.filename)
+    caminho = os.path.join(current_app.config["UPLOAD_FOLDER"], nome)
     try:
-        file_obj.save(caminho)
-        return filename
+        arquivo.save(caminho)
+        return nome
     except Exception as e:
-        current_app.logger.error(f"Erro ao salvar arquivo: {e}")
+        current_app.logger.error(f"Erro ao salvar imagem: {e}")
         return None
 
 
 def get_images():
-    upload_folder = current_app.config["UPLOAD_FOLDER"]
-    return os.listdir(upload_folder)
+    return os.listdir(current_app.config["UPLOAD_FOLDER"])
 
 
 def get_professor_questions_service(professor_id):
-    return get_professor_questions(professor_id)
+    return buscar_questoes_professor(professor_id)
 
 
 def get_all_questions_service():
-    return get_all_questions()
+    return buscar_todas_questoes()
 
 
-def get_question_detail_service(question_id: int):
-    question = get_question_details(question_id)
-    if not question:
+def get_question_detail_service(questao_id: int):
+    questao = buscar_detalhes_questao(questao_id)
+    if not questao:
         return None
-    payload = dict(question)
-    payload["alternatives"] = [
-        dict(alternative) for alternative in get_alternatives_by_question(question_id)
-    ]
+    payload = dict(questao)
+    payload["alternatives"] = buscar_alternativas_por_questao(questao_id)
     return payload
 
 
-def delete_question_service(question_id: int):
+def delete_question_service(questao_id: int):
     try:
-        delete_question(question_id)
-        return jsonify({"message": "questão removida com sucesso"}), 200
+        deletar_questao(questao_id)
+        return jsonify({"message": "questão removida"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
 def random_question_filtered(num, chapter_id=None, topic_id=None, difficulty=None, source=None):
-    result = get_random_question_filtered(
-        num,
-        chapter_id=chapter_id,
-        topic_id=topic_id,
-        difficulty=difficulty,
-        source=source,
-    )
-    output = []
-    for q in result:
-        q_dict = dict(q)
-        q_dict["alternatives"] = [dict(a) for a in get_alternatives_by_question(q_dict["id"])]
-        output.append(q_dict)
-    return output
+    questoes = [dict(q) for q in buscar_questoes_filtradas(
+        num, chapter_id=chapter_id, topic_id=topic_id,
+        difficulty=difficulty, source=source,
+    )]
+    return _embutir_alternativas(questoes)
 
 
 def get_chapters_service():
-    return [dict(r) for r in get_all_chapters()]
+    return [dict(c) for c in buscar_capitulos()]
 
 
 def get_topics_service(chapter_id=None):
-    return [dict(r) for r in get_topics_by_chapter(chapter_id)]
+    return [dict(t) for t in buscar_topicos(chapter_id)]

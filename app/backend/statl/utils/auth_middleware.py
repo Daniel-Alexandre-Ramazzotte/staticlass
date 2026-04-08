@@ -1,40 +1,27 @@
 from functools import wraps
-from flask import jsonify, request
-from dotenv import load_dotenv
-import os
+from flask import jsonify
 from flask_jwt_extended import verify_jwt_in_request, get_jwt
 
-load_dotenv()
-SECRET_KEY = os.getenv("SECRET_KEY")
 
-# Roles = aluno, professor, admin
-def require_role(required_roles):
-    # Garante que seja uma lista, mesmo se passar só uma string
-    if isinstance(required_roles, str):
-        required_roles = [required_roles]
+def require_role(papeis_permitidos):
+    """Decorator que valida JWT e verifica se o papel do usuário está autorizado."""
+    if isinstance(papeis_permitidos, str):
+        papeis_permitidos = [papeis_permitidos]
 
-    def decorator(f):
-        @wraps(f)
+    def decorador(funcao):
+        @wraps(funcao)
         def wrapper(*args, **kwargs):
-            # Verifica o token JWT
-            # Ele lê o header, valida o Bearer, checa expiração e assinatura
             try:
                 verify_jwt_in_request()
-            except Exception as e:
-                return jsonify({"error": "Invalid or missing token"}), 401
-            
-            # Pega os dados do token já decodificado
-            claims = get_jwt()
-            
-            # Verifica a role
-            # Se 'role' não existir no token, assume que não tem permissão
-            user_role = claims.get("role")
-            
-            if user_role not in required_roles:
+            except Exception:
+                return jsonify({"error": "token inválido ou ausente"}), 401
+
+            papel_usuario = get_jwt().get("role")
+            if papel_usuario not in papeis_permitidos:
                 return jsonify({
-                    "error": f"Acesso negado. Privilégios necessários: {', '.join(required_roles)}"
+                    "error": f"acesso negado — requer: {', '.join(papeis_permitidos)}"
                 }), 403
 
-            return f(*args, **kwargs)
+            return funcao(*args, **kwargs)
         return wrapper
-    return decorator
+    return decorador

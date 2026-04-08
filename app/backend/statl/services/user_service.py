@@ -1,203 +1,197 @@
-from ..repositories.user_repository import (
-    create_professor,
-    create_user,
-    create_user_with_role,
-    delete_user,
-    get_all_alunos,
-    get_all_professors,
-    get_user_by_email,
-    get_user_by_id,
-    get_users_by_role,
-    update_user,
-)
-from werkzeug.security import generate_password_hash, check_password_hash
+import secrets
 from flask import jsonify
+from werkzeug.security import generate_password_hash, check_password_hash
 
+from ..repositories.user_repository import (
+    buscar_usuario_por_email,
+    buscar_usuario_por_id,
+    criar_professor,
+    criar_usuario_com_papel,
+    deletar_usuario,
+    listar_alunos,
+    listar_professores,
+    listar_usuarios_por_papel,
+    atualizar_usuario,
+)
+from ..utils.validators import email_valido
+
+
+def _gerar_senha_temporaria():
+    return secrets.token_urlsafe(12)
+
+
+def _validar_email_disponivel(email):
+    """Retorna mensagem de erro ou None se o e-mail for válido e disponível."""
+    if not email_valido(email):
+        return "email inválido"
+    if buscar_usuario_por_email(email):
+        return "email já está em uso"
+    return None
+
+
+# ── Leitura ────────────────────────────────────────────────────────────────
 
 def get_user_by_email_service(email):
-    if not email:
-        return None
-    return get_user_by_email(email)
+    return buscar_usuario_por_email(email) if email else None
 
 
-def get_user_by_id_service(user_id):
-    if not user_id:
-        return None
-    return get_user_by_id(user_id)
+def get_user_by_id_service(usuario_id):
+    return buscar_usuario_por_id(usuario_id) if usuario_id else None
 
 
-def update_user_service(user_id, data):
-    if not data or not user_id:
+def get_all_professors_service():
+    return listar_professores()
+
+
+def get_all_alunos_service():
+    return listar_alunos()
+
+
+def get_users_by_role_service(papel):
+    return listar_usuarios_por_papel(papel)
+
+
+# ── Perfil próprio ─────────────────────────────────────────────────────────
+
+def update_own_profile_service(usuario_id, dados):
+    usuario = buscar_usuario_por_id(usuario_id)
+    if not usuario:
+        return None, jsonify({"error": "usuário não encontrado"}), 404
+
+    alteracoes = {}
+
+    novo_nome = (dados.get("name") or "").strip()
+    if novo_nome and novo_nome != usuario.name:
+        alteracoes["name"] = novo_nome
+
+    novo_email = (dados.get("email") or "").strip()
+    if novo_email and novo_email != usuario.email:
+        erro = _validar_email_disponivel(novo_email)
+        if erro:
+            return None, jsonify({"error": erro}), 400
+        alteracoes["email"] = novo_email
+
+    nova_senha = dados.get("password")
+    if nova_senha:
+        if nova_senha != dados.get("confirm_password"):
+            return None, jsonify({"error": "as senhas não coincidem"}), 400
+        alteracoes["password_hash"] = generate_password_hash(nova_senha)
+
+    if not alteracoes:
+        return usuario, None, 200
+
+    try:
+        atualizar_usuario(usuario_id, alteracoes)
+    except KeyError as e:
+        return None, jsonify({"error": str(e)}), 400
+
+    return buscar_usuario_por_id(usuario_id), None, 200
+
+
+def delete_own_account_service(usuario_id, senha_fornecida):
+    usuario = buscar_usuario_por_id(usuario_id)
+    if not usuario:
+        return {"error": "usuário não encontrado"}, 404
+    if not check_password_hash(usuario.password_hash, senha_fornecida):
+        return {"error": "senha incorreta"}, 400
+    try:
+        deletar_usuario(usuario_id)
+        return {"message": "conta excluída com sucesso"}, 200
+    except Exception as e:
+        return {"error": f"erro ao deletar conta: {e}"}, 500
+
+
+# ── CRUD gerenciado pelo admin ─────────────────────────────────────────────
+
+def create_professor_service(dados):
+    """Cria professor (rota legada). Prefira create_managed_user_service."""
+    return create_managed_user_service(dados, "professor")
+
+
+def create_managed_user_service(dados, papel):
+    if papel not in {"professor", "aluno"}:
+        return None, jsonify({"error": "papel inválido"}), 400
+    if not dados:
+        return None, jsonify({"error": "dados inválidos"}), 400
+
+    email = (dados.get("email") or "").strip()
+    nome  = (dados.get("name") or "").strip()
+    if not email or not nome:
+        return None, jsonify({"error": "nome e email são obrigatórios"}), 400
+
+    erro = _validar_email_disponivel(email)
+    if erro:
+        return None, jsonify({"error": erro}), 400
+
+    senha = dados.get("password") or _gerar_senha_temporaria()
+    usuario_id = criar_usuario_com_papel(email, generate_password_hash(senha), nome, papel)
+    return {"id": usuario_id, "temporary_password": senha}, None, 201
+
+
+def update_user_service(usuario_id, dados):
+    if not dados or not usuario_id:
         return jsonify({"error": "dados inválidos"}), 400
     try:
-        update_user(user_id, data)
+        atualizar_usuario(usuario_id, dados)
         return jsonify({"message": "usuário atualizado com sucesso"}), 200
     except KeyError as e:
         return jsonify({"error": str(e)}), 400
 
 
-def delete_user_service(user_id):
-    if not user_id:
-        return jsonify({"error": "user_id é obrigatório"}), 400
+def update_managed_user_service(usuario_id, dados, papel):
+    if not usuario_id:
+        return jsonify({"error": "dados inválidos"}), 400
+
+    usuario = buscar_usuario_por_id(usuario_id)
+    if not usuario:
+        return jsonify({"error": "usuário não encontrado"}), 404
+    if usuario.role != papel:
+        return jsonify({"error": "usuário não pertence ao grupo informado"}), 400
+
+    alteracoes = {}
+    nome   = (dados.get("name") or "").strip()
+    email  = (dados.get("email") or "").strip()
+    senha  = dados.get("password") or ""
+    ativo  = dados.get("active")
+
+    if nome and nome != usuario.name:
+        alteracoes["name"] = nome
+    if email and email != usuario.email:
+        outro = buscar_usuario_por_email(email)
+        if not email_valido(email):
+            return jsonify({"error": "email inválido"}), 400
+        if outro and outro.id != usuario.id:
+            return jsonify({"error": "email já está em uso"}), 400
+        alteracoes["email"] = email
+    if senha:
+        alteracoes["password_hash"] = generate_password_hash(senha)
+    if ativo is not None:
+        alteracoes["active"] = bool(ativo)
+
+    if not alteracoes:
+        return jsonify({"message": "nenhuma alteração realizada"}), 200
+
     try:
-        delete_user(user_id)
+        atualizar_usuario(usuario_id, alteracoes)
+        return jsonify({"message": "usuário atualizado com sucesso"}), 200
+    except KeyError as e:
+        return jsonify({"error": str(e)}), 400
+
+
+def delete_user_service(usuario_id):
+    if not usuario_id:
+        return jsonify({"error": "id é obrigatório"}), 400
+    try:
+        deletar_usuario(usuario_id)
         return jsonify({"message": "usuário removido com sucesso"}), 200
     except KeyError as e:
         return jsonify({"error": str(e)}), 500
 
 
-def delete_own_account_service(user_id, provided_password):
-    user = get_user_by_id(user_id)
-    if not user:
-        return {"error": "usuário não encontrado"}, 404
-    if not check_password_hash(user.password_hash, provided_password):
-        return {"error": "senha incorreta"}, 400
-    try:
-        delete_user(user_id)
-        return {"message": "conta excluída com sucesso"}, 200
-    except Exception as e:
-        return {"error": f"erro ao deletar conta: {str(e)}"}, 500
-
-
-def update_own_profile_service(user_id, data):
-    from statl.services.auth_service import email_valido
-
-    user = get_user_by_id(user_id)
-    if not user:
-        return None, jsonify({"error": "usuário não encontrado"}), 404
-
-    changes = {}
-
-    if data.get("name") and data["name"] != user.name:
-        changes["name"] = data["name"]
-
-    if data.get("email") and data["email"] != user.email:
-        new_email = data["email"]
-        if not email_valido(new_email):
-            return None, jsonify({"error": "email inválido"}), 400
-        if get_user_by_email(new_email):
-            return None, jsonify({"error": "email já em uso"}), 400
-        changes["email"] = new_email
-
-    if data.get("password"):
-        if data["password"] != data.get("confirm_password"):
-            return None, jsonify({"error": "as senhas não coincidem"}), 400
-        changes["password_hash"] = generate_password_hash(data["password"])
-
-    if not changes:
-        return user, None, 200
-
-    try:
-        update_user(user_id, changes)
-    except KeyError as e:
-        return None, jsonify({"error": str(e)}), 400
-
-    return get_user_by_id(user_id), None, 200
-
-
-def get_all_professors_service():
-    return get_all_professors()
-
-
-def create_professor_service(data):
-    from statl.services.auth_service import email_valido
-
-    if not data:
-        return None, jsonify({"error": "dados inválidos"}), 400
-
-    email = (data.get("email") or "").strip()
-    name  = (data.get("name") or "").strip()
-
-    if not email or not name:
-        return None, jsonify({"error": "nome e email são obrigatórios"}), 400
-    if not email_valido(email):
-        return None, jsonify({"error": "email inválido"}), 400
-    if get_user_by_email(email):
-        return None, jsonify({"error": "email já está em uso"}), 400
-
-    raw_password = data.get("password") or "Professor@123"
-    professor_id = create_professor(email, generate_password_hash(raw_password), name)
-
-    return {"id": professor_id, "temporary_password": raw_password}, None, 201
-
-
-def get_all_alunos_service():
-    return get_all_alunos()
-
-
-def get_users_by_role_service(role):
-    return get_users_by_role(role)
-
-
-def create_managed_user_service(data, role):
-    from statl.services.auth_service import email_valido
-
-    if role not in {"professor", "aluno"}:
-        return None, jsonify({"error": "papel inválido"}), 400
-    if not data:
-        return None, jsonify({"error": "dados inválidos"}), 400
-
-    email = (data.get("email") or "").strip()
-    name = (data.get("name") or "").strip()
-    password = data.get("password") or ("Professor@123" if role == "professor" else "Aluno@123")
-
-    if not email or not name:
-        return None, jsonify({"error": "nome e email são obrigatórios"}), 400
-    if not email_valido(email):
-        return None, jsonify({"error": "email inválido"}), 400
-    if get_user_by_email(email):
-        return None, jsonify({"error": "email já está em uso"}), 400
-
-    user_id = create_user_with_role(email, generate_password_hash(password), name, role)
-    return {"id": user_id, "temporary_password": password}, None, 201
-
-
-def update_managed_user_service(user_id, data, role):
-    from statl.services.auth_service import email_valido
-
-    if not data or not user_id:
-        return jsonify({"error": "dados inválidos"}), 400
-
-    user = get_user_by_id(user_id)
-    if not user:
+def delete_managed_user_service(usuario_id, papel):
+    usuario = buscar_usuario_por_id(usuario_id)
+    if not usuario:
         return jsonify({"error": "usuário não encontrado"}), 404
-    if user.role != role:
+    if usuario.role != papel:
         return jsonify({"error": "usuário não pertence ao grupo informado"}), 400
-
-    changes = {}
-    name = (data.get("name") or "").strip()
-    email = (data.get("email") or "").strip()
-    password = data.get("password") or ""
-    active = data.get("active")
-
-    if name and name != user.name:
-        changes["name"] = name
-    if email and email != user.email:
-        if not email_valido(email):
-            return jsonify({"error": "email inválido"}), 400
-        other_user = get_user_by_email(email)
-        if other_user and other_user.id != user.id:
-            return jsonify({"error": "email já está em uso"}), 400
-        changes["email"] = email
-    if password:
-        changes["password_hash"] = generate_password_hash(password)
-    if active is not None:
-        changes["active"] = bool(active)
-
-    if not changes:
-        return jsonify({"message": "nenhuma alteração realizada"}), 200
-
-    try:
-        update_user(user_id, changes)
-        return jsonify({"message": "usuário atualizado com sucesso"}), 200
-    except KeyError as e:
-        return jsonify({"error": str(e)}), 400
-
-
-def delete_managed_user_service(user_id, role):
-    user = get_user_by_id(user_id)
-    if not user:
-        return jsonify({"error": "usuário não encontrado"}), 404
-    if user.role != role:
-        return jsonify({"error": "usuário não pertence ao grupo informado"}), 400
-    return delete_user_service(user_id)
+    return delete_user_service(usuario_id)

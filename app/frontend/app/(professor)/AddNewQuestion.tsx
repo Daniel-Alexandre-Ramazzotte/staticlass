@@ -1,25 +1,16 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import {
-  Input,
-  YStack,
-  XStack,
-  ZStack,
-  Text,
-  ScrollView,
-  Button,
-} from 'tamagui';
+import { Input, YStack, XStack, ZStack, Text, ScrollView, Button } from 'tamagui';
 import { palette } from 'app/constants/style';
 import api from 'app/services/api';
 import { AppButton } from 'app/components/AppButton';
 import { ChevronLeft } from 'lucide-react-native';
 import { useAuth } from 'app/context/AuthContext';
 
-type Alternative = {
-  letter: string;
-  text: string;
-  is_correct: boolean;
-};
+const LETRAS = ['A', 'B', 'C', 'D', 'E'] as const;
+type Letra = typeof LETRAS[number];
+
+type Alternative = { letter: string; text: string; is_correct: boolean };
 
 type QuestionDetail = {
   id: number;
@@ -31,6 +22,8 @@ type QuestionDetail = {
   alternatives: Alternative[];
 };
 
+const ALTERNATIVAS_VAZIAS: Record<Letra, string> = { A: '', B: '', C: '', D: '', E: '' };
+
 export default function AddNewQuestion() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string }>();
@@ -39,61 +32,51 @@ export default function AddNewQuestion() {
   const questionId = params.id ? Number(params.id) : null;
   const isEditing = useMemo(() => questionId !== null && !Number.isNaN(questionId), [questionId]);
 
-  const [issue, setIssue] = useState('');
-  const [altA, setAltA] = useState('');
-  const [altB, setAltB] = useState('');
-  const [altC, setAltC] = useState('');
-  const [altD, setAltD] = useState('');
-  const [altE, setAltE] = useState('');
-  const [correctAlt, setCorrectAlt] = useState('');
-  const [section, setSection] = useState('');
-  const [difficulty, setDifficulty] = useState('');
-  const [solution, setSolution] = useState('');
-  const [loadingQuestion, setLoadingQuestion] = useState(false);
+  const [enunciado, setEnunciado] = useState('');
+  const [alternativas, setAlternativas] = useState<Record<Letra, string>>(ALTERNATIVAS_VAZIAS);
+  const [respostaCorreta, setRespostaCorreta] = useState<Letra | ''>('');
+  const [secao, setSecao] = useState('');
+  const [dificuldade, setDificuldade] = useState('');
+  const [solucao, setSolucao] = useState('');
+  const [carregando, setCarregando] = useState(false);
+
+  const setAlternativa = (letra: Letra, texto: string) =>
+    setAlternativas((prev) => ({ ...prev, [letra]: texto }));
 
   useEffect(() => {
-    if (!isEditing || questionId === null) {
-      return;
-    }
+    if (!isEditing || questionId === null) return;
 
-    const loadQuestion = async () => {
-      setLoadingQuestion(true);
-      try {
-        const response = await api.get(`/questions/${questionId}`);
-        const question = response.data as QuestionDetail;
-        setIssue(question.issue || '');
-        setCorrectAlt(question.correct_answer || '');
-        setSection(question.section || '');
-        setDifficulty(question.difficulty ? String(question.difficulty) : '');
-        setSolution(question.solution || '');
+    setCarregando(true);
+    api.get(`/questions/${questionId}`)
+      .then(({ data }) => {
+        const q = data as QuestionDetail;
+        setEnunciado(q.issue || '');
+        setRespostaCorreta((q.correct_answer || '') as Letra | '');
+        setSecao(q.section || '');
+        setDificuldade(q.difficulty ? String(q.difficulty) : '');
+        setSolucao(q.solution || '');
 
-        const alternativesByLetter = new Map(
-          (question.alternatives || []).map((alternative) => [alternative.letter, alternative.text])
-        );
-        setAltA(alternativesByLetter.get('A') || '');
-        setAltB(alternativesByLetter.get('B') || '');
-        setAltC(alternativesByLetter.get('C') || '');
-        setAltD(alternativesByLetter.get('D') || '');
-        setAltE(alternativesByLetter.get('E') || '');
-      } catch (error) {
-        console.error('Erro ao carregar questão:', error);
-        alert('Nao foi possivel carregar a questao.');
+        const mapa: Record<string, string> = {};
+        (q.alternatives || []).forEach((alt) => { mapa[alt.letter] = alt.text; });
+        setAlternativas({
+          A: mapa['A'] || '', B: mapa['B'] || '', C: mapa['C'] || '',
+          D: mapa['D'] || '', E: mapa['E'] || '',
+        });
+      })
+      .catch((err) => {
+        console.error('Erro ao carregar questão:', err);
+        alert('Não foi possível carregar a questão.');
         router.back();
-      } finally {
-        setLoadingQuestion(false);
-      }
-    };
-
-    loadQuestion();
+      })
+      .finally(() => setCarregando(false));
   }, [isEditing, questionId, router]);
 
-  const handleQuestionSubmit = async () => {
+  const salvar = async () => {
     if (!userId) {
-      alert('Usuario nao autenticado. Faca login novamente.');
+      alert('Usuário não autenticado. Faça login novamente.');
       return;
     }
-
-    if (!issue || !altA || !altB || !altC || !altD || !altE || !correctAlt || !solution) {
+    if (!enunciado || !solucao || !respostaCorreta || LETRAS.some((l) => !alternativas[l])) {
       alert('Por favor, preencha todos os campos.');
       return;
     }
@@ -101,27 +84,19 @@ export default function AddNewQuestion() {
     try {
       const payload = {
         id: questionId ?? undefined,
-        issue,
-        correct_answer: correctAlt.toUpperCase(),
-        solution,
-        section: section || undefined,
-        difficulty: difficulty ? Number(difficulty) : undefined,
-        alternatives: [
-          { letter: 'A', text: altA },
-          { letter: 'B', text: altB },
-          { letter: 'C', text: altC },
-          { letter: 'D', text: altD },
-          { letter: 'E', text: altE },
-        ],
+        issue: enunciado,
+        correct_answer: respostaCorreta,
+        solution: solucao,
+        section: secao || undefined,
+        difficulty: dificuldade ? Number(dificuldade) : undefined,
+        alternatives: LETRAS.map((letra) => ({ letter: letra, text: alternativas[letra] })),
       };
 
-      const response = isEditing
+      const resposta = isEditing
         ? await api.put('/questions/update', payload)
-        : await api.post('/questions/add', payload, {
-            headers: { 'Content-Type': 'application/json' },
-          });
+        : await api.post('/questions/add', payload, { headers: { 'Content-Type': 'application/json' } });
 
-      if (response.status === 200 || response.status === 201) {
+      if (resposta.status === 200 || resposta.status === 201) {
         alert(isEditing ? 'Questão atualizada com sucesso!' : 'Questão adicionada com sucesso!');
         router.replace('/(professor)/QuestionsManager');
       } else {
@@ -137,256 +112,121 @@ export default function AddNewQuestion() {
   return (
     <ZStack f={1}>
       <YStack
-        position="absolute"
-        top={0}
-        right={0}
-        bottom={0}
-        left={0}
-        backgroundColor={palette.backgroundLight}
-        opacity={0.2}
-        pointerEvents="none"
+        position="absolute" top={0} right={0} bottom={0} left={0}
+        backgroundColor={palette.backgroundLight} opacity={0.2} pointerEvents="none"
       />
-      <ScrollView
-        f={1}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 24 }}
-      >
+      <ScrollView f={1} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 24 }}>
         <YStack>
           <XStack
             backgroundColor={palette.primaryBlue}
-            pt="$8"
-            pb="$4"
-            px="$4"
-            ai="center"
-            jc="space-between"
-            width="100%"
+            pt="$8" pb="$4" px="$4"
+            ai="center" jc="space-between" width="100%"
           >
             <Button
-              size="$3"
-              circular
-              backgroundColor="transparent"
-              pressStyle={{ opacity: 0.7 }}
-              onPress={() => router.back()}
+              size="$3" circular backgroundColor="transparent"
+              pressStyle={{ opacity: 0.7 }} onPress={() => router.back()}
               icon={<ChevronLeft color={palette.white} size={28} />}
             />
-            <Text
-              f={1}
-              color="#fff"
-              fontSize="$8"
-              fontWeight="bold"
-              textAlign="center"
-              mr="$6"
-            >
+            <Text f={1} color="#fff" fontSize="$8" fontWeight="bold" textAlign="center" mr="$6">
               {isEditing ? 'Editar Questão' : 'Gerenciar Questões'}
             </Text>
           </XStack>
 
           <YStack ai="center" gap="$4" width="70%" alignSelf="center" py="$4">
-            {loadingQuestion && (
-              <Text color={palette.darkBlue}>Carregando questão...</Text>
-            )}
-
-            <YStack width="100%" gap={0}>
-              <Text
-                backgroundColor={palette.darkBlue}
-                color={palette.offWhite}
-                padding="$1"
-                width="40%"
-                borderRadius={4}
-                alignSelf="flex-start"
-                marginLeft="$1"
-                textAlign="left"
-                fontWeight="bold"
-              >
-                Seção:
-              </Text>
-              <Input
-                width="94%"
-                alignSelf="flex-end"
-                marginTop="$1"
-                value={section}
-                onChangeText={setSection}
-                backgroundColor={palette.backgroundLight}
-                opacity={0.3}
-                color={palette.offWhite}
-              />
-            </YStack>
-
-            <YStack width="100%" gap={0}>
-              <Text
-                backgroundColor={palette.darkBlue}
-                color={palette.offWhite}
-                padding="$1"
-                width="40%"
-                borderRadius={4}
-                alignSelf="flex-start"
-                marginLeft="$1"
-                textAlign="left"
-                fontWeight="bold"
-              >
-                Enunciado:
-              </Text>
-              <Input
-                width="94%"
-                alignSelf="flex-end"
-                marginTop="$1"
-                value={issue}
-                onChangeText={setIssue}
-                backgroundColor={palette.backgroundLight}
-                opacity={0.3}
-                color={palette.offWhite}
-              />
-            </YStack>
+            {carregando && <Text color={palette.darkBlue}>Carregando questão...</Text>}
 
             {[
-              ['Alternativa A:', altA, setAltA],
-              ['Alternativa B:', altB, setAltB],
-              ['Alternativa C:', altC, setAltC],
-              ['Alternativa D:', altD, setAltD],
-              ['Alternativa E:', altE, setAltE],
-            ].map(([label, value, setter]) => (
-              <YStack width="100%" gap={0} key={label}>
-                <Text
-                  backgroundColor={palette.darkBlue}
-                  color={palette.offWhite}
-                  padding="$1"
-                  width="40%"
-                  borderRadius={4}
-                  alignSelf="flex-start"
-                  marginLeft="$1"
-                  textAlign="left"
-                  fontWeight="bold"
-                >
-                  {label}
-                </Text>
-                <Input
-                  width="94%"
-                  alignSelf="flex-end"
-                  marginTop="$1"
-                  value={value as string}
-                  onChangeText={setter as (value: string) => void}
-                  backgroundColor={palette.backgroundLight}
-                  opacity={0.3}
-                  color={palette.offWhite}
-                />
-              </YStack>
+              { label: 'Seção:', valor: secao, setValor: setSecao },
+              { label: 'Enunciado:', valor: enunciado, setValor: setEnunciado },
+            ].map(({ label, valor, setValor }) => (
+              <CampoTexto key={label} label={label} valor={valor} setValor={setValor} />
+            ))}
+
+            {LETRAS.map((letra) => (
+              <CampoTexto
+                key={letra}
+                label={`Alternativa ${letra}:`}
+                valor={alternativas[letra]}
+                setValor={(texto) => setAlternativa(letra, texto)}
+              />
             ))}
 
             <YStack width="100%" gap={0}>
-              <Text
-                backgroundColor={palette.darkBlue}
-                color={palette.offWhite}
-                padding="$1"
-                width="40%"
-                borderRadius={4}
-                alignSelf="flex-start"
-                marginLeft="$1"
-                textAlign="left"
-                fontWeight="bold"
-              >
-                Dificuldade:
-              </Text>
+              <RotuloLabel>Dificuldade:</RotuloLabel>
               <XStack width="94%" alignSelf="flex-end" marginTop="$1" gap="$2">
-                {[
-                  { value: '1', label: 'Fácil' },
-                  { value: '2', label: 'Médio' },
-                  { value: '3', label: 'Difícil' },
-                ].map(({ value, label }) => (
-                  <Button
+                {[{ value: '1', label: 'Fácil' }, { value: '2', label: 'Médio' }, { value: '3', label: 'Difícil' }].map(({ value, label }) => (
+                  <BotaoSeletor
                     key={value}
-                    flex={1}
-                    size="$3"
-                    backgroundColor={difficulty === value ? palette.primaryGreen : palette.backgroundLight}
-                    borderWidth={1}
-                    borderColor={difficulty === value ? palette.primaryGreen : palette.darkBlue}
-                    pressStyle={{ opacity: 0.7 }}
-                    onPress={() => setDifficulty(value)}
-                  >
-                    <Text
-                      color={difficulty === value ? palette.offWhite : palette.darkBlue}
-                      fontWeight="bold"
-                      fontSize="$4"
-                    >
-                      {label}
-                    </Text>
-                  </Button>
+                    label={label}
+                    ativo={dificuldade === value}
+                    onPress={() => setDificuldade(value)}
+                  />
                 ))}
               </XStack>
             </YStack>
 
             <YStack width="100%" gap={0}>
-              <Text
-                backgroundColor={palette.darkBlue}
-                color={palette.offWhite}
-                padding="$1"
-                width="40%"
-                borderRadius={4}
-                alignSelf="flex-start"
-                marginLeft="$1"
-                textAlign="left"
-                fontWeight="bold"
-              >
-                Resposta correta:
-              </Text>
+              <RotuloLabel>Resposta correta:</RotuloLabel>
               <XStack width="94%" alignSelf="flex-end" marginTop="$1" gap="$2">
-                {['A', 'B', 'C', 'D', 'E'].map((letter) => (
-                  <Button
-                    key={letter}
-                    flex={1}
-                    size="$3"
-                    backgroundColor={correctAlt === letter ? palette.primaryGreen : palette.backgroundLight}
-                    borderWidth={1}
-                    borderColor={correctAlt === letter ? palette.primaryGreen : palette.darkBlue}
-                    pressStyle={{ opacity: 0.7 }}
-                    onPress={() => setCorrectAlt(letter)}
-                  >
-                    <Text
-                      color={correctAlt === letter ? palette.offWhite : palette.darkBlue}
-                      fontWeight="bold"
-                      fontSize="$5"
-                    >
-                      {letter}
-                    </Text>
-                  </Button>
+                {LETRAS.map((letra) => (
+                  <BotaoSeletor
+                    key={letra}
+                    label={letra}
+                    ativo={respostaCorreta === letra}
+                    onPress={() => setRespostaCorreta(letra)}
+                  />
                 ))}
               </XStack>
             </YStack>
 
-            <YStack width="100%" gap={0}>
-              <Text
-                backgroundColor={palette.darkBlue}
-                color={palette.offWhite}
-                padding="$1"
-                width="40%"
-                borderRadius={4}
-                alignSelf="flex-start"
-                marginLeft="$1"
-                textAlign="left"
-                fontWeight="bold"
-              >
-                Solução:
-              </Text>
-              <Input
-                width="94%"
-                alignSelf="flex-end"
-                marginTop="$1"
-                value={solution}
-                onChangeText={setSolution}
-                backgroundColor={palette.backgroundLight}
-                opacity={0.3}
-                color={palette.offWhite}
-              />
-            </YStack>
+            <CampoTexto label="Solução:" valor={solucao} setValor={setSolucao} />
 
-            <AppButton
-              backgroundColor={palette.darkBlue}
-              onPress={handleQuestionSubmit}
-            >
+            <AppButton backgroundColor={palette.darkBlue} onPress={salvar}>
               {isEditing ? 'Salvar Alterações' : 'Adicionar Nova Questão'}
             </AppButton>
           </YStack>
         </YStack>
       </ScrollView>
     </ZStack>
+  );
+}
+
+function RotuloLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <Text
+      backgroundColor={palette.darkBlue} color={palette.offWhite}
+      padding="$1" width="40%" borderRadius={4}
+      alignSelf="flex-start" marginLeft="$1" textAlign="left" fontWeight="bold"
+    >
+      {children}
+    </Text>
+  );
+}
+
+function CampoTexto({ label, valor, setValor }: { label: string; valor: string; setValor: (v: string) => void }) {
+  return (
+    <YStack width="100%" gap={0}>
+      <RotuloLabel>{label}</RotuloLabel>
+      <Input
+        width="94%" alignSelf="flex-end" marginTop="$1"
+        value={valor} onChangeText={setValor}
+        backgroundColor={palette.backgroundLight} opacity={0.3} color={palette.offWhite}
+      />
+    </YStack>
+  );
+}
+
+function BotaoSeletor({ label, ativo, onPress }: { label: string; ativo: boolean; onPress: () => void }) {
+  return (
+    <Button
+      flex={1} size="$3"
+      backgroundColor={ativo ? palette.primaryGreen : palette.backgroundLight}
+      borderWidth={1} borderColor={ativo ? palette.primaryGreen : palette.darkBlue}
+      pressStyle={{ opacity: 0.7 }} onPress={onPress}
+    >
+      <Text color={ativo ? palette.offWhite : palette.darkBlue} fontWeight="bold" fontSize="$4">
+        {label}
+      </Text>
+    </Button>
   );
 }

@@ -1,161 +1,134 @@
-"""
-Rotas exclusivas para o painel admin.
-Inclui: visualizador de questões filtrado e SQL viewer read-only.
-"""
+"""Rotas exclusivas do painel admin — visualizador de questões, SQL viewer e estatísticas."""
 import re
 from flask import Blueprint, jsonify, request
 from sqlalchemy import text
 from statl.utils.auth_middleware import require_role
 from .. import db
+from ..repositories.questions_repository import _buscar_alternativas_em_lote
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 
-# ─── Visualizador de Questões ────────────────────────────────────────────────
+
+# ── Helpers ─────────────────────────────────────────────────────────────────
+
+def _construir_where(chapter_ids, topic_ids, difficulties, sources):
+    """Monta cláusula WHERE parametrizada a partir dos filtros recebidos."""
+    filtros, params = [], {}
+
+    def _in(coluna, valores, prefixo):
+        phs = ", ".join(f":{prefixo}{i}" for i in range(len(valores)))
+        params.update({f"{prefixo}{i}": v for i, v in enumerate(valores)})
+        filtros.append(f"q.{coluna} IN ({phs})")
+
+    if chapter_ids:  _in("chapter_id", chapter_ids, "cap")
+    if topic_ids:    _in("topic_id",   topic_ids,   "top")
+    if difficulties: _in("difficulty", difficulties, "dif")
+    if sources:      _in("source",     sources,      "src")
+
+    return ("WHERE " + " AND ".join(filtros)) if filtros else "", params
+
+
+# ── Visualizador de questões ─────────────────────────────────────────────────
 
 @bp.route('/questoes', methods=['GET'])
 @require_role('admin')
 def visualizar_questoes():
-    """Retorna questões com suporte a filtros de layout e conteúdo.
-
-    Query params:
-        layout      — 'enem' | 'vestibular' | 'avulsa' (padrão: 'avulsa')
-        chapter_id  — filtra por capítulo
-        topic_id    — filtra por tópico
-        difficulty  — 1, 2 ou 3
-        page        — número da página (padrão: 1)
-        per_page    — itens por página (padrão: 20, máx: 100)
-    """
-    layout       = request.args.get('layout', 'avulsa')
+    """Lista questões paginadas com filtros opcionais de capítulo, tópico, dificuldade e fonte."""
     chapter_ids  = request.args.getlist('chapter_id', type=int)
-    topic_ids    = request.args.getlist('topic_id', type=int)
+    topic_ids    = request.args.getlist('topic_id',   type=int)
     difficulties = request.args.getlist('difficulty', type=int)
     sources      = [s for s in request.args.getlist('source') if s]
-    page         = max(1, request.args.get('page', 1, type=int))
-    per_page     = min(100, request.args.get('per_page', 20, type=int))
-    offset       = (page - 1) * per_page
+    pagina       = max(1, request.args.get('page',     1,  type=int))
+    por_pagina   = min(100, request.args.get('per_page', 20, type=int))
+    deslocamento = (pagina - 1) * por_pagina
 
-    # Monta cláusula WHERE dinamicamente
-    filtros = []
-    params: dict = {}
+    where, params = _construir_where(chapter_ids, topic_ids, difficulties, sources)
+    params.update({"limite": por_pagina, "deslocamento": deslocamento})
 
-    if chapter_ids:
-        ph = ', '.join([f':cid{i}' for i in range(len(chapter_ids))])
-        filtros.append(f"q.chapter_id IN ({ph})")
-        for i, v in enumerate(chapter_ids):
-            params[f'cid{i}'] = v
-    if topic_ids:
-        ph = ', '.join([f':tid{i}' for i in range(len(topic_ids))])
-        filtros.append(f"q.topic_id IN ({ph})")
-        for i, v in enumerate(topic_ids):
-            params[f'tid{i}'] = v
-    if difficulties:
-        ph = ', '.join([f':dif{i}' for i in range(len(difficulties))])
-        filtros.append(f"q.difficulty IN ({ph})")
-        for i, v in enumerate(difficulties):
-            params[f'dif{i}'] = v
-    if sources:
-        ph = ', '.join([f':src{i}' for i in range(len(sources))])
-        filtros.append(f"q.source IN ({ph})")
-        for i, v in enumerate(sources):
-            params[f'src{i}'] = v
-
-    where = ("WHERE " + " AND ".join(filtros)) if filtros else ""
-    params["limit"]  = per_page
-    params["offset"] = offset
-
-    sql = text(f"""
+    questoes_raw = db.session.execute(text(f"""
         SELECT
-            q.id,
-            q.issue,
-            q.correct_answer,
-            q.solution,
-            q.difficulty,
-            q.section,
-            q.source,
-            q.image_q,
-            q.image_s,
-            c.name  AS capitulo,
+            q.id, q.issue, q.correct_answer, q.solution,
+            q.difficulty, q.section, q.source, q.image_q, q.image_s,
+            c.name   AS capitulo,
             c.number AS capitulo_numero,
-            t.name  AS topico
+            t.name   AS topico
         FROM questions q
         LEFT JOIN chapters c ON c.id = q.chapter_id
         LEFT JOIN topics   t ON t.id = q.topic_id
         {where}
         ORDER BY c.number ASC, q.id ASC
-        LIMIT :limit OFFSET :offset
-    """)
+        LIMIT :limite OFFSET :deslocamento
+    """), params).mappings().all()
 
-    linhas = db.session.execute(sql, params).mappings().all()
+    total = db.session.execute(
+        text(f"SELECT COUNT(*) FROM questions q {where}"),
+        {k: v for k, v in params.items() if k not in ("limite", "deslocamento")},
+    ).scalar()
 
-    # Total sem paginação (para o frontend saber quantas páginas tem)
-    sql_count = text(f"SELECT COUNT(*) AS total FROM questions q {where}")
-    total = db.session.execute(sql_count, {k: v for k, v in params.items() if k not in ('limit', 'offset')}).scalar()
+    # Carrega todas as alternativas em uma única query (sem N+1)
+    ids_questoes = [q["id"] for q in questoes_raw]
+    mapa_alternativas = _buscar_alternativas_em_lote(ids_questoes)
 
-    questoes = []
-    for q in linhas:
-        # Busca alternativas
-        alts = db.session.execute(
-            text("SELECT letter, text, is_correct FROM alternatives WHERE question_id = :qid ORDER BY letter"),
-            {"qid": q["id"]},
-        ).mappings().all()
-
-        questoes.append({
-            "id":               q["id"],
-            "enunciado":        q["issue"],
+    questoes = [
+        {
+            "id":              q["id"],
+            "enunciado":       q["issue"],
             "resposta_correta": q["correct_answer"],
-            "solucao":          q["solution"],
-            "dificuldade":      q["difficulty"],
-            "secao":            q["section"],
-            "imagem_q":         q["image_q"],
-            "imagem_s":         q["image_s"],
-            "source":           q["source"],
-            "capitulo":         q["capitulo"],
-            "capitulo_numero":  q["capitulo_numero"],
-            "topico":           q["topico"],
-            "alternativas":     [dict(a) for a in alts],
-            "layout":           layout,
-        })
+            "solucao":         q["solution"],
+            "dificuldade":     q["difficulty"],
+            "secao":           q["section"],
+            "source":          q["source"],
+            "imagem_q":        q["image_q"],
+            "imagem_s":        q["image_s"],
+            "capitulo":        q["capitulo"],
+            "capitulo_numero": q["capitulo_numero"],
+            "topico":          q["topico"],
+            "alternativas":    mapa_alternativas.get(q["id"], []),
+            "layout":          q["source"] or "apostila",
+        }
+        for q in questoes_raw
+    ]
 
     return jsonify({
         "questoes":  questoes,
         "total":     total,
-        "page":      page,
-        "per_page":  per_page,
-        "pages":     (total + per_page - 1) // per_page,
+        "page":      pagina,
+        "per_page":  por_pagina,
+        "pages":     max(1, (total + por_pagina - 1) // por_pagina),
     }), 200
 
 
-# ─── Estatísticas dos Alunos ────────────────────────────────────────────────
+# ── Estatísticas dos alunos ──────────────────────────────────────────────────
 
 @bp.route('/stats/alunos', methods=['GET'])
 @require_role('admin')
 def stats_alunos():
-    """Retorna todos os alunos com suas estatísticas de quiz."""
-    rows = db.session.execute(text("""
+    """Retorna todos os alunos com suas estatísticas de quiz agregadas."""
+    linhas = db.session.execute(text("""
         SELECT
             u.id,
             u.name,
             u.email,
-            COALESCE(u.score, 0)                                          AS score,
-            COUNT(qr.id)                                                  AS total_quizzes,
-            COALESCE(SUM(qr.acertos), 0)                                  AS total_acertos,
-            COALESCE(SUM(qr.total), 0)                                    AS total_questoes,
+            COALESCE(u.score, 0)                                         AS score,
+            COUNT(qr.id)                                                 AS total_quizzes,
+            COALESCE(SUM(qr.acertos), 0)                                 AS total_acertos,
+            COALESCE(SUM(qr.total), 0)                                   AS total_questoes,
             ROUND(
                 COALESCE(SUM(qr.acertos) * 100.0 / NULLIF(SUM(qr.total), 0), 0), 1
-            )                                                             AS media_pct
+            )                                                            AS media_pct
         FROM users u
         LEFT JOIN quiz_resultados qr ON qr.usuario_id = u.id
         WHERE u.role = 'aluno'
         GROUP BY u.id, u.name, u.email, u.score
         ORDER BY score DESC
     """)).mappings().all()
-    return jsonify([dict(r) for r in rows]), 200
+    return jsonify([dict(r) for r in linhas]), 200
 
 
-@bp.route('/stats/aluno/<int:user_id>', methods=['GET'])
+@bp.route('/stats/aluno/<int:usuario_id>', methods=['GET'])
 @require_role('admin')
-def stats_aluno_detalhe(user_id):
-    """Retorna o histórico de quizzes de um aluno específico."""
+def stats_aluno_detalhe(usuario_id):
+    """Retorna o histórico de quizzes de um aluno específico (últimos 50)."""
     historico = db.session.execute(text("""
         SELECT qr.id, qr.acertos, qr.total, qr.dificuldade, qr.criado_em,
                c.name AS capitulo_nome
@@ -164,59 +137,58 @@ def stats_aluno_detalhe(user_id):
         WHERE qr.usuario_id = :uid
         ORDER BY qr.criado_em DESC
         LIMIT 50
-    """), {"uid": user_id}).mappings().all()
+    """), {"uid": usuario_id}).mappings().all()
     return jsonify([dict(r) for r in historico]), 200
 
 
-# ─── SQL Viewer (somente leitura) ────────────────────────────────────────────
+# ── SQL Viewer (somente leitura) ─────────────────────────────────────────────
 
-# Apenas essas palavras-chave são permitidas no início do SQL
-_REGEX_SELECT = re.compile(r'^\s*(SELECT|SHOW|DESCRIBE|EXPLAIN|DESC)\b', re.IGNORECASE)
-# Palavras proibidas em qualquer parte da query
+_REGEX_SOMENTE_LEITURA = re.compile(
+    r'^\s*(SELECT|SHOW|DESCRIBE|EXPLAIN|DESC)\b', re.IGNORECASE
+)
 _PALAVRAS_PROIBIDAS = re.compile(
-    r'\b(INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE|GRANT|REVOKE|EXEC|EXECUTE|CALL)\b',
+    r'\b(INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|TRUNCATE|GRANT|REVOKE|EXEC|EXECUTE|CALL)\b'
+    r'|--|/\*',
     re.IGNORECASE,
 )
+
 
 @bp.route('/sql', methods=['POST'])
 @require_role('admin')
 def sql_viewer():
-    """Executa uma query SQL de leitura e retorna os resultados.
-
-    Corpo esperado (JSON):
-        sql (str) — query SELECT/SHOW/DESCRIBE
+    """Executa query SELECT de leitura e retorna resultados (máx. 500 linhas).
 
     Restrições de segurança:
-        - A query deve começar com SELECT, SHOW, DESCRIBE ou EXPLAIN
-        - Palavras-chave de escrita (INSERT, UPDATE, DELETE, DROP...) são bloqueadas
-        - Máximo de 500 linhas por execução
+    - Apenas SELECT, SHOW, DESCRIBE, EXPLAIN permitidos
+    - Palavras-chave de escrita bloqueadas
+    - Comentários SQL (-- e /* */) bloqueados
+    - Multi-statement (;) bloqueado
+    - Execução em transação somente leitura
     """
     dados = request.get_json() or {}
     query = (dados.get('sql') or '').strip()
 
     if not query:
         return jsonify({"error": "campo 'sql' é obrigatório"}), 400
-
-    # Validação: deve começar com SELECT/SHOW/DESCRIBE/EXPLAIN
-    if not _REGEX_SELECT.match(query):
-        return jsonify({"error": "apenas queries SELECT, SHOW, DESCRIBE e EXPLAIN são permitidas"}), 403
-
-    # Validação: não pode conter palavras proibidas
+    if ';' in query:
+        return jsonify({"error": "múltiplos statements não são permitidos"}), 403
+    if not _REGEX_SOMENTE_LEITURA.match(query):
+        return jsonify({"error": "apenas SELECT, SHOW, DESCRIBE e EXPLAIN são permitidos"}), 403
     if _PALAVRAS_PROIBIDAS.search(query):
-        return jsonify({"error": "query contém operações de escrita — não permitido"}), 403
+        return jsonify({"error": "query contém operações ou padrões não permitidos"}), 403
 
     try:
-        resultado = db.session.execute(text(query)).mappings().fetchmany(500)
-        colunas   = list(resultado[0].keys()) if resultado else []
-        linhas    = [dict(r) for r in resultado]
+        with db.engine.connect() as conn:
+            conn.execute(text("SET TRANSACTION READ ONLY"))
+            resultado = conn.execute(text(query)).mappings().fetchmany(500)
 
+        colunas = list(resultado[0].keys()) if resultado else []
+        linhas  = [dict(r) for r in resultado]
         return jsonify({
             "colunas":      colunas,
             "linhas":       linhas,
             "total_linhas": len(linhas),
             "limitado":     len(linhas) == 500,
         }), 200
-
     except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": f"erro na query: {str(e)}"}), 400
+        return jsonify({"error": f"erro na query: {e}"}), 400

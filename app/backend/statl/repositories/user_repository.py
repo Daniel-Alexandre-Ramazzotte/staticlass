@@ -2,114 +2,121 @@ from .. import db
 from sqlalchemy import text
 
 
-_ALLOWED_USER_UPDATE_FIELDS = {"name", "email", "score", "active", "password_hash"}
+_CAMPOS_ATUALIZAVEIS = {"name", "email", "score", "active", "password_hash"}
 
 
-def get_user_by_email(email):
+def buscar_usuario_por_email(email):
     return db.session.execute(
         text("SELECT * FROM users WHERE email = :email"),
         {"email": email},
     ).fetchone()
 
 
-def get_user_by_id(user_id):
+def buscar_usuario_por_id(usuario_id):
     return db.session.execute(
         text("SELECT * FROM users WHERE id = :id"),
-        {"id": user_id},
+        {"id": usuario_id},
     ).fetchone()
 
 
-def create_user(email, password_hash, name):
-    db.session.execute(
-        text("INSERT INTO users (email, password_hash, name) VALUES (:email, :password_hash, :name)"),
-        {"email": email, "password_hash": password_hash, "name": name},
+def criar_usuario(email, senha_hash, nome):
+    resultado = db.session.execute(
+        text("""
+            INSERT INTO users (email, password_hash, name)
+            VALUES (:email, :senha_hash, :nome)
+            RETURNING id
+        """),
+        {"email": email, "senha_hash": senha_hash, "nome": nome},
     )
     db.session.commit()
-    user = db.session.execute(
-        text("SELECT id FROM users WHERE email = :email"), {"email": email}
-    ).fetchone()
-    return user.id
+    return resultado.scalar()
 
 
-def create_professor(email, password_hash, name):
-    return create_user_with_role(email, password_hash, name, "professor")
+def criar_professor(email, senha_hash, nome):
+    return criar_usuario_com_papel(email, senha_hash, nome, "professor")
 
 
-def create_user_with_role(email, password_hash, name, role):
-    db.session.execute(
-        text(
-            """
+def criar_usuario_com_papel(email, senha_hash, nome, papel):
+    resultado = db.session.execute(
+        text("""
             INSERT INTO users (email, password_hash, name, role)
-            VALUES (:email, :password_hash, :name, :role)
-            """
-        ),
-        {"email": email, "password_hash": password_hash, "name": name, "role": role},
+            VALUES (:email, :senha_hash, :nome, :papel)
+            RETURNING id
+        """),
+        {"email": email, "senha_hash": senha_hash, "nome": nome, "papel": papel},
     )
     db.session.commit()
-    user = db.session.execute(
-        text("SELECT id FROM users WHERE email = :email"), {"email": email}
-    ).fetchone()
-    return user.id
+    return resultado.scalar()
 
 
-def update_user(user_id, data):
-    safe = {k: v for k, v in data.items() if k in _ALLOWED_USER_UPDATE_FIELDS}
-    if not safe:
-        raise KeyError("Nenhum campo válido para atualizar")
-    safe["id"] = user_id
-    fields = ", ".join([f"{k} = :{k}" for k in safe if k != "id"])
+def atualizar_usuario(usuario_id, dados):
+    campos = {k: v for k, v in dados.items() if k in _CAMPOS_ATUALIZAVEIS}
+    if not campos:
+        raise KeyError("nenhum campo válido para atualizar")
+    campos["id"] = usuario_id
+    atribuicoes = ", ".join(f"{k} = :{k}" for k in campos if k != "id")
     try:
-        db.session.execute(text(f"UPDATE users SET {fields} WHERE id = :id"), safe)
+        db.session.execute(text(f"UPDATE users SET {atribuicoes} WHERE id = :id"), campos)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        raise KeyError(f"Erro ao atualizar usuário: {e}")
+        raise KeyError(f"erro ao atualizar usuário: {e}")
 
 
-def update_password(user_id, new_password_hash):
+def atualizar_senha(usuario_id, nova_senha_hash):
     try:
         db.session.execute(
-            text("UPDATE users SET password_hash = :password_hash WHERE id = :id"),
-            {"password_hash": new_password_hash, "id": user_id},
+            text("UPDATE users SET password_hash = :senha_hash WHERE id = :id"),
+            {"senha_hash": nova_senha_hash, "id": usuario_id},
         )
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        raise KeyError(f"Erro ao atualizar senha: {e}")
+        raise KeyError(f"erro ao atualizar senha: {e}")
 
 
-def delete_user(user_id):
+def deletar_usuario(usuario_id):
     try:
-        db.session.execute(text("DELETE FROM users WHERE id = :id"), {"id": user_id})
+        db.session.execute(text("DELETE FROM users WHERE id = :id"), {"id": usuario_id})
         db.session.commit()
     except Exception as e:
         db.session.rollback()
-        raise KeyError(f"Erro ao deletar usuário: {e}")
+        raise KeyError(f"erro ao deletar usuário: {e}")
 
 
-def get_all_professors():
+def listar_professores():
     return db.session.execute(
-        text("SELECT id, name, email FROM users WHERE role = :role ORDER BY name ASC"),
-        {"role": "professor"},
+        text("SELECT id, name, email FROM users WHERE role = 'professor' ORDER BY name"),
     ).mappings().all()
 
 
-def get_all_alunos():
+def listar_alunos():
     return db.session.execute(
-        text("SELECT id, name, email FROM users WHERE role = :role ORDER BY name ASC"),
-        {"role": "aluno"},
+        text("SELECT id, name, email FROM users WHERE role = 'aluno' ORDER BY name"),
     ).mappings().all()
 
 
-def get_users_by_role(role):
+def listar_usuarios_por_papel(papel):
     return db.session.execute(
-        text(
-            """
+        text("""
             SELECT id, name, email, active, score
             FROM users
-            WHERE role = :role
-            ORDER BY name ASC
-            """
-        ),
-        {"role": role},
+            WHERE role = :papel
+            ORDER BY name
+        """),
+        {"papel": papel},
     ).mappings().all()
+
+
+# ── Aliases para compatibilidade com código existente ──────────────────────
+get_user_by_email     = buscar_usuario_por_email
+get_user_by_id        = buscar_usuario_por_id
+create_user           = criar_usuario
+create_professor      = criar_professor
+create_user_with_role = criar_usuario_com_papel
+update_user           = atualizar_usuario
+update_password       = atualizar_senha
+delete_user           = deletar_usuario
+get_all_professors    = listar_professores
+get_all_alunos        = listar_alunos
+get_users_by_role     = listar_usuarios_por_papel
