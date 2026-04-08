@@ -197,7 +197,7 @@ def buscar_questoes_filtradas(
     difficulty=None,
     source=None,
 ) -> list[dict]:
-    condicoes = ["EXISTS (SELECT 1 FROM alternatives a WHERE a.question_id = questions.id)"]
+    condicoes = ["EXISTS (SELECT 1 FROM alternatives a WHERE a.question_id = q.id)"]
     params: dict = {"n": quantidade}
 
     def _adicionar_in(coluna: str, valor, prefixo: str):
