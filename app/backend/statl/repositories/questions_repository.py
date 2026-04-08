@@ -207,13 +207,13 @@ def buscar_questoes_filtradas(
         condicoes.append(f"{coluna} IN ({placeholders})")
 
     if chapter_id is not None:
-        _adicionar_in("chapter_id", chapter_id, "cap")
+        _adicionar_in("q.chapter_id", chapter_id, "cap")
     if topic_id is not None:
-        _adicionar_in("topic_id", topic_id, "top")
+        _adicionar_in("q.topic_id", topic_id, "top")
     if difficulty is not None:
-        _adicionar_in("difficulty", difficulty, "dif")
+        _adicionar_in("q.difficulty", difficulty, "dif")
     if source is not None:
-        _adicionar_in("source", source, "src")
+        _adicionar_in("q.source", source, "src")
 
     where = "WHERE " + " AND ".join(condicoes)
     return db.session.execute(
