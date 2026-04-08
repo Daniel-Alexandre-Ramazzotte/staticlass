@@ -107,6 +107,13 @@ def _garantir_schema_incremental(app):
         db.session.execute(
             text("ALTER TABLE questions ADD COLUMN IF NOT EXISTS source VARCHAR(20)")
         )
+        # Garante defaults nas colunas users que podem ter sido criadas sem server_default
+        db.session.execute(
+            text("ALTER TABLE users ALTER COLUMN active SET DEFAULT TRUE")
+        )
+        db.session.execute(
+            text("ALTER TABLE users ALTER COLUMN score SET DEFAULT 0")
+        )
         db.session.commit()
     except Exception:
         db.session.rollback()

@@ -22,8 +22,8 @@ def buscar_usuario_por_id(usuario_id):
 def criar_usuario(email, senha_hash, nome):
     resultado = db.session.execute(
         text("""
-            INSERT INTO users (email, password_hash, name)
-            VALUES (:email, :senha_hash, :nome)
+            INSERT INTO users (email, password_hash, name, active, score)
+            VALUES (:email, :senha_hash, :nome, TRUE, 0)
             RETURNING id
         """),
         {"email": email, "senha_hash": senha_hash, "nome": nome},
@@ -39,8 +39,8 @@ def criar_professor(email, senha_hash, nome):
 def criar_usuario_com_papel(email, senha_hash, nome, papel):
     resultado = db.session.execute(
         text("""
-            INSERT INTO users (email, password_hash, name, role)
-            VALUES (:email, :senha_hash, :nome, :papel)
+            INSERT INTO users (email, password_hash, name, role, active, score)
+            VALUES (:email, :senha_hash, :nome, :papel, TRUE, 0)
             RETURNING id
         """),
         {"email": email, "senha_hash": senha_hash, "nome": nome, "papel": papel},
