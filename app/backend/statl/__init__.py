@@ -5,6 +5,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from flask_login import LoginManager
 from flask_mail import Mail
+from sqlalchemy import text
 from dotenv import load_dotenv
 from .config import Config
 
@@ -43,6 +44,7 @@ def create_app(testing: bool = False):
         from .models import user, chapters, quiz_resultado, questao_diaria  # noqa: F401
         from .models import questions as _modelos_questao                   # noqa: F401
         db.create_all()
+        _garantir_schema_incremental(app)
 
     return app
 
@@ -95,3 +97,18 @@ def _registrar_blueprints(app):
     from .routes import auth, questions, users, admin
     for blueprint in (auth.bp, questions.bp, users.bp, admin.bp):
         app.register_blueprint(blueprint)
+
+
+def _garantir_schema_incremental(app):
+    if db.engine.dialect.name != "postgresql":
+        return
+
+    try:
+        db.session.execute(
+            text("ALTER TABLE questions ADD COLUMN IF NOT EXISTS source VARCHAR(20)")
+        )
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        app.logger.exception("Falha ao garantir schema incremental do banco.")
+        raise
