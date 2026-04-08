@@ -59,7 +59,7 @@ export default function HomeScreen() {
         <Header name={name || ''} subtitle="Administrador" />
         <YStack f={1} jc="center" ai="center" gap="$4" px="$8">
           <AppButton
-            backgroundColor={palette.primaryBlue}
+            backgroundColor={palette.primaryGreen}
             onPress={() => router.push('/(admin)/QuestaoViewer')}
           >
             Gerenciar Questões

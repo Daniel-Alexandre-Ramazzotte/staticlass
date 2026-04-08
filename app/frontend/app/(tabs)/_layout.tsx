@@ -41,7 +41,12 @@ export default function TabLayout() {
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: 'bold',
+          marginLeft: 4,
           marginTop: 4,
+        },
+        tabBarItemStyle: {
+          borderRadius: 18,
+          marginHorizontal: 2,
         },
       }}
     >

@@ -7,6 +7,13 @@ export const AppButton = styled(Button, {
   minHeight: 50,
   alignItems: 'center',
   justifyContent: 'center',
+  hoverStyle: {
+    opacity: 0.94,
+    scale: 1.02,
+    shadowColor: palette.offBlack,
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+  },
   pressStyle: { opacity: 0.8, scale: 0.98 },
   animation: 'quick',
 
