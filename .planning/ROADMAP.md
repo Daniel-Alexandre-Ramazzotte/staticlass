@@ -21,7 +21,7 @@
 
 ## Phases
 
-### Phase 1 — Foundation & Auth Hardening
+### Phase 1: Foundation & Auth Hardening
 
 **Goal:** The app is stable, secure, and correctly enforces access rules — every other phase builds on this foundation without carrying forward known bugs.
 
@@ -42,7 +42,7 @@
 
 ---
 
-### Phase 2 — Question Bank Expansion
+### Phase 2: Question Bank Expansion
 
 **Goal:** Questions carry source metadata and both professors and students can use source as a filter, making the bank meaningfully navigable beyond chapter/difficulty.
 
@@ -62,7 +62,7 @@
 
 ---
 
-### Phase 3 — Gamification
+### Phase 3: Gamification
 
 **Goal:** Every practice session moves a student's XP and streak forward, and students can see where they stand relative to peers — making daily practice intrinsically rewarding.
 
@@ -84,7 +84,7 @@
 
 ---
 
-### Phase 4 — Professor Lists
+### Phase 4: Professor Lists
 
 **Goal:** Professors can assign curated question lists with deadlines to students, and both sides have a clear workflow — professors compose and publish, students see and submit, professors review results.
 
@@ -107,7 +107,7 @@
 
 ---
 
-### Phase 5 — Statistics & Analytics
+### Phase 5: Statistics & Analytics
 
 **Goal:** Students understand their own learning trajectory, professors can identify struggling students and problematic questions, and admins can see platform health — all without leaving the app.
 
@@ -128,7 +128,7 @@
 
 ---
 
-### Phase 6 — Polish & Release
+### Phase 6: Polish & Release
 
 **Goal:** The app is stable, tested under real usage conditions, and ready to hand to real students and professors at the start of the semester.
 
