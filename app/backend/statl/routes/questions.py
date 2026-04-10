@@ -35,11 +35,13 @@ def _ensure_question_access(question_id: int):
 
 
 @bp.route("/rand/<int:num>", methods=["GET"])
+@require_role(['aluno', 'professor', 'admin'])
 def get_question_rand(num=NUM_QUESTIONS):
     return random_question(num)
 
 
 @bp.route("/filtered", methods=["GET"])
+@require_role(['aluno', 'professor', 'admin'])
 def get_questions_filtered():
     num         = request.args.get("num", NUM_QUESTIONS, type=int)
     chapter_ids = request.args.getlist("chapter_id", type=int) or None
@@ -57,17 +59,20 @@ def get_questions_filtered():
 
 
 @bp.route("/chapters", methods=["GET"])
+@require_role(['aluno', 'professor', 'admin'])
 def get_chapters():
     return jsonify(get_chapters_service()), 200
 
 
 @bp.route("/topics", methods=["GET"])
+@require_role(['aluno', 'professor', 'admin'])
 def get_topics():
     chapter_id = request.args.get("chapter_id", type=int)
     return jsonify(get_topics_service(chapter_id)), 200
 
 
 @bp.route('/check', methods=['POST'])
+@require_role(['aluno', 'professor', 'admin'])
 def check_correct_answer():
     return check_answer(request.get_json())
 
