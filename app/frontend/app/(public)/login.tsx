@@ -37,6 +37,34 @@ export default function LoginScreen() {
 
   const { signIn } = useAuth();
 
+  function extractToken(payload: unknown): string | null {
+    if (typeof payload === 'string') {
+      const trimmed = payload.trim();
+
+      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+        try {
+          return extractToken(JSON.parse(trimmed));
+        } catch {
+          return null;
+        }
+      }
+
+      if (trimmed.split('.').length === 3) {
+        return trimmed;
+      }
+
+      return null;
+    }
+
+    if (payload && typeof payload === 'object') {
+      const data = payload as Record<string, unknown>;
+      const candidate = data.access_token ?? data.token ?? data.accessToken;
+      return typeof candidate === 'string' && candidate ? candidate : null;
+    }
+
+    return null;
+  }
+
   const handleLogin = async () => {
     // Realiza a lógica de autenticação
     // Após o login bem-sucedido, navega para a tela principal (conjunto de abas)
@@ -56,7 +84,7 @@ export default function LoginScreen() {
         setErrorMessage(response.data?.error || 'Email ou senha incorretos.');
         return;
       }
-      const token = response.data?.access_token;
+      const token = extractToken(response.data);
       if (!token) {
         setErrorMessage('Resposta de login inválida. Token não recebido.');
         return;
