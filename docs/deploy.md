@@ -35,7 +35,7 @@ MAIL_PASSWORD=senha-de-app-gmail
 ### Frontend — `app/frontend/.env`
 
 ```env
-EXPO_PUBLIC_API_URL=https://api.staticlass.com.br/
+EXPO_PUBLIC_API_URL=https://staticlass-backend.fly.dev/
 ```
 
 > Em desenvolvimento local, esta variável não é necessária — a URL é detectada automaticamente pela plataforma.
@@ -102,7 +102,7 @@ docker compose up -d web
 ```bash
 cd app/frontend
 npx vercel --prod
-# Configure a env var EXPO_PUBLIC_API_URL no painel da Vercel
+# Configure EXPO_PUBLIC_API_URL=https://staticlass-backend.fly.dev/ no painel da Vercel
 ```
 
 #### Netlify
