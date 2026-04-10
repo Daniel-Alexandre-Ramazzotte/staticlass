@@ -61,6 +61,9 @@ def login_user(data):
     if user is None or not check_password_hash(user.password_hash, password):
         return None, jsonify({"error": "Email ou senha incorretos."}), 400
 
+    if not user.active:
+        return None, jsonify({"error": "Conta desativada. Contate o administrador."}), 403
+
     token = create_access_token(
         identity=str(user.id),
         additional_claims={

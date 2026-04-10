@@ -122,6 +122,10 @@ def _garantir_schema_incremental(app):
         db.session.execute(
             text("ALTER TABLE users ALTER COLUMN score SET DEFAULT 0")
         )
+        # Backfill: set active=TRUE for any user rows created before server_default was applied
+        db.session.execute(
+            text("UPDATE users SET active = TRUE WHERE active IS NULL")
+        )
         db.session.commit()
     except Exception:
         db.session.rollback()
