@@ -1,3 +1,4 @@
+import os
 from flask_mail import Message
 from .. import mail
 from flask import current_app
@@ -8,8 +9,8 @@ from flask import current_app
 def send_reset_email(to: str, token: str):
     ''' Envia um email de redefinição de senha para o endereço fornecido com o token dado.
     '''
-
-    reset_link = f"http://localhost:5000/reset-password?token={token}"
+    base_url = os.environ.get("APP_BASE_URL", "http://localhost:5000")
+    reset_link = f"{base_url}/reset-password?token={token}"
 
     subject = "Recuperação de senha"
     body = f"""
