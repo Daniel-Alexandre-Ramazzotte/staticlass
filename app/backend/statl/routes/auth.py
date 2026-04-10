@@ -25,7 +25,7 @@ def login():
     token, error, http_code = login_user(data)
     if error:
         return error, http_code
-    return jsonify({"token": token})
+    return jsonify({"access_token": token})
     
 
 
