@@ -28,8 +28,9 @@ def create_app(testing: bool = False):
 
     app.config['UPLOAD_FOLDER']               = _PASTA_UPLOADS
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.secret_key                            = os.getenv("FLASK_SECRET_KEY", os.getenv("SECRET_KEY"))
-    app.config["JWT_SECRET_KEY"]              = os.getenv("JWT_SECRET_KEY",   os.getenv("SECRET_KEY"))
+    if not testing:
+        app.secret_key             = os.getenv("FLASK_SECRET_KEY", os.getenv("SECRET_KEY"))
+        app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", os.getenv("SECRET_KEY"))
 
     _configurar_cors(app)
 
@@ -51,11 +52,18 @@ def create_app(testing: bool = False):
 
 def _configurar_banco(app, testing):
     if testing:
+        from sqlalchemy.pool import StaticPool
         app.config.update(
             TESTING=True,
             WTF_CSRF_ENABLED=False,
             LOGIN_DISABLED=True,
             SQLALCHEMY_DATABASE_URI="sqlite:///:memory:",
+            SQLALCHEMY_ENGINE_OPTIONS={
+                "connect_args": {"check_same_thread": False},
+                "poolclass": StaticPool,
+            },
+            SECRET_KEY="test-secret-key",
+            JWT_SECRET_KEY="test-jwt-secret-key",
         )
         return
 

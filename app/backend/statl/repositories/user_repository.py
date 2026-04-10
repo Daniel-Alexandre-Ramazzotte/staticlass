@@ -6,30 +6,37 @@ _CAMPOS_ATUALIZAVEIS = {"name", "email", "score", "active", "password_hash"}
 
 
 def buscar_usuario_por_email(email):
-    return db.session.execute(
+    result = db.session.execute(
         text("SELECT * FROM users WHERE email = :email"),
         {"email": email},
-    ).fetchone()
+    )
+    row = result.fetchone()
+    result.close()
+    return row
 
 
 def buscar_usuario_por_id(usuario_id):
-    return db.session.execute(
+    result = db.session.execute(
         text("SELECT * FROM users WHERE id = :id"),
         {"id": usuario_id},
-    ).fetchone()
+    )
+    row = result.fetchone()
+    result.close()
+    return row
 
 
 def criar_usuario(email, senha_hash, nome):
     resultado = db.session.execute(
         text("""
-            INSERT INTO users (email, password_hash, name, active, score)
-            VALUES (:email, :senha_hash, :nome, TRUE, 0)
+            INSERT INTO users (email, password_hash, name, role, active, score)
+            VALUES (:email, :senha_hash, :nome, 'aluno', TRUE, 0)
             RETURNING id
         """),
         {"email": email, "senha_hash": senha_hash, "nome": nome},
     )
+    new_id = resultado.scalar()
     db.session.commit()
-    return resultado.scalar()
+    return new_id
 
 
 def criar_professor(email, senha_hash, nome):
@@ -45,8 +52,9 @@ def criar_usuario_com_papel(email, senha_hash, nome, papel):
         """),
         {"email": email, "senha_hash": senha_hash, "nome": nome, "papel": papel},
     )
+    new_id = resultado.scalar()
     db.session.commit()
-    return resultado.scalar()
+    return new_id
 
 
 def atualizar_usuario(usuario_id, dados):
