@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: unknown
-last_updated: "2026-04-10T20:31:00.939Z"
+last_updated: "2026-04-10T21:32:37.835Z"
 progress:
   total_phases: 6
   completed_phases: 1
@@ -52,7 +52,7 @@ See: `.planning/PROJECT.md` (updated 2026-04-08)
 
 ## Todos
 
-(none)
+- Move shared question viewer out of admin namespace
 
 ## Session Continuity
 
