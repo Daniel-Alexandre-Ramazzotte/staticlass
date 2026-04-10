@@ -11,7 +11,7 @@ export default function AdminMenu() {
     <YStack f={1} jc="center" ai="center" gap="$4" px="$8" backgroundColor={palette.offWhite}>
       <AppButton
         backgroundColor={palette.primaryGreen}
-        onPress={() => router.push('/(professor)/QuestionsManager')}
+        onPress={() => router.push('/(admin)/QuestaoViewer')}
       >
         Gerenciar e Visualizar Questões
       </AppButton>

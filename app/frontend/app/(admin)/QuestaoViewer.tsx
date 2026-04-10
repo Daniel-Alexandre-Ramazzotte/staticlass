@@ -1,20 +1,21 @@
 /**
- * Visualizador de questões para o Admin — versão web.
- * Duas abas:
- *   1. Visualização — questões com filtros e layouts (ENEM, Vestibular, Avulsa)
- *   2. Banco de dados — SQL viewer read-only
+ * Tela compartilhada de gestão de questões.
+ * Admin e professor usam o mesmo visualizador moderno; apenas o admin vê a aba SQL.
  */
 import React, { useState, useCallback, useEffect } from 'react';
 import {
   ScrollView, View, TextInput, TouchableOpacity,
   ActivityIndicator, StyleSheet, Platform, Alert,
 } from 'react-native';
-import { YStack, XStack, Text } from 'tamagui';
+import { XStack, Text } from 'tamagui';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, Stack } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { ChevronLeft, Pencil, Trash2, Search } from '@tamagui/lucide-icons';
 import { palette, primaryFontA } from 'app/constants/style';
 import api from 'app/services/api';
+import { AppButton } from 'app/components/AppButton';
+import { useAuth } from 'app/context/AuthContext';
 import { useLayout } from '../../src/constants/layout';
 
 type Alternativa = { letter: string; text: string; is_correct: boolean };
@@ -138,6 +139,7 @@ function toggleS(arr: string[], val: string): string[] {
 function AbaVisualizador() {
   const { maxW, fs } = useLayout();
   const router = useRouter();
+  const { role } = useAuth();
   const [capituloIds, setCapIds] = useState<number[]>([]);
   const [topicoIds, setTopIds] = useState<number[]>([]);
   const [dificuldades, setDifs] = useState<number[]>([]);
@@ -146,6 +148,7 @@ function AbaVisualizador() {
   const [todosTopicos, setTodosTopicos] = useState<Topico[]>([]);
   const [questoes, setQuestoes] = useState<Questao[]>([]);
   const [carregando, setCarreg] = useState(false);
+  const [jaBuscou, setJaBuscou] = useState(false);
   const [pagina, setPagina] = useState(1);
   const [totalPages, setTotalPag] = useState(1);
   const [buscaId, setBuscaId] = useState('');
@@ -171,9 +174,18 @@ function AbaVisualizador() {
         setQuestoes(r.data.questoes);
         setTotalPag(r.data.pages);
         setPagina(pag);
+        setJaBuscou(true);
       })
       .finally(() => setCarreg(false));
   }, [dificuldades, capituloIds, topicoIds, fontes]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (jaBuscou) {
+        buscar(pagina);
+      }
+    }, [buscar, jaBuscou, pagina]),
+  );
 
   const handleDelete = (q: Questao) => {
     Alert.alert('Excluir questão', `Excluir questão #${q.id}?`, [
@@ -196,6 +208,16 @@ function AbaVisualizador() {
   return (
     <ScrollView contentContainerStyle={{ padding: 16, alignItems: 'center' }}>
       <View style={{ width: '100%', maxWidth: maxW ?? 860 }}>
+        <AppButton
+          backgroundColor={palette.primaryBlue}
+          onPress={() => router.push({
+            pathname: '/(professor)/AddNewQuestion',
+            params: { returnTo: '/(admin)/QuestaoViewer' },
+          })}
+        >
+          {role === 'admin' ? 'Adicionar Nova Questão' : 'Nova Questão'}
+        </AppButton>
+
         <View style={s.filtrosBox}>
           <Text fontSize={fs(13)} color={palette.darkBlue} fontWeight="bold" mb={6}>
             Capítulo {capituloIds.length > 0 && <Text fontSize={fs(11)} color={palette.primaryBlue}> ({capituloIds.length} selecionado(s))</Text>}
@@ -291,7 +313,10 @@ function AbaVisualizador() {
             <XStack gap={8} mb={8} mt={-8} jc="flex-end" px={4}>
               <TouchableOpacity
                 style={s.acaoBtnEditar}
-                onPress={() => router.push({ pathname: '/(professor)/AddNewQuestion', params: { id: String(q.id) } })}
+                onPress={() => router.push({
+                  pathname: '/(professor)/AddNewQuestion',
+                  params: { id: String(q.id), returnTo: '/(admin)/QuestaoViewer' },
+                })}
               >
                 <Pencil color="#fff" size={14} />
                 <Text color="#fff" fontSize={12} fontWeight="bold" ml={4}>Editar</Text>
@@ -421,7 +446,10 @@ function AbaSQLViewer() {
 export default function QuestaoViewerScreen() {
   const router = useRouter();
   const { fs } = useLayout();
+  const { role } = useAuth();
   const [abaAtiva, setAbaAtiva] = useState<0 | 1>(0);
+  const isAdmin = role === 'admin';
+  const abas = isAdmin ? ['Visualização', 'Banco de Dados (SQL)'] : ['Visualização'];
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#f5f7fa' }}>
@@ -432,12 +460,12 @@ export default function QuestaoViewerScreen() {
           <ChevronLeft color={palette.white} size={24} />
         </TouchableOpacity>
         <Text color={palette.white} fontSize={fs(18)} fontWeight="bold" fontFamily={primaryFontA}>
-          Visualizador de Questões
+          Gerenciar Questões
         </Text>
       </XStack>
 
       <XStack backgroundColor={palette.darkBlue}>
-        {['Visualização', 'Banco de Dados (SQL)'].map((label, i) => (
+        {abas.map((label, i) => (
           <TouchableOpacity
             key={label}
             onPress={() => setAbaAtiva(i as 0 | 1)}
@@ -454,7 +482,7 @@ export default function QuestaoViewerScreen() {
         ))}
       </XStack>
 
-      {abaAtiva === 0 ? <AbaVisualizador /> : <AbaSQLViewer />}
+      {abaAtiva === 0 || !isAdmin ? <AbaVisualizador /> : <AbaSQLViewer />}
     </SafeAreaView>
   );
 }

@@ -102,8 +102,8 @@ Uses **Expo Router** (file-based routing). Route groups in `app/frontend/app/`:
 - `(public)/` — unauthenticated screens: Login, Register, RecoverPassword
 - `(tabs)/` — main tab bar (Home, Questions/Questoes, Profile); available to all authenticated users
 - `(app)/` — quiz flow screens: QuizInProgressScreen, ResultScreen, SolutionScreen, Ranking, Statistics, Settings
-- `(professor)/` — professor-only: ProfessorMenu, QuestionsManager, AddNewQuestion, ListManager, CreateNewList
-- `(admin)/` — admin-only: AdminMenu, AddProfessor, ProfessorManager, AlunoManager
+- `(professor)/` — professor-only: ProfessorMenu, AddNewQuestion, ListManager, CreateNewList
+- `(admin)/` — admin-only: AdminMenu, AddProfessor, ProfessorManager, AlunoManager, QuestaoViewer
 
 **Auth flow** (`app/_layout.tsx`):
 - `AuthProvider` wraps the entire app

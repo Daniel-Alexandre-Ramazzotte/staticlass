@@ -9,6 +9,7 @@ import { useAuth } from 'app/context/AuthContext';
 
 const LETRAS = ['A', 'B', 'C', 'D', 'E'] as const;
 type Letra = typeof LETRAS[number];
+const QUESTION_MANAGER_ROUTE = '/(admin)/QuestaoViewer';
 
 type Alternative = { letter: string; text: string; is_correct: boolean };
 
@@ -24,13 +25,25 @@ type QuestionDetail = {
 
 const ALTERNATIVAS_VAZIAS: Record<Letra, string> = { A: '', B: '', C: '', D: '', E: '' };
 
+function normalizarReturnTo(returnTo?: string) {
+  if (!returnTo || returnTo.includes('QuestionsManager')) {
+    return QUESTION_MANAGER_ROUTE;
+  }
+
+  return returnTo;
+}
+
 export default function AddNewQuestion() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ id?: string }>();
+  const params = useLocalSearchParams<{ id?: string; returnTo?: string }>();
   const { userId } = useAuth();
 
   const questionId = params.id ? Number(params.id) : null;
   const isEditing = useMemo(() => questionId !== null && !Number.isNaN(questionId), [questionId]);
+  const returnTo = useMemo(
+    () => normalizarReturnTo(typeof params.returnTo === 'string' ? params.returnTo : undefined),
+    [params.returnTo],
+  );
 
   const [enunciado, setEnunciado] = useState('');
   const [alternativas, setAlternativas] = useState<Record<Letra, string>>(ALTERNATIVAS_VAZIAS);
@@ -98,7 +111,7 @@ export default function AddNewQuestion() {
 
       if (resposta.status === 200 || resposta.status === 201) {
         alert(isEditing ? 'Questão atualizada com sucesso!' : 'Questão adicionada com sucesso!');
-        router.replace('/(professor)/QuestionsManager');
+        router.replace(returnTo);
       } else {
         alert('Erro ao salvar questão. Tente novamente.');
       }
@@ -128,7 +141,7 @@ export default function AddNewQuestion() {
               icon={<ChevronLeft color={palette.white} size={28} />}
             />
             <Text f={1} color="#fff" fontSize="$8" fontWeight="bold" textAlign="center" mr="$6">
-              {isEditing ? 'Editar Questão' : 'Gerenciar Questões'}
+              {isEditing ? 'Editar Questão' : 'Nova Questão'}
             </Text>
           </XStack>
 

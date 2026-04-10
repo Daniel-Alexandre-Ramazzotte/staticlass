@@ -2,6 +2,7 @@
 import re
 from flask import Blueprint, jsonify, request
 from sqlalchemy import text
+from flask_jwt_extended import get_jwt, get_jwt_identity
 from statl.utils.auth_middleware import require_role
 from .. import db
 from ..repositories.questions_repository import _buscar_alternativas_em_lote
@@ -11,7 +12,7 @@ bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
 
-def _construir_where(chapter_ids, topic_ids, difficulties, sources):
+def _construir_where(chapter_ids, topic_ids, difficulties, sources, professor_id=None):
     """Monta cláusula WHERE parametrizada a partir dos filtros recebidos."""
     filtros, params = [], {}
 
@@ -24,6 +25,9 @@ def _construir_where(chapter_ids, topic_ids, difficulties, sources):
     if topic_ids:    _in("topic_id",   topic_ids,   "top")
     if difficulties: _in("difficulty", difficulties, "dif")
     if sources:      _in("source",     sources,      "src")
+    if professor_id is not None:
+        filtros.append("q.professor_id = :professor_id")
+        params["professor_id"] = professor_id
 
     return ("WHERE " + " AND ".join(filtros)) if filtros else "", params
 
@@ -31,7 +35,7 @@ def _construir_where(chapter_ids, topic_ids, difficulties, sources):
 # ── Visualizador de questões ─────────────────────────────────────────────────
 
 @bp.route('/questoes', methods=['GET'])
-@require_role('admin')
+@require_role(['admin', 'professor'])
 def visualizar_questoes():
     """Lista questões paginadas com filtros opcionais de capítulo, tópico, dificuldade e fonte."""
     chapter_ids  = request.args.getlist('chapter_id', type=int)
@@ -42,7 +46,17 @@ def visualizar_questoes():
     por_pagina   = min(100, request.args.get('per_page', 20, type=int))
     deslocamento = (pagina - 1) * por_pagina
 
-    where, params = _construir_where(chapter_ids, topic_ids, difficulties, sources)
+    claims = get_jwt()
+    role = claims.get("role")
+    professor_id = get_jwt_identity() if role == "professor" else None
+
+    where, params = _construir_where(
+        chapter_ids,
+        topic_ids,
+        difficulties,
+        sources,
+        professor_id=professor_id,
+    )
     params.update({"limite": por_pagina, "deslocamento": deslocamento})
 
     questoes_raw = db.session.execute(text(f"""
