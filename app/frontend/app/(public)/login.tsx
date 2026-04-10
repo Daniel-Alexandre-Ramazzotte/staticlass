@@ -1,20 +1,14 @@
 import { useRouter } from 'expo-router';
-import { View, TextInput, Pressable, KeyboardAvoidingView } from 'react-native';
-import styles, { tamaguiStyles, palette } from 'app/constants/style';
+import styles, { palette } from 'app/constants/style';
 import { useState } from 'react';
 import CheckLogin from 'app/services/CheckLogin';
-import RecoverPassword from 'app/services/RecoverPasswordService';
-import { appName } from 'app/constants/names';
 import { useAuth } from 'app/context/AuthContext';
 import {
   XStack,
   YStack,
-  ZStack,
   Button,
   Text,
-  SizeTokens,
   Input,
-  TextArea,
   Image,
 } from 'tamagui';
 
@@ -62,8 +56,13 @@ export default function LoginScreen() {
         setErrorMessage(response.data?.error || 'Email ou senha incorretos.');
         return;
       }
-      await signIn(response.data.token);
-    } catch (error: any) {
+      const token = response.data?.access_token;
+      if (!token) {
+        setErrorMessage('Resposta de login inválida. Token não recebido.');
+        return;
+      }
+      await signIn(token);
+    } catch {
       setErrorMessage('Erro de conexão. Tente novamente.');
     }
   };
