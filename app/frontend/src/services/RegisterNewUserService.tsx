@@ -12,7 +12,7 @@ const RegisterNewUserService = async (data: {
     return response;
   } catch (error: any) {
     console.error('Error:', error);
-    return error.response;
+    return error.response ?? { status: 0, data: { error: 'Sem conexão com o servidor.' } };
   }
 };
 export default RegisterNewUserService;

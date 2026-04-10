@@ -42,7 +42,7 @@ export default function RegisterScreen() {
     });
     if (response?.status !== 201) {
       setErrorMessage(
-        response?.data.error || 'Erro ao registrar. Tente novamente.'
+        response?.data?.error ?? 'Erro ao registrar. Tente novamente.'
       );
     } else {
       showAlert();
