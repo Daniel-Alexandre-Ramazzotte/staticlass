@@ -1,1 +1,3 @@
 banco_questoes/
+.env
+app/backend/.env
