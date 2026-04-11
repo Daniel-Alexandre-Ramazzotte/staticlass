@@ -22,17 +22,23 @@ from ..repositories.questions_repository import (
 )
 
 NUM_QUESTOES_PADRAO = 5
-_FONTES_VALIDAS = {"apostila", "concurso", "avulsa", "vestibular", "enem"}
+_FONTES_VALIDAS = {"vestibular", "ENEM", "lista", "concurso", "olimpíada", "apostila", "outro"}
+_FONTE_PADRAO_PROFESSOR = "lista"
 
 
 # ── Helpers de normalização ─────────────────────────────────────────────────
 
-def _normalizar_fonte(valor):
+def _normalizar_fonte(valor, default=None):
     if valor in (None, "", "null"):
-        return None
-    v = str(valor).strip().lower()
+        return default
+    v = str(valor).strip()
+    # Case-normalize: enem → ENEM (backward compatibility + D-02)
+    if v.lower() == "enem":
+        v = "ENEM"
     if v not in _FONTES_VALIDAS:
-        raise ValueError(f"fonte inválida — use {sorted(_FONTES_VALIDAS)} ou deixe em branco")
+        raise ValueError(
+            f"fonte inválida — valores aceitos: {sorted(_FONTES_VALIDAS)}"
+        )
     return v
 
 
@@ -97,7 +103,10 @@ def _normalizar_payload(dados, professor_id=None):
         "image_q":        dados.get("image_q"),
         "image_s":        dados.get("image_s"),
         "section":        (dados.get("section") or "").strip() or None,
-        "source":         _normalizar_fonte(dados.get("source")),
+        "source":         _normalizar_fonte(
+            dados.get("source"),
+            default=_FONTE_PADRAO_PROFESSOR if professor_id is not None else None
+        ),
         "difficulty":     _para_int_opcional(dados.get("difficulty")),
         "needs_fix":      _para_bool_opcional(dados.get("needs_fix")),
         "chapter_id":     _para_int_opcional(dados.get("chapter_id")),
