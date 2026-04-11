@@ -1,15 +1,26 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
+import { Modal, Pressable } from 'react-native';
 import { Input, YStack, XStack, ZStack, Text, ScrollView, Button } from 'tamagui';
 import { palette } from 'app/constants/style';
 import api from 'app/services/api';
 import { AppButton } from 'app/components/AppButton';
-import { ChevronLeft } from 'lucide-react-native';
+import { ChevronLeft, ChevronDown } from 'lucide-react-native';
 import { useAuth } from 'app/context/AuthContext';
 
 const LETRAS = ['A', 'B', 'C', 'D', 'E'] as const;
 type Letra = typeof LETRAS[number];
 const QUESTION_MANAGER_ROUTE = '/(admin)/QuestaoViewer';
+
+const FONTES_ADD = [
+  { label: 'Vestibular', value: 'vestibular' },
+  { label: 'ENEM',       value: 'ENEM' },
+  { label: 'Concurso',   value: 'concurso' },
+  { label: 'Olimpíada',  value: 'olimpíada' },
+  { label: 'Lista',      value: 'lista' },
+  { label: 'Apostila',   value: 'apostila' },
+  { label: 'Outro',      value: 'outro' },
+];
 
 type Alternative = { letter: string; text: string; is_correct: boolean };
 
@@ -20,6 +31,7 @@ type QuestionDetail = {
   solution: string | null;
   difficulty: number | null;
   section: string | null;
+  source?: string | null;
   alternatives: Alternative[];
 };
 
@@ -50,6 +62,8 @@ export default function AddNewQuestion() {
   const [respostaCorreta, setRespostaCorreta] = useState<Letra | ''>('');
   const [secao, setSecao] = useState('');
   const [dificuldade, setDificuldade] = useState('');
+  const [fonte, setFonte] = useState('');
+  const [fonteOpen, setFonteOpen] = useState(false);
   const [solucao, setSolucao] = useState('');
   const [carregando, setCarregando] = useState(false);
 
@@ -67,6 +81,7 @@ export default function AddNewQuestion() {
         setRespostaCorreta((q.correct_answer || '') as Letra | '');
         setSecao(q.section || '');
         setDificuldade(q.difficulty ? String(q.difficulty) : '');
+        setFonte(q.source || '');
         setSolucao(q.solution || '');
 
         const mapa: Record<string, string> = {};
@@ -102,6 +117,7 @@ export default function AddNewQuestion() {
         solution: solucao,
         section: secao || undefined,
         difficulty: dificuldade ? Number(dificuldade) : undefined,
+        source: fonte || undefined,
         alternatives: LETRAS.map((letra) => ({ letter: letra, text: alternativas[letra] })),
       };
 
@@ -177,6 +193,62 @@ export default function AddNewQuestion() {
                 ))}
               </XStack>
             </YStack>
+
+            <YStack width="100%" gap={0}>
+              <RotuloLabel>Fonte:</RotuloLabel>
+              <Pressable
+                onPress={() => setFonteOpen(true)}
+                style={{
+                  width: '94%', alignSelf: 'flex-end', marginTop: 4,
+                  backgroundColor: palette.lightBlue, borderRadius: 8,
+                  paddingHorizontal: 12, paddingVertical: 12,
+                  flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+                  minHeight: 44,
+                }}
+              >
+                <Text style={{ color: '#fff', fontSize: 14 }}>
+                  {fonte
+                    ? FONTES_ADD.find((f) => f.value === fonte)?.label ?? fonte
+                    : 'Selecionar fonte...'}
+                </Text>
+                <ChevronDown size={16} color="#fff" />
+              </Pressable>
+            </YStack>
+
+            <Modal
+              visible={fonteOpen}
+              transparent
+              animationType="fade"
+              onRequestClose={() => setFonteOpen(false)}
+            >
+              <Pressable
+                style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' }}
+                onPress={() => setFonteOpen(false)}
+              >
+                <YStack
+                  backgroundColor={palette.darkBlue}
+                  borderRadius={12}
+                  margin="$6"
+                  padding="$4"
+                  gap="$2"
+                  onStartShouldSetResponder={() => true}
+                >
+                  {FONTES_ADD.map(({ value, label }) => (
+                    <Pressable
+                      key={value}
+                      onPress={() => { setFonte(value); setFonteOpen(false); }}
+                      style={{
+                        paddingVertical: 12, paddingHorizontal: 16, borderRadius: 8,
+                        backgroundColor: fonte === value ? palette.primaryBlue : 'transparent',
+                        minHeight: 44,
+                      }}
+                    >
+                      <Text style={{ color: '#fff', fontSize: 14 }}>{label}</Text>
+                    </Pressable>
+                  ))}
+                </YStack>
+              </Pressable>
+            </Modal>
 
             <YStack width="100%" gap={0}>
               <RotuloLabel>Resposta correta:</RotuloLabel>
