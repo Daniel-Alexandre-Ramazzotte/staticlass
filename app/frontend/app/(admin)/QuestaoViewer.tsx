@@ -96,9 +96,7 @@ function QuestaoVestibular({ q, num }: { q: Questao; num: number }) {
         {q.topico && (
           <Text fontSize={11} color="#555">› {q.topico}</Text>
         )}
-        {q.layout && (
-          <Text fontSize={11} color="#999">· {fonteLabel(q.layout)}</Text>
-        )}
+        <Text fontSize={11} color="#999">· {fonteLabel(q.source)}</Text>
       </XStack>
 
       <Text fontSize={15} color={palette.offBlack} mb={14} style={{ lineHeight: 24 }}>{q.enunciado}</Text>
@@ -110,9 +108,6 @@ function QuestaoVestibular({ q, num }: { q: Questao; num: number }) {
           </Text>
         </View>
       ))}
-
-      {q.secao && <Text fontSize={11} color="#aaa" mt={8}>Seção: {q.secao}</Text>}
-      <Text fontSize={11} color="#aaa" mt={4}>{`Fonte: ${q.source || 'Não informada'}`}</Text>
 
       {q.solucao && (
         <View style={s.solucao}>

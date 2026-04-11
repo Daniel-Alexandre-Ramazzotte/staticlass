@@ -22,9 +22,9 @@ with app.app_context():
     for u in users:
         db.session.execute(
             text("""
-                INSERT INTO users (email, password_hash, name, role)
-                VALUES (:e, :p, :n, :r)
-                ON CONFLICT (email) DO NOTHING
+                INSERT INTO users (email, password_hash, name, role, active, score)
+                VALUES (:e, :p, :n, :r, TRUE, 0)
+                ON CONFLICT (email) DO UPDATE SET active = TRUE, score = COALESCE(users.score, 0)
             """),
             u,
         )

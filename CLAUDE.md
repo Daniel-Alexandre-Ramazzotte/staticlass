@@ -32,14 +32,11 @@ flask --app statl run
 
 Requires a `.env` file in `app/backend/` with:
 ```
-DB_HOST=
-DB_USER=
-DB_PASS=
-DB_NAME=
+DATABASE_URL=postgresql://staticlass:staticlass123@localhost:5432/staticlass
 SECRET_KEY=
 ```
 
-The app uses **MySQL** in production and falls back to **SQLite in-memory** when `create_app(testing=True)` is called.
+The app uses **PostgreSQL** (via Docker) and falls back to **SQLite in-memory** when `create_app(testing=True)` is called.
 
 ### Architecture
 
@@ -162,17 +159,14 @@ As questões em `/filtered` retornam com o array `alternatives` embutido no JSON
 
 ## Infraestrutura
 
-### MySQL via Docker
+### PostgreSQL via Docker
 
 ```bash
-# Subir o banco
+# Subir o banco (e o backend + nginx)
 docker compose up -d
 
 # Credenciais (também em app/backend/.env)
-DB_HOST=localhost
-DB_USER=flask_user
-DB_PASS=staticlass123
-DB_NAME=staticlass
+DATABASE_URL=postgresql://staticlass:staticlass123@localhost:5432/staticlass
 ```
 
 O `docker-compose.yml` está na raiz do repositório. O schema é criado automaticamente pelo `db.create_all()` no startup do Flask.

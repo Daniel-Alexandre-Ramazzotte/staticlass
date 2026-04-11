@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from flask import Flask, jsonify, request as req_flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
@@ -31,6 +32,7 @@ def create_app(testing: bool = False):
     if not testing:
         app.secret_key             = os.getenv("FLASK_SECRET_KEY", os.getenv("SECRET_KEY"))
         app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", os.getenv("SECRET_KEY"))
+        app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=12)
 
     _configurar_cors(app)
 
