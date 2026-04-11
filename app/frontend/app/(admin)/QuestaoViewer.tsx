@@ -31,6 +31,7 @@ type Questao = {
   capitulo_numero: number | null;
   topico: string | null;
   secao?: string | null;
+  source?: string | null;
   alternativas: Alternativa[];
   layout: string;
 };
@@ -111,6 +112,7 @@ function QuestaoVestibular({ q, num }: { q: Questao; num: number }) {
       ))}
 
       {q.secao && <Text fontSize={11} color="#aaa" mt={8}>Seção: {q.secao}</Text>}
+      <Text fontSize={11} color="#aaa" mt={4}>{`Fonte: ${q.source || 'Não informada'}`}</Text>
 
       {q.solucao && (
         <View style={s.solucao}>
@@ -123,10 +125,13 @@ function QuestaoVestibular({ q, num }: { q: Questao; num: number }) {
 }
 
 const FONTES = [
-  { label: 'Apostila', value: 'apostila' },
-  { label: 'Concurso', value: 'concurso' },
   { label: 'Vestibular', value: 'vestibular' },
-  { label: 'ENEM', value: 'enem' },
+  { label: 'ENEM',       value: 'ENEM' },
+  { label: 'Concurso',   value: 'concurso' },
+  { label: 'Olimpíada',  value: 'olimpíada' },
+  { label: 'Lista',      value: 'lista' },
+  { label: 'Apostila',   value: 'apostila' },
+  { label: 'Outro',      value: 'outro' },
 ];
 
 function toggleN(arr: number[], val: number): number[] {
