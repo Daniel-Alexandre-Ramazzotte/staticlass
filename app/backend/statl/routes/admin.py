@@ -123,7 +123,7 @@ def stats_alunos():
             u.id,
             u.name,
             u.email,
-            COALESCE(u.score, 0)                                         AS score,
+            COALESCE(u.xp, 0)                                            AS xp,
             COUNT(qr.id)                                                 AS total_quizzes,
             COALESCE(SUM(qr.acertos), 0)                                 AS total_acertos,
             COALESCE(SUM(qr.total), 0)                                   AS total_questoes,
@@ -133,8 +133,8 @@ def stats_alunos():
         FROM users u
         LEFT JOIN quiz_resultados qr ON qr.usuario_id = u.id
         WHERE u.role = 'aluno'
-        GROUP BY u.id, u.name, u.email, u.score
-        ORDER BY score DESC
+        GROUP BY u.id, u.name, u.email, u.xp
+        ORDER BY xp DESC
     """)).mappings().all()
     return jsonify([dict(r) for r in linhas]), 200
 

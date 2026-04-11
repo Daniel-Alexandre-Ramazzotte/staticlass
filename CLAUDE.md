@@ -4,7 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Pendências
 
-- **Tela de Registro**: fluxo de cadastro apresenta erros intermitentes (mensagem genérica "Tente novamente"). O `RegisterNewUserService` já foi corrigido para retornar `error.response`, mas o fluxo completo ainda precisa ser validado/testado.
+- **Próxima fase ativa**: Professor Lists (Phase 04) ainda não foi implementada.
+- **Lint global do frontend**: ainda há avisos preexistentes fora dos arquivos tocados no Phase 03; validar e limpar isso antes do release.
 
 ## Project Overview
 
@@ -57,11 +58,14 @@ Strictly layered: **Routes → Services → Repositories**
 |-----------|--------|------------|
 | auth | `/auth` | `POST /register`, `POST /login`, `POST /password-reset`, `POST /password-reset/confirm` |
 | questions | `/questions` | `GET /rand/<num>`, `GET /filtered`, `GET /chapters`, `GET /topics`, `POST /add`, `PUT /update`, `POST /check`, `GET /professor/<id>`, `GET /admin/<id>` |
-| users | `/users` | `PUT /update-me`, `DELETE /delete-me`, `GET /profile/<email>`, admin routes |
+| users | `/users` | `PUT /update-me`, `DELETE /delete-me`, `GET /profile/<email>`, `GET /estatisticas`, `GET /historico`, admin routes for professor/aluno management |
+| gamification | `/gamification` | `POST /record-session`, `GET /ranking` |
+| admin | `/admin` | `GET /questoes`, `GET /stats/alunos`, `GET /stats/aluno/<id>`, `POST /sql` |
 
 ### Role-based Access
 
 Use `@require_role('admin')` or `@require_role(['admin', 'professor'])` on route functions. It validates the JWT and checks the `role` claim.
+For student-only gamification flows, use `@require_role(['aluno'])`.
 
 ### Tests
 
@@ -113,6 +117,8 @@ Uses **Expo Router** (file-based routing). Route groups in `app/frontend/app/`:
 - `app/constants/style.tsx` — global `palette` color object and shared `StyleSheet` styles
 - `app/constants/names.tsx` — shared string constants
 - `app/components/` — reusable components: `AppButton`, `CustomAccordion`
+- `app/(tabs)/ranking.tsx` — leaderboard screen backed by `/gamification/ranking`
+- `app/(tabs)/profile.tsx` — student profile hydrated from `/users/profile`, `/users/historico`, and `/gamification/ranking`
 
 **UI libraries:** Tamagui (components + theming), react-native-paper, @tamagui/lucide-icons
 
@@ -171,6 +177,15 @@ DATABASE_URL=postgresql://staticlass:staticlass123@localhost:5432/staticlass
 
 O `docker-compose.yml` está na raiz do repositório. O schema é criado automaticamente pelo `db.create_all()` no startup do Flask.
 
+### Seed de dados fictícios
+
+```bash
+cd app/backend
+python seed_demo_data.py
+```
+
+O script cria/atualiza contas demo para `admin`, `professor` e `aluno`, e popula histórico/XP/streak para alunos que ainda não têm quizzes registrados.
+
 ## Quiz — Fluxo de Dados
 
 O quiz usa exclusivamente `/questions/filtered` (não mais `/rand/<num>`). Cada questão retorna:
@@ -201,3 +216,10 @@ A checagem de resposta é feita **no cliente** — o frontend compara `userAnswe
 - `difficulty` — filtra por dificuldade (1=Fácil, 2=Médio, 3=Difícil)
 
 A tela `(tabs)/questions.tsx` busca os capítulos de `/questions/chapters` no mount e passa os filtros para `QuizInProgressScreen` via router params.
+
+## Estado Atual do Produto
+
+- Phase 01 concluída: hardening de auth e proteção dos endpoints críticos
+- Phase 02 concluída: filtro por `source` no banco de questões e nas telas de professor/aluno
+- Phase 03 concluída: XP, streak, ranking global, feedback de resultado com backend e perfil gamificado
+- Próximo foco: Phase 04 — listas de exercícios para professores e alunos

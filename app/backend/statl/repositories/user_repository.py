@@ -2,7 +2,7 @@ from .. import db
 from sqlalchemy import text
 
 
-_CAMPOS_ATUALIZAVEIS = {"name", "email", "score", "active", "password_hash"}
+_CAMPOS_ATUALIZAVEIS = {"name", "email", "xp", "active", "password_hash"}
 
 
 def buscar_usuario_por_email(email):
@@ -28,7 +28,7 @@ def buscar_usuario_por_id(usuario_id):
 def criar_usuario(email, senha_hash, nome):
     resultado = db.session.execute(
         text("""
-            INSERT INTO users (email, password_hash, name, role, active, score)
+            INSERT INTO users (email, password_hash, name, role, active, xp)
             VALUES (:email, :senha_hash, :nome, 'aluno', TRUE, 0)
             RETURNING id
         """),
@@ -39,14 +39,10 @@ def criar_usuario(email, senha_hash, nome):
     return new_id
 
 
-def criar_professor(email, senha_hash, nome):
-    return criar_usuario_com_papel(email, senha_hash, nome, "professor")
-
-
 def criar_usuario_com_papel(email, senha_hash, nome, papel):
     resultado = db.session.execute(
         text("""
-            INSERT INTO users (email, password_hash, name, role, active, score)
+            INSERT INTO users (email, password_hash, name, role, active, xp)
             VALUES (:email, :senha_hash, :nome, :papel, TRUE, 0)
             RETURNING id
         """),
@@ -107,24 +103,10 @@ def listar_alunos():
 def listar_usuarios_por_papel(papel):
     return db.session.execute(
         text("""
-            SELECT id, name, email, active, score
+            SELECT id, name, email, active, COALESCE(xp, 0) AS xp
             FROM users
             WHERE role = :papel
             ORDER BY name
         """),
         {"papel": papel},
     ).mappings().all()
-
-
-# ── Aliases para compatibilidade com código existente ──────────────────────
-get_user_by_email     = buscar_usuario_por_email
-get_user_by_id        = buscar_usuario_por_id
-create_user           = criar_usuario
-create_professor      = criar_professor
-create_user_with_role = criar_usuario_com_papel
-update_user           = atualizar_usuario
-update_password       = atualizar_senha
-delete_user           = deletar_usuario
-get_all_professors    = listar_professores
-get_all_alunos        = listar_alunos
-get_users_by_role     = listar_usuarios_por_papel

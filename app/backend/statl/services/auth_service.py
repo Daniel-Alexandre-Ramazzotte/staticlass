@@ -1,10 +1,17 @@
 from flask import jsonify
 from flask_jwt_extended import create_access_token
-from statl.repositories.user_repository import get_user_by_email, get_user_by_id, create_user, update_password
 from werkzeug.security import generate_password_hash, check_password_hash
+import re
+
 from statl.security.tokens import generate_reset_token, verify_reset_token
 from statl.services.email_service import send_reset_email
-import re
+
+from ..repositories.user_repository import (
+    atualizar_senha,
+    buscar_usuario_por_email,
+    buscar_usuario_por_id,
+    criar_usuario,
+)
 
 EMAIL_REGEX = re.compile(
     r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
@@ -19,7 +26,7 @@ def register_user(data):
     '''
     if not data:
         return None, jsonify({"error": "Requisicao invalida"}), 400
-    if get_user_by_email(data.get("email")) is not None:
+    if buscar_usuario_por_email(data.get("email")) is not None:
         return None, jsonify({"error": "Usuario ja registrado."}), 400
 
     if not all (k in data for k in ("email", "password", "confirm_password", "name")):
@@ -36,7 +43,7 @@ def register_user(data):
     if not email_valido(email):
         return None, jsonify({"error": "Email invalido."}), 400
         
-    user = create_user(email, generate_password_hash(password), name)
+    user = criar_usuario(email, generate_password_hash(password), name)
     return user, None, 201
 
 
@@ -55,7 +62,7 @@ def login_user(data):
     except KeyError as e:
         return None, jsonify({"error": f"Campo obrigatório ausente: {e}"}), 400
     
-    user = get_user_by_email(email)
+    user = buscar_usuario_por_email(email)
 
 
     if user is None or not check_password_hash(user.password_hash, password):
@@ -80,7 +87,7 @@ def login_user(data):
 def request_password_reset(email: str):
     ''' Servico para solicitar a redefinição de senha.
     '''
-    user = get_user_by_email(email)
+    user = buscar_usuario_por_email(email)
     if not user:
         return None
     
@@ -100,10 +107,10 @@ def reset_password(token: str, new_password: str):
     if not user_id:
         return False
 
-    user = get_user_by_id(user_id)
+    user = buscar_usuario_por_id(user_id)
     if not user:
         return False
     
     password_hash = generate_password_hash(new_password)
-    update_password(user.id, password_hash)
+    atualizar_senha(user.id, password_hash)
     return True

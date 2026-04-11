@@ -104,8 +104,8 @@ def _configurar_cors(app):
 
 
 def _registrar_blueprints(app):
-    from .routes import auth, questions, users, admin
-    for blueprint in (auth.bp, questions.bp, users.bp, admin.bp):
+    from .routes import admin, auth, gamification, questions, users
+    for blueprint in (auth.bp, questions.bp, users.bp, admin.bp, gamification.bp):
         app.register_blueprint(blueprint)
 
 
@@ -117,16 +117,48 @@ def _garantir_schema_incremental(app):
         db.session.execute(
             text("ALTER TABLE questions ADD COLUMN IF NOT EXISTS source VARCHAR(20)")
         )
+        db.session.execute(
+            text("""
+                DO $$
+                BEGIN
+                    IF EXISTS (
+                        SELECT 1
+                        FROM information_schema.columns
+                        WHERE table_name = 'users' AND column_name = 'score'
+                    ) THEN
+                        ALTER TABLE users RENAME COLUMN score TO xp;
+                    END IF;
+                END $$;
+            """)
+        )
+        db.session.execute(
+            text("ALTER TABLE users ADD COLUMN IF NOT EXISTS xp INTEGER NOT NULL DEFAULT 0")
+        )
+        db.session.execute(
+            text("ALTER TABLE users ADD COLUMN IF NOT EXISTS streak INTEGER NOT NULL DEFAULT 0")
+        )
+        db.session.execute(
+            text("ALTER TABLE users ADD COLUMN IF NOT EXISTS last_practice_date DATE")
+        )
         # Garante defaults nas colunas users que podem ter sido criadas sem server_default
         db.session.execute(
             text("ALTER TABLE users ALTER COLUMN active SET DEFAULT TRUE")
         )
         db.session.execute(
-            text("ALTER TABLE users ALTER COLUMN score SET DEFAULT 0")
+            text("ALTER TABLE users ALTER COLUMN xp SET DEFAULT 0")
+        )
+        db.session.execute(
+            text("ALTER TABLE users ALTER COLUMN streak SET DEFAULT 0")
         )
         # Backfill: set active=TRUE for any user rows created before server_default was applied
         db.session.execute(
             text("UPDATE users SET active = TRUE WHERE active IS NULL")
+        )
+        db.session.execute(
+            text("UPDATE users SET xp = 0 WHERE xp IS NULL")
+        )
+        db.session.execute(
+            text("UPDATE users SET streak = 0 WHERE streak IS NULL")
         )
         db.session.commit()
     except Exception:

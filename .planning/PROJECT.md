@@ -2,7 +2,7 @@
 
 ## What This Is
 
-Staticlass é um app mobile-first (React Native/Expo + Flask) para prática gamificada de estatística, criado como parte do Programa de Ensino Tutorial (PET) da UFPR. Integra-se à apostila *Estatística Básica com Ênfase Computacional* e tem como visão de longo prazo ser o app oficial do Departamento de Estatística, cobrindo desde disciplinas básicas até o bacharelado.
+Staticlass é um app mobile-first (React Native/Expo + Flask) para prática gamificada de estatística, criado como parte do Programa de Ensino Tutorial (PET). Integra-se à apostila *Estatística Básica com Ênfase Computacional* e tem como visão de longo prazo ser o app oficial do Departamento de Estatística, cobrindo desde disciplinas básicas até o bacharelado.
 
 ## Core Value
 
@@ -15,18 +15,18 @@ Alunos praticam estatística de forma contínua e engajante — como o Duolingo,
 - ✓ Cadastro e login de alunos, professores e admin com JWT — existing
 - ✓ Banco de 230 questões importadas da apostila, organizadas por capítulo e tópico — existing
 - ✓ Quiz filtrado por capítulo e dificuldade com checagem no cliente — existing
+- ✓ Categorização de questões por fonte — vestibular, ENEM, lista, concurso, olimpíada
 - ✓ CRUD de questões pelo professor (adicionar, editar, listar) — existing
 - ✓ Gerenciamento de usuários pelo admin — existing
 - ✓ Sistema de capítulos e tópicos (4 capítulos, 17 tópicos) — existing
 - ✓ Alternativas normalizadas (A-E) com flag is_correct — existing
+- ✓ Sistema de XP e streaks — pontos por questão respondida, sequência diária, ranking global
 
 ### Active
 
-- [ ] Sistema de XP e streaks — pontos por questão respondida, sequência diária, ranking global
 - [ ] Professor cria listas de questões — seleciona questões manualmente, define prazo, publica para alunos
 - [ ] Aluno resolve lista atribuída — rastreia progresso e submete resultado
 - [ ] Professor visualiza resultado das listas — quem fez, nota/desempenho por aluno
-- [ ] Categorização de questões por fonte — vestibular, ENEM, lista, concurso, olimpíada
 - [ ] Geração de questões similares — híbrido determinístico + LLM (mesmo processo, contexto variado)
 - [ ] Trilha guiada com desbloqueio progressivo — capítulo/tópico desbloqueado ao completar o anterior
 - [ ] Repetição espaçada — app sugere revisão com base em desempenho histórico
@@ -45,6 +45,7 @@ Alunos praticam estatística de forma contínua e engajante — como o Duolingo,
 - **Usuários atuais:** Apenas desenvolvedores; primeiro lançamento real planejado para o próximo semestre
 - **Stack consolidado:** React Native (Expo Router), Flask/Python, MySQL (Docker), JWT
 - **Gamificação:** Inspirada no Duolingo — streaks diários, XP por questão, ranking global entre todos os usuários
+- **Dados demo:** `app/backend/seed_demo_data.py` cria contas fictícias para admin/professor/aluno e popula histórico inicial de quizzes/gamificação
 - **Expansão futura:** Bacharelado em Estatística → app oficial do departamento, com geração automática de listas/tarefas e integração com múltiplos professores/disciplinas
 
 ## Constraints
@@ -64,4 +65,4 @@ Alunos praticam estatística de forma contínua e engajante — como o Duolingo,
 | JWT sem refresh token | Simples para v1; pode ser problema em sessões longas | — Pending |
 
 ---
-*Last updated: 2026-04-08 after initial project definition*
+*Last updated: 2026-04-11 after Phase 03 execution and demo-data consolidation*

@@ -1,21 +1,18 @@
 from flask import Blueprint, jsonify, request
+from datetime import date
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from statl.utils.auth_middleware import require_role
 from ..services.user_service import (
     create_managed_user_service,
     delete_managed_user_service,
     delete_own_account_service,
-    delete_user_service,
     get_user_by_email_service,
     get_users_by_role_service,
     update_managed_user_service,
     update_own_profile_service,
-    update_user_service,
 )
 from ..services.resultado_service import (
-    salvar_resultado_service,
     buscar_historico_service,
-    buscar_ranking_service,
     buscar_estatisticas_service,
 )
 
@@ -49,8 +46,22 @@ def perfil(email):
     usuario = get_user_by_email_service(email)
     if not usuario:
         return jsonify({"message": "usuário não encontrado"}), 404
-    return jsonify({"id": usuario.id, "name": usuario.name,
-                    "email": usuario.email, "score": usuario.score}), 200
+    last_practice_date = getattr(usuario, "last_practice_date", None)
+    if isinstance(last_practice_date, date):
+        last_practice_date = last_practice_date.isoformat()
+    elif isinstance(last_practice_date, str):
+        last_practice_date = last_practice_date[:10]
+    else:
+        last_practice_date = None
+
+    return jsonify({
+        "id": usuario.id,
+        "name": usuario.name,
+        "email": usuario.email,
+        "xp": usuario.xp,
+        "streak": usuario.streak,
+        "last_practice_date": last_practice_date,
+    }), 200
 
 
 # ── Gestão de professores (admin) ──────────────────────────────────────────
@@ -110,26 +121,7 @@ def atualizar_aluno(usuario_id):
 def deletar_aluno(usuario_id):
     return delete_managed_user_service(usuario_id, 'aluno')
 
-
-# ── Rotas legadas (mantidas para compatibilidade com frontend antigo) ───────
-
-@bp.route('/update/<int:usuario_id>', methods=['PUT'])
-@require_role('admin')
-def atualizar_usuario(usuario_id):
-    return update_user_service(usuario_id, request.json)
-
-
-@bp.route('/delete/<int:usuario_id>', methods=['DELETE'])
-@require_role('admin')
-def deletar_usuario(usuario_id):
-    return delete_user_service(usuario_id)
-
-
 # ── Ranking e resultados ───────────────────────────────────────────────────
-
-@bp.route('/ranking', methods=['GET'])
-def ranking():
-    return jsonify(buscar_ranking_service()), 200
 
 
 @bp.route('/estatisticas', methods=['GET'])
@@ -142,12 +134,3 @@ def estatisticas():
 @jwt_required()
 def historico():
     return jsonify(buscar_historico_service(get_jwt_identity())), 200
-
-
-@bp.route('/salvar-resultado', methods=['POST'])
-@jwt_required()
-def salvar_resultado():
-    resposta, status = salvar_resultado_service(
-        get_jwt_identity(), request.get_json() or {}
-    )
-    return jsonify(resposta), status

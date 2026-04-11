@@ -5,7 +5,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from ..repositories.user_repository import (
     buscar_usuario_por_email,
     buscar_usuario_por_id,
-    criar_professor,
     criar_usuario_com_papel,
     deletar_usuario,
     listar_alunos,
@@ -103,10 +102,6 @@ def delete_own_account_service(usuario_id, senha_fornecida):
 
 # ── CRUD gerenciado pelo admin ─────────────────────────────────────────────
 
-def create_professor_service(dados):
-    """Cria professor (rota legada). Prefira create_managed_user_service."""
-    return create_managed_user_service(dados, "professor")
-
 
 def create_managed_user_service(dados, papel):
     if papel not in {"professor", "aluno"}:
@@ -126,16 +121,6 @@ def create_managed_user_service(dados, papel):
     senha = dados.get("password") or _gerar_senha_temporaria()
     usuario_id = criar_usuario_com_papel(email, generate_password_hash(senha), nome, papel)
     return {"id": usuario_id, "temporary_password": senha}, None, 201
-
-
-def update_user_service(usuario_id, dados):
-    if not dados or not usuario_id:
-        return jsonify({"error": "dados inválidos"}), 400
-    try:
-        atualizar_usuario(usuario_id, dados)
-        return jsonify({"message": "usuário atualizado com sucesso"}), 200
-    except KeyError as e:
-        return jsonify({"error": str(e)}), 400
 
 
 def update_managed_user_service(usuario_id, dados, papel):
@@ -177,21 +162,14 @@ def update_managed_user_service(usuario_id, dados, papel):
     except KeyError as e:
         return jsonify({"error": str(e)}), 400
 
-
-def delete_user_service(usuario_id):
-    if not usuario_id:
-        return jsonify({"error": "id é obrigatório"}), 400
-    try:
-        deletar_usuario(usuario_id)
-        return jsonify({"message": "usuário removido com sucesso"}), 200
-    except KeyError as e:
-        return jsonify({"error": str(e)}), 500
-
-
 def delete_managed_user_service(usuario_id, papel):
     usuario = buscar_usuario_por_id(usuario_id)
     if not usuario:
         return jsonify({"error": "usuário não encontrado"}), 404
     if usuario.role != papel:
         return jsonify({"error": "usuário não pertence ao grupo informado"}), 400
-    return delete_user_service(usuario_id)
+    try:
+        deletar_usuario(usuario_id)
+        return jsonify({"message": "usuário removido com sucesso"}), 200
+    except KeyError as e:
+        return jsonify({"error": str(e)}), 500

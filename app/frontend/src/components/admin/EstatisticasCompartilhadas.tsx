@@ -9,7 +9,7 @@ export type AlunoStat = {
   id: number;
   name: string;
   email: string;
-  score: number;
+  xp: number;
   total_quizzes: number;
   total_acertos: number;
   total_questoes: number;
@@ -69,7 +69,7 @@ export function CartaoAluno({ aluno, posicao }: { aluno: AlunoStat; posicao: num
             <Text fontSize={12} color="#888">{aluno.email}</Text>
           </View>
           <View style={{ alignItems: 'flex-end' }}>
-            <Text fontSize={16} fontWeight="bold" color={palette.primaryGreen}>{aluno.score} pts</Text>
+            <Text fontSize={16} fontWeight="bold" color={palette.primaryGreen}>{aluno.xp} XP</Text>
             <Text fontSize={11} color="#999">
               {aluno.total_quizzes} quiz{aluno.total_quizzes !== 1 ? 'zes' : ''}
             </Text>

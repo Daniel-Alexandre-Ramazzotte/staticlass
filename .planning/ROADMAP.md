@@ -10,9 +10,9 @@
 
 | Phase | Name | Status | Plans | Requirements |
 |-------|------|--------|-------|--------------|
-| 1 | Foundation & Auth Hardening | Pending | 4 | QA-01, QA-02, QA-03, QA-04 |
-| 2 | Question Bank Expansion | Pending | 3 | QUEST-01, QUEST-02, QUEST-03 |
-| 3 | Gamification | Pending | 4 | GAME-01, GAME-02, GAME-03, GAME-04, GAME-05, GAME-06 |
+| 1 | Foundation & Auth Hardening | Complete | 4 | QA-01, QA-02, QA-03, QA-04 |
+| 2 | Question Bank Expansion | Complete | 3 | QUEST-01, QUEST-02, QUEST-03 |
+| 3 | Gamification | Complete | 4 | GAME-01, GAME-02, GAME-03, GAME-04, GAME-05, GAME-06 |
 | 4 | Professor Lists | Pending | 4 | LIST-01, LIST-02, LIST-03, LIST-04, LIST-05, LIST-06, LIST-07 |
 | 5 | Statistics & Analytics | Pending | 3 | STAT-01, STAT-02, STAT-03, STAT-04, STAT-05 |
 | 6 | Polish & Release | Pending | 3 | — (cross-cutting) |
@@ -153,19 +153,19 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| QA-01 | Phase 1 | Pending |
-| QA-02 | Phase 1 | Pending |
-| QA-03 | Phase 1 | Pending |
-| QA-04 | Phase 1 | Pending |
-| QUEST-01 | Phase 2 | Pending |
-| QUEST-02 | Phase 2 | Pending |
-| QUEST-03 | Phase 2 | Pending |
-| GAME-01 | Phase 3 | Pending |
-| GAME-02 | Phase 3 | Pending |
-| GAME-03 | Phase 3 | Pending |
-| GAME-04 | Phase 3 | Pending |
-| GAME-05 | Phase 3 | Pending |
-| GAME-06 | Phase 3 | Pending |
+| QA-01 | Phase 1 | Complete |
+| QA-02 | Phase 1 | Complete |
+| QA-03 | Phase 1 | Complete |
+| QA-04 | Phase 1 | Complete |
+| QUEST-01 | Phase 2 | Complete |
+| QUEST-02 | Phase 2 | Complete |
+| QUEST-03 | Phase 2 | Complete |
+| GAME-01 | Phase 3 | Complete |
+| GAME-02 | Phase 3 | Complete |
+| GAME-03 | Phase 3 | Complete |
+| GAME-04 | Phase 3 | Complete |
+| GAME-05 | Phase 3 | Complete |
+| GAME-06 | Phase 3 | Complete |
 | LIST-01 | Phase 4 | Pending |
 | LIST-02 | Phase 4 | Pending |
 | LIST-03 | Phase 4 | Pending |

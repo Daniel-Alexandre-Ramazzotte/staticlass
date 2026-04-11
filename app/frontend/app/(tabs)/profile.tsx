@@ -33,24 +33,82 @@ function WeekRow({ row }: { row: (boolean | null)[] }) {
 export default function ProfileScreen() {
   const router = useRouter();
   const { signOut, role, email, name } = useAuth();
-  const [score, setScore] = useState(0);
+  const [xp, setXp] = useState<number>(0);
+  const [streak, setStreak] = useState<number>(0);
+  const [rankPosition, setRankPosition] = useState<number | null>(null);
+  const [dadosCarregando, setDadosCarregando] = useState(true);
+  const [calendar, setCalendar] = useState<(boolean | null)[][]>([
+    [null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null],
+  ]);
+
+  const buildCalendar = useCallback((historico: { criado_em: string }[]): (boolean | null)[][] => {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    const toKey = (data: Date) => {
+      const ano = data.getFullYear();
+      const mes = String(data.getMonth() + 1).padStart(2, '0');
+      const dia = String(data.getDate()).padStart(2, '0');
+      return `${ano}-${mes}-${dia}`;
+    };
+
+    const praticados = new Set(historico.map((item) => item.criado_em.slice(0, 10)));
+    const grid: (boolean | null)[][] = [];
+
+    for (let semana = 3; semana >= 0; semana -= 1) {
+      const linha: (boolean | null)[] = [];
+      for (let dia = 0; dia < 7; dia += 1) {
+        const data = new Date(hoje);
+        const diaDaSemanaHoje = hoje.getDay();
+        const offset = (semana * 7) + (diaDaSemanaHoje - dia);
+        data.setDate(hoje.getDate() - offset);
+        const chave = toKey(data);
+
+        if (data > hoje) {
+          linha.push(null);
+        } else if (data.getTime() === hoje.getTime() && !praticados.has(chave)) {
+          linha.push(null);
+        } else {
+          linha.push(praticados.has(chave));
+        }
+      }
+      grid.push(linha);
+    }
+
+    return grid;
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
-      if (!email) return;
-      api.get(`/users/profile/${email.trim()}`)
-        .then(r => setScore(r.data?.score ?? 0))
-        .catch(() => {});
-    }, [email])
-  );
+      if (!email || role !== 'aluno') {
+        setDadosCarregando(false);
+        return;
+      }
 
-  // Mock weekly calendar (4 weeks × 7 days)
-  const calendar: (boolean | null)[][] = [
-    [true, true, false, true, false, false, false],
-    [true, true, true, true, null, null, null],
-    [null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null],
-  ];
+      setDadosCarregando(true);
+
+      Promise.all([
+        api.get(`/users/profile/${email.trim()}`),
+        api.get('/gamification/ranking?page=1'),
+        api.get('/users/historico'),
+      ])
+        .then(([resPerfil, resRanking, resHistorico]) => {
+          setXp(resPerfil.data?.xp ?? 0);
+          setStreak(resPerfil.data?.streak ?? 0);
+          const ownEntry = resRanking.data?.own_entry;
+          setRankPosition(ownEntry ? ownEntry.posicao : null);
+          const historico = resHistorico.data ?? [];
+          setCalendar(buildCalendar(historico));
+        })
+        .catch(() => {
+          // Mantem os dados anteriores caso algum fetch falhe.
+        })
+        .finally(() => setDadosCarregando(false));
+    }, [buildCalendar, email, role])
+  );
 
   return (
     <YStack f={1} backgroundColor={palette.primaryBlue}>
@@ -92,10 +150,31 @@ export default function ProfileScreen() {
                 height={8}
                 borderRadius={4}
                 backgroundColor="#FFD700"
-                width="30%"
+                width={`${Math.min((xp / 5000) * 100, 100)}%`}
               />
             </YStack>
-            <Text color={palette.white} fontSize={12} mt="$1">{score} pontos</Text>
+            <XStack jc="space-between" mt="$1">
+              <Text color="rgba(255,255,255,0.75)" fontSize={12}>
+                {xp} XP total
+              </Text>
+              <Text color="rgba(255,255,255,0.75)" fontSize={12}>
+                {streak === 0
+                  ? 'Sequência: 0 dias - pratique hoje!'
+                  : `Sequência: ${streak} dias`}
+              </Text>
+            </XStack>
+            <Text
+              fontSize={15}
+              fontWeight="bold"
+              color={palette.primaryGreen}
+              mt="$1"
+            >
+              {dadosCarregando
+                ? 'Ranking: -'
+                : rankPosition !== null
+                  ? `Ranking: #${rankPosition}`
+                  : 'Ranking: -'}
+            </Text>
           </YStack>
         )}
 
@@ -132,7 +211,7 @@ export default function ProfileScreen() {
             ))}
 
             <Text color="rgba(255,255,255,0.7)" fontSize={12} textAlign="right">
-              Sequência: 4 dias
+              {streak === 0 ? 'Sequência: 0 dias - pratique hoje!' : `Sequência: ${streak} dias`}
             </Text>
           </YStack>
         )}

@@ -22,16 +22,6 @@ def salvar_resultado(usuario_id, acertos, total, capitulo_id=None, dificuldade=N
     )
     db.session.commit()
 
-
-def incrementar_score(usuario_id, pontos):
-    """Soma pontos ao score acumulado do usuário na tabela users."""
-    db.session.execute(
-        text("UPDATE users SET score = COALESCE(score, 0) + :pontos WHERE id = :id"),
-        {"pontos": pontos, "id": usuario_id},
-    )
-    db.session.commit()
-
-
 def buscar_historico(usuario_id, limite=10):
     """Retorna os últimos resultados de quiz do usuário, do mais recente ao mais antigo."""
     return db.session.execute(
@@ -73,21 +63,6 @@ def buscar_estatisticas(usuario_id):
         """),
         {"uid": usuario_id},
     ).mappings().fetchone()
-
-
-def buscar_ranking(limite=10):
-    """Retorna os alunos com maior pontuação, em ordem decrescente."""
-    return db.session.execute(
-        text("""
-            SELECT id, name, COALESCE(score, 0) AS score
-            FROM users
-            WHERE role = 'aluno'
-            ORDER BY score DESC
-            LIMIT :limite
-        """),
-        {"limite": limite},
-    ).mappings().all()
-
 
 # ─── Questão Diária ─────────────────────────────────────────────────────────
 

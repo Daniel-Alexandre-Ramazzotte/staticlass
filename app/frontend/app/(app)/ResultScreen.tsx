@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { YStack, XStack, Text, View } from 'tamagui';
@@ -20,6 +20,10 @@ const ResultScreen = () => {
 
   const acertos = resultado.filter((r: any) => r.message === 'correct').length;
   const total   = resultado.length;
+  const [xpGanho, setXpGanho] = useState<number | null>(null);
+  const [streak, setStreak] = useState<number | null>(null);
+  const [multiplier, setMultiplier] = useState<number | null>(null);
+  const [xpLoading, setXpLoading] = useState(true);
 
   // Controle para não enviar o resultado mais de uma vez (evita re-render duplo)
   const enviado = useRef(false);
@@ -28,21 +32,29 @@ const ResultScreen = () => {
     if (enviado.current || total === 0) return;
     enviado.current = true;
 
-    // Salva o resultado no backend e atualiza o score do aluno
-    api.post('/users/salvar-resultado', {
+    api.post('/gamification/record-session', {
       acertos,
       total,
       capitulo_id,
       dificuldade,
-    }).catch(() => {
-      // Falha silenciosa — o aluno vê o resultado mesmo se o servidor não responder
-    });
+    })
+      .then((response) => {
+        setXpGanho(response.data?.xp_ganho ?? null);
+        setStreak(response.data?.streak ?? null);
+        setMultiplier(response.data?.multiplier ?? null);
+      })
+      .catch(() => {
+        setXpGanho(acertos * 10 + 20);
+        setStreak(null);
+        setMultiplier(null);
+      })
+      .finally(() => setXpLoading(false));
 
     // Se era a questão diária, marca como concluída para hoje
     if (ehDiaria) {
       api.post('/questions/diaria/marcar').catch(() => {});
     }
-  }, []);
+  }, [acertos, capitulo_id, dificuldade, ehDiaria, total]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: palette.primaryBlue }}>
@@ -90,9 +102,31 @@ const ResultScreen = () => {
           <Text fontSize={56} fontWeight="900" color={palette.white} mb="$1">
             {acertos}/{total}
           </Text>
-          <Text fontSize={14} color="rgba(255,255,255,0.7)" mb="$4">
-            Pontuação: +{acertos * 10} pts
-          </Text>
+          {xpLoading ? (
+            <Text fontSize={15} color="rgba(255,255,255,0.6)" mb="$4">
+              Calculando XP...
+            </Text>
+          ) : (
+            <YStack ai="center" mb="$4" gap="$1">
+              <Text fontSize={20} fontWeight="bold" color={palette.primaryGreen}>
+                +{xpGanho ?? 0} XP
+              </Text>
+              {multiplier && multiplier >= 1.25 ? (
+                <XStack gap="$3" ai="center" flexWrap="wrap" jc="center">
+                  <Text fontSize={12} color="rgba(255,255,255,0.8)">
+                    Sequência: {streak} dias
+                  </Text>
+                  <Text fontSize={12} color={palette.primaryGreen} fontWeight="700">
+                    Multiplicador {multiplier === 1.5 ? '1.5x' : '1.25x'} aplicado
+                  </Text>
+                </XStack>
+              ) : streak !== null ? (
+                <Text fontSize={12} color="rgba(255,255,255,0.8)">
+                  Sequência: {streak} dias
+                </Text>
+              ) : null}
+            </YStack>
+          )}
 
           <ScrollView style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
             {resultado.map((resposta: any, indice: number) => {
