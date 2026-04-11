@@ -61,7 +61,7 @@ The existing 56px score display on ResultScreen is pre-existing, not introduced 
 | Role | Size | Weight | Line Height | Font Family | Usage |
 |------|------|--------|-------------|-------------|-------|
 | Heading | 22px | bold (700) | 1.2 | primaryFontA (ChauPhilomeneOne) | Screen titles (Statistics, Ranking header) |
-| Subheading | 20px | 900 | 1.2 | default (system) | XP earned display on ResultScreen (`+{xpTotal} XP`), streak count large display on profile header |
+| Subheading | 20px | bold (700) | 1.2 | default (system) | XP earned display on ResultScreen (`+{xpTotal} XP`), streak count large display on profile header |
 | Body | 15px | 400 | 1.5 | primaryFontC (Carlito) | Ranking row names, XP values in list; use bold (700) weight at this size for rank position number (e.g. `#12`) instead of a separate size |
 | Label | 12px | 400 | 1.4 | default | Sub-labels, column headers (e.g. `XP`), opacity 0.7–0.75 on dark backgrounds |
 
@@ -158,13 +158,13 @@ State handling:
 Change line 94 only:
 - Before: `Pontuação: +{acertos * 10} pts`
 - After: `+{xpGanho} XP` — where `xpGanho` is the actual XP returned from the `record-session` API response
-- Font size: 20px (Subheading role), weight 900, color `palette.primaryGreen` (promote from muted opacity to accent green — it is now the primary feedback moment)
+- Font size: 20px (Subheading role), weight bold (700), color `palette.primaryGreen` (promote from muted opacity to accent green — it is now the primary feedback moment)
 
 Add below the score display, inside the darkBlue card:
 ```
 XStack gap="$3" mt="$2" jc="center"
   Text 12px color=white opacity=0.8  → "Sequência: {streak} dias"
-  Text 12px color=primaryGreen fontWeight=bold  → if streak >= 3: "Multiplicador {1.25×|1.5×} aplicado"
+  Text 12px color=primaryGreen fontWeight="700"  → if streak >= 3: "Multiplicador {1.25×|1.5×} aplicado"
 ```
 
 ---
@@ -312,4 +312,5 @@ If `Flame` icon from `@tamagui/lucide-icons` is used for streak decoration — i
 
 *UI-SPEC generated: 2026-04-11*
 *UI-SPEC revised: 2026-04-11 — typography collapsed to 4 sizes; Ranking focal point added*
+*UI-SPEC revised: 2026-04-11 — weight 900 removed; Subheading now bold (700) throughout*
 *Phase: 03-gamification*
