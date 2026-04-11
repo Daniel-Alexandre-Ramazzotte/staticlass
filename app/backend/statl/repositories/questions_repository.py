@@ -190,6 +190,54 @@ def buscar_detalhes_questao(questao_id: int):
     ).mappings().fetchone()
 
 
+def buscar_questoes_por_ids_ordenados(ids_questoes: list[int]) -> list[dict]:
+    if not ids_questoes:
+        return []
+
+    placeholders = ", ".join(f":qid{i}" for i in range(len(ids_questoes)))
+    params = {f"qid{i}": questao_id for i, questao_id in enumerate(ids_questoes)}
+    linhas = db.session.execute(
+        text(f"""
+            SELECT
+                q.id,
+                q.issue,
+                q.correct_answer,
+                q.solution,
+                q.image_q,
+                q.image_s,
+                q.difficulty,
+                q.source,
+                c.name AS chapter_name,
+                c.number AS chapter_number,
+                t.name AS topic_name
+            FROM questions q
+            LEFT JOIN chapters c ON c.id = q.chapter_id
+            LEFT JOIN topics t ON t.id = q.topic_id
+            WHERE q.id IN ({placeholders})
+        """),
+        params,
+    ).mappings().all()
+    mapa_alternativas = _buscar_alternativas_em_lote(ids_questoes)
+    por_id = {
+        linha["id"]: {
+            "id": linha["id"],
+            "issue": linha["issue"],
+            "alternatives": mapa_alternativas.get(linha["id"], []),
+            "correct_answer": linha["correct_answer"],
+            "solution": linha["solution"],
+            "image_q": linha["image_q"],
+            "image_s": linha["image_s"],
+            "difficulty": linha["difficulty"],
+            "chapter_name": linha["chapter_name"],
+            "chapter_number": linha["chapter_number"],
+            "topic_name": linha["topic_name"],
+            "source": linha["source"],
+        }
+        for linha in linhas
+    }
+    return [por_id[questao_id] for questao_id in ids_questoes if questao_id in por_id]
+
+
 def buscar_questoes_filtradas(
     quantidade: int,
     chapter_id=None,

@@ -21,12 +21,12 @@ Alunos praticam estatística de forma contínua e engajante — como o Duolingo,
 - ✓ Sistema de capítulos e tópicos (4 capítulos, 17 tópicos) — existing
 - ✓ Alternativas normalizadas (A-E) com flag is_correct — existing
 - ✓ Sistema de XP e streaks — pontos por questão respondida, sequência diária, ranking global
+- ✓ Professor cria listas com prazo, seleção manual de questões e publicação para alunos — Phase 4
+- ✓ Aluno visualiza, resolve e submete listas atribuídas com status de prazo — Phase 4
+- ✓ Professor visualiza submissões, notas e taxa de erro por questão nas listas publicadas — Phase 4
 
 ### Active
 
-- [ ] Professor cria listas de questões — seleciona questões manualmente, define prazo, publica para alunos
-- [ ] Aluno resolve lista atribuída — rastreia progresso e submete resultado
-- [ ] Professor visualiza resultado das listas — quem fez, nota/desempenho por aluno
 - [ ] Geração de questões similares — híbrido determinístico + LLM (mesmo processo, contexto variado)
 - [ ] Trilha guiada com desbloqueio progressivo — capítulo/tópico desbloqueado ao completar o anterior
 - [ ] Repetição espaçada — app sugere revisão com base em desempenho histórico
@@ -63,6 +63,8 @@ Alunos praticam estatística de forma contínua e engajante — como o Duolingo,
 | SQLite em testes, MySQL em prod | Dialeto RETURNING/RANDOM() pode divergir | ⚠️ Revisit |
 | Importação idempotente via original_id | Permite re-migrar sem duplicar questões | ✓ Good |
 | JWT sem refresh token | Simples para v1; pode ser problema em sessões longas | — Pending |
+| Status de lista calculado na leitura | Evita job de expiração e mantém professor/aluno consistentes com o prazo real | ✓ Good |
+| Question picker compartilhado fora do namespace admin | Professor precisa montar listas sem depender de rota administrativa | ✓ Good |
 
 ---
-*Last updated: 2026-04-11 after Phase 03 execution and demo-data consolidation*
+*Last updated: 2026-04-11 after Phase 04 execution*

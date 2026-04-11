@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollView } from 'react-native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { YStack, XStack, Text, View } from 'tamagui';
@@ -6,62 +6,146 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { palette } from 'app/constants/style';
 import api from 'app/services/api';
 
+type QuizResultItem = {
+  message: 'correct' | 'incorrect';
+  userAnswer?: string;
+  id: number;
+  correct_answer: string;
+  solution: string | null;
+  image_q: string | null;
+  image_s: string | null;
+};
+
+type ListSubmissionSummary = {
+  submitted_at: string;
+  score_pct: number;
+  student_status: 'entregue' | 'entregue_fora_do_prazo';
+  is_late: boolean;
+  correct_count: number;
+  total_questions: number;
+};
+
+function firstParam(value: string | string[] | undefined) {
+  if (Array.isArray(value)) return value[0];
+  return value;
+}
+
 const ResultScreen = () => {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const rawResult = firstParam(params.result);
+  const resultado = useMemo<QuizResultItem[]>(
+    () => (rawResult ? JSON.parse(rawResult) : []),
+    [rawResult],
+  );
+  const capituloId = firstParam(params.chapter_id);
+  const dificuldade = firstParam(params.difficulty);
+  const ehDiaria = firstParam(params.daily) === 'true';
+  const listId = firstParam(params.list_id);
+  const listTitle = firstParam(params.list_title);
+  const listMode = firstParam(params.list_mode) === '1';
+  const submissionView = firstParam(params.submission_view) === '1';
+  const isListMode = Boolean(listId) && (listMode || submissionView);
 
-  // Resultado recebido do QuizInProgressScreen como JSON serializado
-  const resultado = params.result ? JSON.parse(params.result as string) : [];
-
-  // Parâmetros opcionais de filtro usados no quiz — enviados ao backend ao salvar
-  const capitulo_id  = params.chapter_id  ? Number(params.chapter_id)  : undefined;
-  const dificuldade  = params.difficulty  ? Number(params.difficulty)  : undefined;
-  const ehDiaria     = params.daily === 'true';
-
-  const acertos = resultado.filter((r: any) => r.message === 'correct').length;
-  const total   = resultado.length;
+  const acertos = resultado.filter((r) => r.message === 'correct').length;
+  const total = resultado.length;
   const [xpGanho, setXpGanho] = useState<number | null>(null);
   const [streak, setStreak] = useState<number | null>(null);
   const [multiplier, setMultiplier] = useState<number | null>(null);
-  const [xpLoading, setXpLoading] = useState(true);
-
-  // Controle para não enviar o resultado mais de uma vez (evita re-render duplo)
+  const [xpLoading, setXpLoading] = useState(!submissionView);
+  const [listSummary, setListSummary] = useState<ListSubmissionSummary | null>(null);
   const enviado = useRef(false);
 
   useEffect(() => {
-    if (enviado.current || total === 0) return;
+    if (enviado.current) return;
     enviado.current = true;
 
-    api.post('/gamification/record-session', {
-      acertos,
-      total,
-      capitulo_id,
-      dificuldade,
-    })
-      .then((response) => {
-        setXpGanho(response.data?.xp_ganho ?? null);
-        setStreak(response.data?.streak ?? null);
-        setMultiplier(response.data?.multiplier ?? null);
-      })
-      .catch(() => {
-        setXpGanho(acertos * 10 + 20);
-        setStreak(null);
-        setMultiplier(null);
-      })
-      .finally(() => setXpLoading(false));
+    const processar = async () => {
+      if (isListMode && listId) {
+        if (submissionView) {
+          const response = await api.get<ListSubmissionSummary & { title?: string }>(`/lists/${listId}/me`);
+          setListSummary(response.data);
+          setXpLoading(false);
+          return;
+        }
 
-    // Se era a questão diária, marca como concluída para hoje
-    if (ehDiaria) {
-      api.post('/questions/diaria/marcar').catch(() => {});
-    }
-  }, [acertos, capitulo_id, dificuldade, ehDiaria, total]);
+        const responses = resultado.map((resposta) => ({
+          question_id: resposta.id,
+          selected_answer: resposta.userAnswer ?? null,
+          is_correct: resposta.message === 'correct',
+        }));
+
+        const submitResponse = await api.post<ListSubmissionSummary>(`/lists/${listId}/submit`, {
+          responses,
+          correct_count: acertos,
+          total_questions: total,
+        });
+        setListSummary({
+          ...submitResponse.data,
+          correct_count: acertos,
+          total_questions: total,
+        });
+
+        try {
+          const xpResponse = await api.post('/gamification/record-session', {
+            acertos,
+            total,
+            capitulo_id: capituloId ? Number(capituloId) : undefined,
+            dificuldade: dificuldade ? Number(dificuldade) : undefined,
+          });
+          setXpGanho(xpResponse.data?.xp_ganho ?? null);
+          setStreak(xpResponse.data?.streak ?? null);
+          setMultiplier(xpResponse.data?.multiplier ?? null);
+        } catch {
+          setXpGanho(acertos * 10 + 20);
+          setStreak(null);
+          setMultiplier(null);
+        } finally {
+          setXpLoading(false);
+        }
+        return;
+      }
+
+      if (total > 0) {
+        try {
+          const response = await api.post('/gamification/record-session', {
+            acertos,
+            total,
+            capitulo_id: capituloId ? Number(capituloId) : undefined,
+            dificuldade: dificuldade ? Number(dificuldade) : undefined,
+          });
+          setXpGanho(response.data?.xp_ganho ?? null);
+          setStreak(response.data?.streak ?? null);
+          setMultiplier(response.data?.multiplier ?? null);
+        } catch {
+          setXpGanho(acertos * 10 + 20);
+          setStreak(null);
+          setMultiplier(null);
+        } finally {
+          setXpLoading(false);
+        }
+      } else {
+        setXpLoading(false);
+      }
+
+      if (ehDiaria) {
+        api.post('/questions/diaria/marcar').catch(() => undefined);
+      }
+    };
+
+    processar().catch(() => {
+      setXpLoading(false);
+    });
+  }, [acertos, capituloId, dificuldade, ehDiaria, isListMode, listId, resultado, submissionView, total]);
+
+  const displayCorrect = listSummary?.correct_count ?? acertos;
+  const displayTotal = listSummary?.total_questions ?? total;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: palette.primaryBlue }}>
       <Stack.Screen options={{ headerShown: false }} />
 
       <YStack f={1} ai="center" jc="center" px="$5">
-        {/* Badge de resumo */}
         <YStack
           backgroundColor={palette.primaryGreen}
           px="$8"
@@ -89,7 +173,6 @@ const ResultScreen = () => {
           </Text>
         </YStack>
 
-        {/* Card de pontuação */}
         <YStack
           backgroundColor={palette.darkBlue}
           width="100%"
@@ -99,10 +182,29 @@ const ResultScreen = () => {
           px="$6"
           ai="center"
         >
+          {isListMode && listTitle ? (
+            <Text fontSize={16} fontWeight="700" color="rgba(255,255,255,0.9)" mb="$2">
+              {listTitle}
+            </Text>
+          ) : null}
           <Text fontSize={56} fontWeight="900" color={palette.white} mb="$1">
-            {acertos}/{total}
+            {displayCorrect}/{displayTotal}
           </Text>
-          {xpLoading ? (
+          {isListMode && listSummary ? (
+            <YStack ai="center" mb="$4" gap="$1">
+              <Text fontSize={18} color={palette.primaryGreen} fontWeight="700">
+                {listSummary.score_pct.toFixed(0)}%
+              </Text>
+              {listSummary.is_late || listSummary.student_status === 'entregue_fora_do_prazo' ? (
+                <Text fontSize={13} color="#ffcf99" fontWeight="700">
+                  Fora do prazo
+                </Text>
+              ) : null}
+              <Text fontSize={12} color="rgba(255,255,255,0.8)">
+                Concluída em {new Date(listSummary.submitted_at).toLocaleString('pt-BR')}
+              </Text>
+            </YStack>
+          ) : xpLoading ? (
             <Text fontSize={15} color="rgba(255,255,255,0.6)" mb="$4">
               Calculando XP...
             </Text>
@@ -129,16 +231,10 @@ const ResultScreen = () => {
           )}
 
           <ScrollView style={{ width: '100%' }} showsVerticalScrollIndicator={false}>
-            {resultado.map((resposta: any, indice: number) => {
+            {resultado.map((resposta, indice) => {
               const correto = resposta.message === 'correct';
               return (
-                <XStack
-                  key={indice}
-                  jc="space-between"
-                  ai="center"
-                  py="$2"
-                  width="100%"
-                >
+                <XStack key={indice} jc="space-between" ai="center" py="$2" width="100%">
                   <Text
                     fontSize={15}
                     fontWeight="bold"
@@ -167,7 +263,6 @@ const ResultScreen = () => {
         </YStack>
       </YStack>
 
-      {/* Botão de voltar */}
       <YStack
         backgroundColor={palette.red}
         width="100%"

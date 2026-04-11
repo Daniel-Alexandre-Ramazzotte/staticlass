@@ -11,6 +11,7 @@ import { useAuth } from 'app/context/AuthContext';
 const LETRAS = ['A', 'B', 'C', 'D', 'E'] as const;
 type Letra = typeof LETRAS[number];
 const QUESTION_MANAGER_ROUTE = '/(admin)/QuestaoViewer';
+const PROFESSOR_MANAGER_ROUTE = '/(app)/QuestionPicker';
 
 const FONTES_ADD = [
   { label: 'Vestibular', value: 'vestibular' },
@@ -37,24 +38,32 @@ type QuestionDetail = {
 
 const ALTERNATIVAS_VAZIAS: Record<Letra, string> = { A: '', B: '', C: '', D: '', E: '' };
 
-function normalizarReturnTo(returnTo?: string) {
-  if (!returnTo || returnTo.includes('QuestionsManager')) {
-    return QUESTION_MANAGER_ROUTE;
+function normalizarReturnTo(returnTo?: string, role?: string) {
+  if (returnTo) {
+    return returnTo;
   }
 
-  return returnTo;
+  if (role === 'professor') {
+    return PROFESSOR_MANAGER_ROUTE;
+  }
+
+  return QUESTION_MANAGER_ROUTE;
 }
 
 export default function AddNewQuestion() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string; returnTo?: string }>();
-  const { userId } = useAuth();
+  const { userId, role } = useAuth();
 
   const questionId = params.id ? Number(params.id) : null;
   const isEditing = useMemo(() => questionId !== null && !Number.isNaN(questionId), [questionId]);
   const returnTo = useMemo(
-    () => normalizarReturnTo(typeof params.returnTo === 'string' ? params.returnTo : undefined),
-    [params.returnTo],
+    () =>
+      normalizarReturnTo(
+        typeof params.returnTo === 'string' ? params.returnTo : undefined,
+        role,
+      ),
+    [params.returnTo, role],
   );
 
   const [enunciado, setEnunciado] = useState('');

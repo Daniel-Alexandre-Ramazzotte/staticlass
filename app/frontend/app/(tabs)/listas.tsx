@@ -57,7 +57,12 @@ export default function ListasScreen() {
         </AppButton>
         <AppButton
           backgroundColor={palette.red}
-          onPress={() => router.push('/(admin)/QuestaoViewer')}
+          onPress={() =>
+            router.push({
+              pathname: '/(app)/QuestionPicker',
+              params: { mode: 'manage', returnTo: '/(tabs)/listas' },
+            })
+          }
         >
           Gerenciar Questões
         </AppButton>

@@ -46,6 +46,7 @@ def create_app(testing: bool = False):
     with app.app_context():
         from .models import user, chapters, quiz_resultado, questao_diaria  # noqa: F401
         from .models import questions as _modelos_questao                   # noqa: F401
+        from .models import listas as _modelos_listas                       # noqa: F401
         db.create_all()
         _garantir_schema_incremental(app)
 
@@ -104,8 +105,8 @@ def _configurar_cors(app):
 
 
 def _registrar_blueprints(app):
-    from .routes import admin, auth, gamification, questions, users
-    for blueprint in (auth.bp, questions.bp, users.bp, admin.bp, gamification.bp):
+    from .routes import admin, auth, gamification, lists, questions, users
+    for blueprint in (auth.bp, questions.bp, users.bp, admin.bp, gamification.bp, lists.bp):
         app.register_blueprint(blueprint)
 
 
@@ -159,6 +160,83 @@ def _garantir_schema_incremental(app):
         )
         db.session.execute(
             text("UPDATE users SET streak = 0 WHERE streak IS NULL")
+        )
+        db.session.execute(
+            text("""
+                CREATE TABLE IF NOT EXISTS lists (
+                    id SERIAL PRIMARY KEY,
+                    professor_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                    title VARCHAR(255) NOT NULL,
+                    deadline TIMESTAMP NOT NULL,
+                    published BOOLEAN NOT NULL DEFAULT FALSE,
+                    published_at TIMESTAMP NULL,
+                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+        )
+        db.session.execute(
+            text("""
+                CREATE TABLE IF NOT EXISTS list_questions (
+                    id SERIAL PRIMARY KEY,
+                    list_id INTEGER NOT NULL REFERENCES lists(id) ON DELETE CASCADE,
+                    question_id INTEGER NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+                    order_index INTEGER NOT NULL,
+                    UNIQUE (list_id, question_id),
+                    UNIQUE (list_id, order_index)
+                )
+            """)
+        )
+        db.session.execute(
+            text("""
+                CREATE TABLE IF NOT EXISTS list_submissions (
+                    id SERIAL PRIMARY KEY,
+                    list_id INTEGER NOT NULL REFERENCES lists(id) ON DELETE CASCADE,
+                    student_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                    started_at TIMESTAMP NULL,
+                    submitted_at TIMESTAMP NULL,
+                    correct_count INTEGER NOT NULL DEFAULT 0,
+                    total_questions INTEGER NOT NULL DEFAULT 0,
+                    score_pct NUMERIC(5, 2) NOT NULL DEFAULT 0,
+                    is_late BOOLEAN NOT NULL DEFAULT FALSE,
+                    UNIQUE (list_id, student_id)
+                )
+            """)
+        )
+        db.session.execute(
+            text("""
+                CREATE TABLE IF NOT EXISTS list_submission_answers (
+                    id SERIAL PRIMARY KEY,
+                    submission_id INTEGER NOT NULL REFERENCES list_submissions(id) ON DELETE CASCADE,
+                    question_id INTEGER NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+                    selected_answer VARCHAR(1) NULL,
+                    is_correct BOOLEAN NOT NULL
+                )
+            """)
+        )
+        db.session.execute(
+            text("""
+                CREATE TABLE IF NOT EXISTS list_change_log (
+                    id SERIAL PRIMARY KEY,
+                    list_id INTEGER NOT NULL REFERENCES lists(id) ON DELETE CASCADE,
+                    professor_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                    action VARCHAR(40) NOT NULL,
+                    summary TEXT NOT NULL,
+                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+        )
+        db.session.execute(
+            text("CREATE INDEX IF NOT EXISTS idx_lists_professor_id ON lists (professor_id)")
+        )
+        db.session.execute(
+            text("CREATE INDEX IF NOT EXISTS idx_list_submissions_student_id ON list_submissions (student_id)")
+        )
+        db.session.execute(
+            text("CREATE INDEX IF NOT EXISTS idx_list_questions_list_order ON list_questions (list_id, order_index)")
+        )
+        db.session.execute(
+            text("CREATE INDEX IF NOT EXISTS idx_list_submission_answers_submission_id ON list_submission_answers (submission_id)")
         )
         db.session.commit()
     except Exception:

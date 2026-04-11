@@ -13,7 +13,7 @@
 | 1 | Foundation & Auth Hardening | Complete | 4 | QA-01, QA-02, QA-03, QA-04 |
 | 2 | Question Bank Expansion | Complete | 3 | QUEST-01, QUEST-02, QUEST-03 |
 | 3 | Gamification | Complete | 4 | GAME-01, GAME-02, GAME-03, GAME-04, GAME-05, GAME-06 |
-| 4 | Professor Lists | Pending | 4 | LIST-01, LIST-02, LIST-03, LIST-04, LIST-05, LIST-06, LIST-07 |
+| 4 | Professor Lists | Complete | 4/4 | LIST-01, LIST-02, LIST-03, LIST-04, LIST-05, LIST-06, LIST-07 |
 | 5 | Statistics & Analytics | Pending | 3 | STAT-01, STAT-02, STAT-03, STAT-04, STAT-05 |
 | 6 | Polish & Release | Pending | 3 | — (cross-cutting) |
 
@@ -166,13 +166,13 @@
 | GAME-04 | Phase 3 | Complete |
 | GAME-05 | Phase 3 | Complete |
 | GAME-06 | Phase 3 | Complete |
-| LIST-01 | Phase 4 | Pending |
-| LIST-02 | Phase 4 | Pending |
-| LIST-03 | Phase 4 | Pending |
-| LIST-04 | Phase 4 | Pending |
-| LIST-05 | Phase 4 | Pending |
-| LIST-06 | Phase 4 | Pending |
-| LIST-07 | Phase 4 | Pending |
+| LIST-01 | Phase 4 | Complete |
+| LIST-02 | Phase 4 | Complete |
+| LIST-03 | Phase 4 | Complete |
+| LIST-04 | Phase 4 | Complete |
+| LIST-05 | Phase 4 | Complete |
+| LIST-06 | Phase 4 | Complete |
+| LIST-07 | Phase 4 | Complete |
 | STAT-01 | Phase 5 | Pending |
 | STAT-02 | Phase 5 | Pending |
 | STAT-03 | Phase 5 | Pending |
