@@ -29,10 +29,13 @@ const DIFFICULTIES = [
 ];
 
 const FONTES = [
-  { label: 'Apostila', value: 'apostila' },
-  { label: 'Concurso', value: 'concurso' },
   { label: 'Vestibular', value: 'vestibular' },
-  { label: 'ENEM', value: 'enem' },
+  { label: 'ENEM',       value: 'ENEM' },
+  { label: 'Concurso',   value: 'concurso' },
+  { label: 'Olimpíada',  value: 'olimpíada' },
+  { label: 'Lista',      value: 'lista' },
+  { label: 'Apostila',   value: 'apostila' },
+  { label: 'Outro',      value: 'outro' },
 ];
 
 const textColor = '#ffffff';
