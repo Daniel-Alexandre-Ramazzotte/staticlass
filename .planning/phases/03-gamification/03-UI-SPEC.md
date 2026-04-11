@@ -5,6 +5,7 @@ status: draft
 shadcn_initialized: false
 preset: none
 created: 2026-04-11
+revised: 2026-04-11
 ---
 
 # Phase 3 — UI Design Contract: Gamification
@@ -53,18 +54,25 @@ Exceptions:
 
 All sizes use Tamagui `Text` component. Weights expressed as `fontWeight` string values.
 
+**Declared sizes (exactly 4):** 22px, 20px, 15px, 12px.
+
+The existing 56px score display on ResultScreen is pre-existing, not introduced by this phase, and is therefore not included in the phase type scale. Do not modify it.
+
 | Role | Size | Weight | Line Height | Font Family | Usage |
 |------|------|--------|-------------|-------------|-------|
-| Display | 56px | 900 | 1.1 | default (system) | Score display on ResultScreen (existing) |
 | Heading | 22px | bold (700) | 1.2 | primaryFontA (ChauPhilomeneOne) | Screen titles (Statistics, Ranking header) |
-| Body | 15px | 400 | 1.5 | primaryFontC (Carlito) | Ranking row names, XP values in list |
-| Label | 12px | 400 | 1.4 | default | Sub-labels, opacity 0.7-0.75 on dark backgrounds |
+| Subheading | 20px | 900 | 1.2 | default (system) | XP earned display on ResultScreen (`+{xpTotal} XP`), streak count large display on profile header |
+| Body | 15px | 400 | 1.5 | primaryFontC (Carlito) | Ranking row names, XP values in list; use bold (700) weight at this size for rank position number (e.g. `#12`) instead of a separate size |
+| Label | 12px | 400 | 1.4 | default | Sub-labels, column headers (e.g. `XP`), opacity 0.7–0.75 on dark backgrounds |
 
-XP earned display on ResultScreen: 20px, weight 900, color `palette.primaryGreen`. Replace existing `"+{acertos*10} pts"` string with `"+{xpTotal} XP"` at the same size slot.
+Size mapping applied to collapse all extras into the 4-size scale:
 
-Ranking position number (e.g. `#12`): 16px, weight bold, color `palette.white` on dark card or `palette.darkBlue` on light background.
-
-Streak count large display (profile header): 20px, weight 900, color `palette.primaryGreen`.
+| Previous mention | Mapped to | Rationale |
+|-----------------|-----------|-----------|
+| 13px (ResultScreen multiplier line) | 12px Label | Decorative sub-label role |
+| 14px (RankingRow rank number, XpStreakHeader label) | 15px Body | Body role, use bold weight for visual distinction |
+| 16px (ranking position, RankingRow XP column) | 15px Body bold | Same body role; bold weight provides distinction without new size |
+| 20px (XP earned display, streak count display) | 20px Subheading | Promoted to explicit Subheading role in the 4-size scale |
 
 Sources: codebase scan of `ResultScreen.tsx`, `Statistics.tsx`, `profile.tsx`, `home.tsx`.
 
@@ -111,7 +119,7 @@ Layout:
 [XStack jc="space-between"]
   [Text 12px opacity 0.75] "{score} XP total"
   [Text 12px opacity 0.75] "Sequência: {streak} dias  🔥"
-[Text 14px bold color primaryGreen] "Ranking: #{position}"
+[Text 15px bold color primaryGreen] "Ranking: #{position}"
 ```
 
 Fetch: `GET /gamification/ranking` (own row from pinned entry) or a separate `GET /users/profile/{email}` response extended with `xp`, `streak`, `rank_position`.
@@ -121,9 +129,9 @@ Fetch: `GET /gamification/ranking` (own row from pinned entry) or a separate `GE
 ```
 XStack height=52 px="$4" ai="center" jc="space-between" borderBottomWidth=1 borderColor="rgba(255,255,255,0.08)"
   XStack gap="$3" ai="center"
-    Text 14px bold color=white width=28   → rank number "#1"
+    Text 15px bold color=white width=28   → rank number "#1"
     Text 15px color=white                 → student name
-  Text 16px bold color=primaryGreen       → "{xp} XP"
+  Text 15px bold color=primaryGreen       → "{xp} XP"
 ```
 
 Pinned own-row variant: same layout, background `rgba(255,215,0,0.15)`, left border 3px `#FFD700`.
@@ -150,13 +158,13 @@ State handling:
 Change line 94 only:
 - Before: `Pontuação: +{acertos * 10} pts`
 - After: `+{xpGanho} XP` — where `xpGanho` is the actual XP returned from the `record-session` API response
-- Font size: 20px, weight 900, color `palette.primaryGreen` (promote from muted opacity to accent green — it is now the primary feedback moment)
+- Font size: 20px (Subheading role), weight 900, color `palette.primaryGreen` (promote from muted opacity to accent green — it is now the primary feedback moment)
 
 Add below the score display, inside the darkBlue card:
 ```
 XStack gap="$3" mt="$2" jc="center"
-  Text 13px color=white opacity=0.8  → "Sequência: {streak} dias"
-  Text 13px color=primaryGreen fontWeight=bold  → if streak >= 3: "Multiplicador {1.25×|1.5×} aplicado"
+  Text 12px color=white opacity=0.8  → "Sequência: {streak} dias"
+  Text 12px color=primaryGreen fontWeight=bold  → if streak >= 3: "Multiplicador {1.25×|1.5×} aplicado"
 ```
 
 ---
@@ -177,6 +185,10 @@ Weekly calendar: currently hardcoded mock. This phase wires it to real data from
 No new navigation added to profile; Ranking screen access via existing tab bar entry in `(app)/Ranking.tsx`.
 
 ### Ranking Screen
+
+**Focal point declaration:**
+- On initial load (first visit or cold load): the #1 ranked row is the primary visual anchor. It sits at the top of the list, with rank number `#1` in 15px bold white. The user's eye travels top-to-bottom naturally; the top row carries implicit status weight.
+- On returning visits (screen already loaded, user scrolls back up): the pinned own-row at the bottom is the primary anchor for the returning user. It is always visible regardless of scroll position and uses the gold tint background (`rgba(255,215,0,0.15)`) + left border (`#FFD700`) to draw attention to the user's own standing. This dual-anchor pattern mirrors the Duolingo leaderboard: aspirational anchor (#1) on load, personal anchor (own row) for returning motivation.
 
 Navigation: already reachable from tab bar (stub exists). No new navigation wiring needed.
 
@@ -299,4 +311,5 @@ If `Flame` icon from `@tamagui/lucide-icons` is used for streak decoration — i
 | Error/empty state pattern | `Statistics.tsx` codebase scan |
 
 *UI-SPEC generated: 2026-04-11*
+*UI-SPEC revised: 2026-04-11 — typography collapsed to 4 sizes; Ranking focal point added*
 *Phase: 03-gamification*
