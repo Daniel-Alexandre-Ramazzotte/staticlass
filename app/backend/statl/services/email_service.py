@@ -1,7 +1,8 @@
 import os
 from flask_mail import Message
-from .. import mail
 from flask import current_app
+
+from .. import mail
 
 
 # Falta configurar o email e o servidor SMTP
@@ -58,8 +59,6 @@ def send_reset_email(to: str, token: str):
         recipients=[to],
         body=body
     )
-    print(current_app.config["MAIL_SERVER"])
-    print(current_app.config["MAIL_PORT"])
     with current_app.app_context():
         mail.send(msg)
 
