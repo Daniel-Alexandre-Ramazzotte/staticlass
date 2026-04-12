@@ -35,3 +35,33 @@ def student_dashboard_service(student_id: int) -> dict[str, Any]:
 
 def student_activity_service(student_id: int) -> dict[str, list[str]]:
     return {"days": _json_safe(get_student_activity_days(int(student_id)))}
+
+
+def student_calendar_service(student_id: int, year: int, month: int) -> dict:
+    """Returns list of day-of-month integers where student has answer_history entries."""
+    from datetime import date as _date
+    from sqlalchemy import text as _text
+    from .. import db
+
+    current_year = _date.today().year
+    if year != current_year:
+        raise ValueError("Calendário disponível apenas para o ano atual")
+    if not 1 <= month <= 12:
+        raise ValueError("Mês inválido")
+
+    rows = db.session.execute(
+        _text("""
+            SELECT DISTINCT DATE(answered_at) AS practice_date
+            FROM answer_history
+            WHERE student_id = :student_id
+        """),
+        {"student_id": int(student_id)},
+    ).fetchall()
+
+    practiced_days = sorted(set(
+        _date.fromisoformat(str(r[0])[:10]).day
+        for r in rows
+        if str(r[0])[:7] == f"{year:04d}-{month:02d}"
+    ))
+
+    return {"year": year, "month": month, "practiced_days": practiced_days}
