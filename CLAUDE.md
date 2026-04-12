@@ -1,227 +1,46 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-## Pendências
-
-- **Fase ativa**: Phase 06 — Polish & Release (todas as fases anteriores concluídas).
-- **Lint global do frontend**: ainda há avisos preexistentes fora dos arquivos tocados; validar e limpar isso antes do release.
-
-## Project Overview
-
-Staticlass is a quiz/question-answering app for students and professors. It has three user roles: `aluno` (student), `professor`, and `admin`.
-
-## Repository Structure
-
-```
-staticlass/
-  app/
-    backend/   # Flask (Python) API
-    frontend/  # React Native (Expo) mobile app
-  uploads/     # Image files uploaded for questions
-```
-
-## Backend
-
-### Setup & Run
-
-```bash
-cd app/backend
-pip install -r requirements.txt
-flask --app statl run
-```
-
-Requires a `.env` file in `app/backend/` with:
-```
-DATABASE_URL=postgresql://staticlass:staticlass123@localhost:5432/staticlass
-SECRET_KEY=
-```
-
-The app uses **PostgreSQL** (via Docker) and falls back to **SQLite in-memory** when `create_app(testing=True)` is called.
-
-### Architecture
-
-Strictly layered: **Routes → Services → Repositories**
-
-- `statl/__init__.py` — app factory (`create_app()`), registers blueprints, initializes extensions
-- `statl/routes/` — Flask Blueprints (`auth`, `questions`, `users`), handle HTTP only
-- `statl/services/` — business logic; routes call service functions
-- `statl/repositories/` — all database access via SQLAlchemy
-- `statl/models/` — SQLAlchemy ORM models (`Question`, `Alternative`, `Chapter`, `Topic`)
-- `statl/security/` — password hashing (`password.py`), JWT reset tokens (`tokens.py`)
-- `statl/utils/auth_middleware.py` — `@require_role(role)` decorator for role-based route protection
-- `statl/config.py` — Flask-Mail configuration
-
-### API Endpoints
-
-| Blueprint | Prefix | Key routes |
-|-----------|--------|------------|
-| auth | `/auth` | `POST /register`, `POST /login`, `POST /password-reset`, `POST /password-reset/confirm` |
-| questions | `/questions` | `GET /rand/<num>`, `GET /filtered`, `GET /chapters`, `GET /topics`, `POST /add`, `PUT /update`, `POST /check`, `GET /professor/<id>`, `GET /admin/<id>` |
-| users | `/users` | `PUT /update-me`, `DELETE /delete-me`, `GET /profile/<email>`, `GET /estatisticas`, `GET /historico`, admin routes for professor/aluno management |
-| gamification | `/gamification` | `POST /record-session`, `GET /ranking` |
-| admin | `/admin` | `GET /questoes`, `GET /stats/alunos`, `GET /stats/aluno/<id>`, `POST /sql` |
-
-### Role-based Access
-
-Use `@require_role('admin')` or `@require_role(['admin', 'professor'])` on route functions. It validates the JWT and checks the `role` claim.
-For student-only gamification flows, use `@require_role(['aluno'])`.
-
-### Tests
-
-```bash
-cd app/backend
-pytest
-```
-
-Test config uses `create_app(testing=True)` which sets `SQLALCHEMY_DATABASE_URI` to `sqlite:///:memory:`.
-
-## Frontend
-
-### Setup & Run
-
-```bash
-cd app/frontend
-npm install
-npx expo start        # starts Metro bundler
-npx expo run:android  # build and run on Android
-```
-
-For Android emulator, the backend API base URL is `http://10.0.2.2:5000/` (emulator loopback to host). Change `app/services/api.tsx` when testing on a physical device.
-
-### Lint
-
-```bash
-cd app/frontend
-npm run lint
-```
-
-### Architecture
-
-Uses **Expo Router** (file-based routing). Route groups in `app/frontend/app/`:
-
-- `(public)/` — unauthenticated screens: Login, Register, RecoverPassword
-- `(tabs)/` — main tab bar (Home, Questions/Questoes, Profile); available to all authenticated users
-- `(app)/` — quiz flow screens: QuizInProgressScreen, ResultScreen, SolutionScreen, Ranking, Statistics, Settings
-- `(professor)/` — professor-only: ProfessorMenu, AddNewQuestion, ListManager, CreateNewList
-- `(admin)/` — admin-only: AdminMenu, AddProfessor, ProfessorManager, AlunoManager, QuestaoViewer
-
-**Auth flow** (`app/_layout.tsx`):
-- `AuthProvider` wraps the entire app
-- On mount, reads JWT from `AsyncStorage` key `@auth_session`, decodes it (with `jwt-decode`), checks expiry
-- Root layout redirects: no session → `(public)/Login`; has session → `(tabs)/Home`
-
-**Key files:**
-- `app/context/AuthContext.tsx` — JWT auth context; exposes `session`, `role`, `email`, `name`, `userId`, `signIn`, `signOut`
-- `app/services/api.tsx` — Axios instance; automatically attaches `Bearer <token>` header from AsyncStorage on every request
-- `app/constants/style.tsx` — global `palette` color object and shared `StyleSheet` styles
-- `app/constants/names.tsx` — shared string constants
-- `app/components/` — reusable components: `AppButton`, `CustomAccordion`
-- `app/(tabs)/ranking.tsx` — leaderboard screen backed by `/gamification/ranking`
-- `app/(tabs)/profile.tsx` — student profile hydrated from `/users/profile`, `/users/historico`, and `/gamification/ranking`
-
-**UI libraries:** Tamagui (components + theming), react-native-paper, @tamagui/lucide-icons
-
-## Integração com Estatistica-Basica
-
-O banco de questões do projeto [Estatistica-Basica](https://github.com/Daniel-Alexandre-Ramazzotte/Estatistica-Basica) alimenta o Staticlass com 356 questões categorizadas por capítulo, tópico e dificuldade.
-
-### Schema adicional (banco PROPET)
-
-Além da tabela `questions` original, o app agora gerencia:
-
-| Tabela | Descrição |
-|--------|-----------|
-| `chapters` | 4 capítulos do livro (Descritiva, Probabilidade, Inferência, Regressão) |
-| `topics` | 17 tópicos organizados por capítulo |
-| `alternatives` | Alternativas normalizadas (A–E) das questões importadas |
-
-Novos campos em `questions`: `chapter_id`, `topic_id`, `difficulty` (1–3), `section`, `needs_fix`, `original_id`.
-
-### Importar o banco de questões
-
-```bash
-cd app/backend
-# Certifique-se que questoes.db está em Desktop/Estatistica-Basica/banco_questoes/
-python -m statl.migrate_questoes
-
-# Ou especificando o caminho:
-python -m statl.migrate_questoes --db-path /caminho/para/questoes.db
-```
-
-O script é idempotente: pula questões já importadas (detecta pelo `original_id`).
-
-### Rotas filtradas (banco PROPET)
-
-```
-GET /questions/chapters               → lista capítulos
-GET /questions/topics?chapter_id=1    → lista tópicos (filtro opcional)
-GET /questions/filtered?num=5&chapter_id=1&difficulty=2  → quiz filtrado
-```
-
-As questões em `/filtered` retornam com o array `alternatives` embutido no JSON.
-
-**Nota:** 230 questões únicas importadas (356 no SQLite, mas 126 têm `original_id` duplicado na fonte). O banco de origem tem questões sem alternativas — nesses casos `alternatives: []`.
-
-## Infraestrutura
-
-### PostgreSQL via Docker
-
-```bash
-# Subir o banco (e o backend + nginx)
-docker compose up -d
-
-# Credenciais (também em app/backend/.env)
-DATABASE_URL=postgresql://staticlass:staticlass123@localhost:5432/staticlass
-```
-
-O `docker-compose.yml` está na raiz do repositório. O schema é criado automaticamente pelo `db.create_all()` no startup do Flask.
-
-### Seed de dados fictícios
-
-```bash
-cd app/backend
-python seed_demo_data.py
-```
-
-O script cria/atualiza contas demo para `admin`, `professor` e `aluno`, e popula histórico/XP/streak para alunos que ainda não têm quizzes registrados.
-
-## Quiz — Fluxo de Dados
-
-O quiz usa exclusivamente `/questions/filtered` (não mais `/rand/<num>`). Cada questão retorna:
-
-```json
-{
-  "id": 397,
-  "issue": "...",
-  "correct_answer": "C",
-  "solution": "...",
-  "image_q": null,
-  "image_s": null,
-  "alternatives": [
-    { "letter": "A", "text": "...", "is_correct": false },
-    { "letter": "C", "text": "...", "is_correct": true }
-  ]
-}
-```
-
-A checagem de resposta é feita **no cliente** — o frontend compara `userAnswer === current.correct_answer` sem chamar o backend. O endpoint `POST /questions/check` existe mas não é usado pelo quiz.
-
-### Filtros disponíveis no quiz
-
-`GET /questions/filtered?num=5&chapter_id=1&difficulty=2`
-
-- `num` — quantidade de questões (padrão: 5)
-- `chapter_id` — filtra por capítulo (1–4)
-- `difficulty` — filtra por dificuldade (1=Fácil, 2=Médio, 3=Difícil)
-
-A tela `(tabs)/questions.tsx` busca os capítulos de `/questions/chapters` no mount e passa os filtros para `QuizInProgressScreen` via router params.
-
-## Estado Atual do Produto
-
-- Phase 01 concluída: hardening de auth e proteção dos endpoints críticos
-- Phase 02 concluída: filtro por `source` no banco de questões e nas telas de professor/aluno
-- Phase 03 concluída: XP, streak, ranking global, feedback de resultado com backend e perfil gamificado
-- Phase 04 concluída: listas de exercícios — criação/publicação pelo professor, submissão pelo aluno, analytics por lista
-- Phase 05 concluída: `answer_history` canônico, dashboard de estatísticas do aluno, analytics de risco do professor, KPIs do admin, e neutralização do viewer compartilhado de questões
-- Próximo foco: Phase 06 — polish & release (validação E2E, ambiente de produção, UX tightening)
+## Status
+
+- **Fase ativa**: Phase 06 — Polish & Release (fases 1–5 concluídas)
+- **Pendência de lint**: avisos preexistentes no frontend fora dos arquivos tocados — limpar antes do release
+
+## Decisões não-óbvias
+
+- **Checagem de resposta é client-side**: `userAnswer === current.correct_answer` no frontend. `POST /questions/check` existe mas não é usado — não adicionar round-trip ao quiz sem redesenhar o contrato.
+- **Expiração de lista é calculada na leitura**: não há background job. Status `encerrada` é derivado do `deadline` no momento do GET.
+- **`answer_history` é a única fonte de verdade para analytics**: tanto quiz livre quanto submissão de listas escrevem aqui. Analytics de aluno, professor e admin leem daqui.
+- **Dialect risk**: testes usam SQLite in-memory; produção usa PostgreSQL. Evitar `RETURNING`, `RANDOM()` e outros construtos sem fallback.
+- **`/rand/<num>` está depreciado**: o quiz usa exclusivamente `/questions/filtered`. A rota antiga ainda existe no código.
+- **Código do frontend está em `src/`**: `app/frontend/src/` — não `app/frontend/app/`.
+
+## Identidades de código para grep
+
+| Identificador | Onde vive | Por que importa |
+|---------------|-----------|-----------------|
+| `@auth_session` | `src/context/AuthContext.tsx` | Chave do AsyncStorage para o JWT — nome não-óbvio |
+| `10.0.2.2:5000` | `src/services/api.tsx` | URL do backend no emulador Android — trocar para device físico |
+| `original_id` | `statl/models/` + `migrate_questoes` | Campo de idempotência da importação do banco PROPET |
+| `require_role` | `statl/utils/auth_middleware.py` | Decorator de proteção de rota; importar daqui |
+| `palette` | `src/constants/style.tsx` | Objeto de cores canônico do projeto |
+| `seed_demo_data.py` | `app/backend/` | Cria contas admin/prof/aluno de teste e popula histórico |
+
+## Referências GSD
+
+| Necessidade | Arquivo |
+|-------------|---------|
+| Estado atual, progresso por fase, próximos passos | `.planning/STATE.md` |
+| Roadmap, fases, critérios de sucesso, backlog | `.planning/ROADMAP.md` |
+| Requisitos validados, decisões técnicas, constraints | `.planning/PROJECT.md` |
+
+## Referências de docs segmentados
+
+| Buscar quando... | Keywords | Arquivo |
+|------------------|----------|---------|
+| Trabalhando em endpoints / rotas / blueprints | api, route, blueprint, endpoint, prefix | `.planning/docs/api-endpoints.md` |
+| Modificando modelos / schema / migrações | table, column, schema, migration, model | `.planning/docs/db-schema.md` |
+| Trabalhando no quiz flow / checagem / record-session | quiz, filtered, alternatives, correct_answer, record | `.planning/docs/quiz-flow.md` |
+| Trabalhando em telas / navegação / auth redirect | screen, tab, router, redirect, layout, group | `.planning/docs/frontend-screens.md` |
+| Aplicando roles / protegendo rotas / criando usuários de teste | require_role, permission, aluno, professor, admin, seed | `.planning/docs/role-patterns.md` |
+| Importação / banco de questões / chapters / topics | original_id, migrate, questoes.db, chapter, topic, difficulty | `.planning/docs/question-bank.md` |
+| Cores, estilos, componentes, fontes, Tamagui | palette, style, color, font, AppButton, Tamagui | `.planning/docs/ui-conventions.md` |
