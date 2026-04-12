@@ -28,8 +28,8 @@ def buscar_usuario_por_id(usuario_id):
 def criar_usuario(email, senha_hash, nome):
     resultado = db.session.execute(
         text("""
-            INSERT INTO users (email, password_hash, name, role, active, xp)
-            VALUES (:email, :senha_hash, :nome, 'aluno', TRUE, 0)
+            INSERT INTO users (email, password_hash, name, role, active, xp, email_verified)
+            VALUES (:email, :senha_hash, :nome, 'aluno', TRUE, 0, FALSE)
             RETURNING id
         """),
         {"email": email, "senha_hash": senha_hash, "nome": nome},
@@ -37,6 +37,14 @@ def criar_usuario(email, senha_hash, nome):
     new_id = resultado.scalar()
     db.session.commit()
     return new_id
+
+
+def verificar_email_usuario(usuario_id):
+    db.session.execute(
+        text("UPDATE users SET email_verified = TRUE WHERE id = :id"),
+        {"id": usuario_id},
+    )
+    db.session.commit()
 
 
 def criar_usuario_com_papel(email, senha_hash, nome, papel):

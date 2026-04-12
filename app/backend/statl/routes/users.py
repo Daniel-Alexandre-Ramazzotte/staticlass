@@ -15,6 +15,10 @@ from ..services.resultado_service import (
     buscar_historico_service,
     buscar_estatisticas_service,
 )
+from ..services.student_analytics_service import (
+    student_activity_service,
+    student_dashboard_service,
+)
 
 bp = Blueprint('users', __name__, url_prefix='/users')
 
@@ -134,3 +138,15 @@ def estatisticas():
 @jwt_required()
 def historico():
     return jsonify(buscar_historico_service(get_jwt_identity())), 200
+
+
+@bp.route('/analytics/dashboard', methods=['GET'])
+@jwt_required()
+def analytics_dashboard():
+    return jsonify(student_dashboard_service(get_jwt_identity())), 200
+
+
+@bp.route('/analytics/activity', methods=['GET'])
+@jwt_required()
+def analytics_activity():
+    return jsonify(student_activity_service(get_jwt_identity())), 200

@@ -107,6 +107,19 @@ def _insert_question_graph(app, *, professor_id: int, question_id: int, chapter_
         db.session.commit()
 
 
+def _fetch_answer_history(app, *, source: str, source_id: int):
+    with app.app_context():
+        return db.session.execute(
+            text("""
+                SELECT source, source_id, list_id, question_id, selected_answer, is_correct
+                FROM answer_history
+                WHERE source = :source AND source_id = :source_id
+                ORDER BY question_id
+            """),
+            {"source": source, "source_id": source_id},
+        ).mappings().all()
+
+
 def test_professor_can_create_and_publish_list(app, client):
     _insert_user(app, user_id=10, email="prof@example.com", name="Prof", role="professor")
     _insert_user(app, user_id=21, email="aluno@example.com", name="Aluno", role="aluno")
@@ -270,6 +283,38 @@ def test_student_can_submit_late_and_professor_results_include_analytics(app, cl
     assert submit_payload["is_late"] is True
     assert submit_payload["score_pct"] == 50.0
 
+    with app.app_context():
+        submission_id = db.session.execute(
+            text("""
+                SELECT id
+                FROM list_submissions
+                WHERE list_id = 1 AND student_id = 21
+            """)
+        ).scalar_one()
+
+    answer_history_rows = _fetch_answer_history(app, source="list", source_id=submission_id)
+    assert len(answer_history_rows) == 2
+    assert all(row["source"] == "list" for row in answer_history_rows)
+    assert all(row["list_id"] == 1 for row in answer_history_rows)
+    assert [row["question_id"] for row in answer_history_rows] == [301, 302]
+
+    resubmit_response = client.post(
+        "/lists/1/submit",
+        json={
+            "responses": [
+                {"question_id": 301, "selected_answer": "A", "is_correct": True},
+                {"question_id": 302, "selected_answer": "C", "is_correct": False},
+            ],
+            "correct_count": 1,
+            "total_questions": 2,
+        },
+        headers=_auth_headers(aluno_token),
+    )
+    assert resubmit_response.status_code == 200
+    resubmitted_rows = _fetch_answer_history(app, source="list", source_id=submission_id)
+    assert len(resubmitted_rows) == 2
+    assert [row["selected_answer"] for row in resubmitted_rows] == ["A", "C"]
+
     me_response = client.get("/lists/1/me", headers=_auth_headers(aluno_token))
     assert me_response.status_code == 200
     me_payload = me_response.get_json()
@@ -284,6 +329,13 @@ def test_student_can_submit_late_and_professor_results_include_analytics(app, cl
     assert results["summary"]["submitted_students"] == 1
     assert results["summary"]["average_score_pct"] == 50.0
     assert results["summary"]["highest_error_rate_pct"] == 100.0
+    assert results["summary"]["late_students"] == 1
+    assert results["summary"]["at_risk_students"] == 2
+    assert results["risk_students"][0]["student_id"] == 21
+    assert results["risk_students"][0]["risk_band"] == "atencao"
+    assert results["risk_students"][1]["student_id"] == 22
+    assert results["risk_students"][1]["student_status"] == "nova"
+    assert sum(bucket["count"] for bucket in results["score_distribution"]) == results["summary"]["submitted_students"]
     assert results["students"][0]["student_status"] in {"entregue_fora_do_prazo", "nova"}
     assert any(item["student_status"] == "entregue_fora_do_prazo" for item in results["students"])
     assert results["per_question"][0]["order_index"] == 1

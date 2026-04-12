@@ -429,6 +429,17 @@ def get_list_results(list_id: int, professor_id: int) -> dict | None:
         """),
         {"list_id": list_id},
     ).scalar_one()
+    score_distribution = db.session.execute(
+        text("""
+            SELECT
+                SUM(CASE WHEN score_pct < 50 THEN 1 ELSE 0 END) AS bucket_0_49,
+                SUM(CASE WHEN score_pct >= 50 AND score_pct < 70 THEN 1 ELSE 0 END) AS bucket_50_69,
+                SUM(CASE WHEN score_pct >= 70 THEN 1 ELSE 0 END) AS bucket_70_100
+            FROM list_submissions
+            WHERE list_id = :list_id AND submitted_at IS NOT NULL
+        """),
+        {"list_id": list_id},
+    ).mappings().one()
     per_question = db.session.execute(
         text("""
             SELECT
@@ -450,6 +461,53 @@ def get_list_results(list_id: int, professor_id: int) -> dict | None:
             WHERE lq.list_id = :list_id
             GROUP BY lq.question_id, lq.order_index
             ORDER BY lq.order_index ASC
+        """),
+        {"list_id": list_id},
+    ).mappings().all()
+    risk_students = db.session.execute(
+        text("""
+            SELECT
+                u.id AS student_id,
+                u.name AS student_name,
+                ls.started_at,
+                ls.submitted_at,
+                ls.score_pct,
+                ls.is_late,
+                CASE
+                    WHEN ls.submitted_at IS NOT NULL AND COALESCE(ls.score_pct, 0) < 50 THEN 'critico'
+                    WHEN ls.submitted_at IS NOT NULL AND COALESCE(ls.score_pct, 0) < 70 THEN 'atencao'
+                    WHEN ls.started_at IS NOT NULL AND ls.submitted_at IS NULL THEN 'atencao'
+                    WHEN ls.started_at IS NULL AND ls.submitted_at IS NULL THEN 'critico'
+                    ELSE 'ok'
+                END AS risk_band,
+                CASE
+                    WHEN ls.submitted_at IS NOT NULL THEN 0
+                    WHEN ls.started_at IS NOT NULL THEN 1
+                    ELSE 2
+                END AS risk_order_group,
+                CASE
+                    WHEN ls.submitted_at IS NOT NULL THEN COALESCE(ls.score_pct, 999)
+                    ELSE 999
+                END AS risk_score_sort,
+                CASE
+                    WHEN ls.submitted_at IS NOT NULL AND COALESCE(ls.is_late, FALSE) THEN 1
+                    ELSE 0
+                END AS late_sort
+            FROM users u
+            LEFT JOIN list_submissions ls
+                ON ls.student_id = u.id AND ls.list_id = :list_id
+            WHERE u.role = 'aluno'
+              AND COALESCE(u.active, TRUE) = TRUE
+              AND (
+                    ls.submitted_at IS NULL
+                    OR COALESCE(ls.score_pct, 0) < 70
+              )
+            ORDER BY
+                risk_order_group ASC,
+                risk_score_sort ASC,
+                late_sort DESC,
+                u.name ASC,
+                u.id ASC
         """),
         {"list_id": list_id},
     ).mappings().all()
@@ -480,7 +538,27 @@ def get_list_results(list_id: int, professor_id: int) -> dict | None:
                 (float(row["error_rate_pct"] or 0) for row in per_question),
                 default=0.0,
             ),
+            "late_students": int(
+                db.session.execute(
+                    text("""
+                        SELECT COUNT(*)
+                        FROM list_submissions
+                        WHERE list_id = :list_id
+                          AND submitted_at IS NOT NULL
+                          AND COALESCE(is_late, FALSE) = TRUE
+                    """),
+                    {"list_id": list_id},
+                ).scalar_one()
+                or 0
+            ),
+            "at_risk_students": int(len(risk_students)),
         },
+        "risk_students": risk_students,
+        "score_distribution": [
+            {"bucket": "0-49", "count": int(score_distribution["bucket_0_49"] or 0)},
+            {"bucket": "50-69", "count": int(score_distribution["bucket_50_69"] or 0)},
+            {"bucket": "70-100", "count": int(score_distribution["bucket_70_100"] or 0)},
+        ],
         "students": students,
         "per_question": per_question,
         "change_log": list_change_log(list_id),

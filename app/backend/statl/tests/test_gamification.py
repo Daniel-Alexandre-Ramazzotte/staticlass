@@ -18,6 +18,17 @@ def _auth_headers(token):
     return {"Authorization": f"Bearer {token}"}
 
 
+def _answers_for_session(total, correct_count):
+    return [
+        {
+            "question_id": 1000 + idx,
+            "selected_answer": chr(65 + idx),
+            "is_correct": idx < correct_count,
+        }
+        for idx in range(total)
+    ]
+
+
 def _insert_user(
     app,
     *,
@@ -91,7 +102,13 @@ def test_record_session_applies_bonus_multiplier_and_updates_streak(app, client)
 
     response = client.post(
         "/gamification/record-session",
-        json={"acertos": 3, "total": 5, "capitulo_id": 2, "dificuldade": 1},
+        json={
+            "acertos": 3,
+            "total": 5,
+            "capitulo_id": 2,
+            "dificuldade": 1,
+            "answers": _answers_for_session(5, 3),
+        },
         headers=_auth_headers(token),
     )
 
@@ -113,6 +130,10 @@ def test_record_session_applies_bonus_multiplier_and_updates_streak(app, client)
             text("SELECT COUNT(*) FROM quiz_resultados WHERE usuario_id = 1")
         ).scalar()
         assert quiz_count == 1
+        answer_count = db.session.execute(
+            text("SELECT COUNT(*) FROM answer_history WHERE source = 'free_practice'")
+        ).scalar()
+        assert answer_count == 5
 
 
 def test_record_session_same_day_keeps_streak(app, client):
@@ -130,7 +151,11 @@ def test_record_session_same_day_keeps_streak(app, client):
 
     response = client.post(
         "/gamification/record-session",
-        json={"acertos": 2, "total": 4},
+        json={
+            "acertos": 2,
+            "total": 4,
+            "answers": _answers_for_session(4, 2),
+        },
         headers=_auth_headers(token),
     )
 
@@ -139,6 +164,43 @@ def test_record_session_same_day_keeps_streak(app, client):
     assert data["streak"] == 3
     assert data["multiplier"] == 1.25
     assert data["xp_ganho"] == 50
+
+
+def test_record_session_rejects_invalid_answers_payload(app, client):
+    _insert_user(
+        app,
+        user_id=3,
+        email="carla@example.com",
+        name="Carla",
+        xp=0,
+        streak=0,
+    )
+    token = _make_token(app, user_id="3", email="carla@example.com", name="Carla")
+
+    for payload in (
+        {"acertos": 1, "total": 2},
+        {
+            "acertos": 1,
+            "total": 2,
+            "answers": [{"question_id": 1, "selected_answer": "A", "is_correct": True}],
+        },
+    ):
+        response = client.post(
+            "/gamification/record-session",
+            json=payload,
+            headers=_auth_headers(token),
+        )
+        assert response.status_code == 400
+
+    with app.app_context():
+        quiz_count = db.session.execute(
+            text("SELECT COUNT(*) FROM quiz_resultados WHERE usuario_id = 3")
+        ).scalar()
+        answer_count = db.session.execute(
+            text("SELECT COUNT(*) FROM answer_history WHERE student_id = 3")
+        ).scalar()
+        assert quiz_count == 0
+        assert answer_count == 0
 
 
 def test_ranking_returns_pagination_and_own_entry(app, client):

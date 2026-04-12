@@ -13,3 +13,4 @@ class User(db.Model):
     streak             = db.Column(db.Integer, nullable=False, server_default='0')
     last_practice_date = db.Column(db.Date, nullable=True)
     active             = db.Column(db.Boolean, nullable=False, server_default='true')
+    email_verified     = db.Column(db.Boolean, nullable=False, server_default='true')

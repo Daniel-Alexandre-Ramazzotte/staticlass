@@ -88,6 +88,7 @@ const ResultScreen = () => {
 
         try {
           const xpResponse = await api.post('/gamification/record-session', {
+            source: 'list',
             acertos,
             total,
             capitulo_id: capituloId ? Number(capituloId) : undefined,
@@ -113,6 +114,12 @@ const ResultScreen = () => {
             total,
             capitulo_id: capituloId ? Number(capituloId) : undefined,
             dificuldade: dificuldade ? Number(dificuldade) : undefined,
+            source: 'free_practice',
+            answers: resultado.map((resposta) => ({
+              question_id: resposta.id,
+              selected_answer: resposta.userAnswer ?? null,
+              is_correct: resposta.message === 'correct',
+            })),
           });
           setXpGanho(response.data?.xp_ganho ?? null);
           setStreak(response.data?.streak ?? null);

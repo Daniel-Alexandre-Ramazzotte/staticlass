@@ -4,8 +4,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Pendências
 
-- **Próxima fase ativa**: Professor Lists (Phase 04) ainda não foi implementada.
-- **Lint global do frontend**: ainda há avisos preexistentes fora dos arquivos tocados no Phase 03; validar e limpar isso antes do release.
+- **Fase ativa**: Phase 06 — Polish & Release (todas as fases anteriores concluídas).
+- **Lint global do frontend**: ainda há avisos preexistentes fora dos arquivos tocados; validar e limpar isso antes do release.
 
 ## Project Overview
 
@@ -222,4 +222,6 @@ A tela `(tabs)/questions.tsx` busca os capítulos de `/questions/chapters` no mo
 - Phase 01 concluída: hardening de auth e proteção dos endpoints críticos
 - Phase 02 concluída: filtro por `source` no banco de questões e nas telas de professor/aluno
 - Phase 03 concluída: XP, streak, ranking global, feedback de resultado com backend e perfil gamificado
-- Próximo foco: Phase 04 — listas de exercícios para professores e alunos
+- Phase 04 concluída: listas de exercícios — criação/publicação pelo professor, submissão pelo aluno, analytics por lista
+- Phase 05 concluída: `answer_history` canônico, dashboard de estatísticas do aluno, analytics de risco do professor, KPIs do admin, e neutralização do viewer compartilhado de questões
+- Próximo foco: Phase 06 — polish & release (validação E2E, ambiente de produção, UX tightening)

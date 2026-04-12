@@ -48,6 +48,7 @@ type Questao = {
   capitulo_numero: number | null;
   topico: string | null;
   source?: string | null;
+  can_manage?: boolean;
   alternativas: Alternativa[];
 };
 
@@ -61,6 +62,9 @@ type SharedQuestionViewerProps = {
 
 type QuestoesResponse = {
   questoes: Questao[];
+  total: number;
+  page: number;
+  per_page: number;
   pages: number;
 };
 
@@ -129,6 +133,7 @@ function QuestionCard({
   onEdit,
   onDelete,
   onToggleSelection,
+  canManage,
 }: {
   question: Questao;
   orderNumber: number;
@@ -137,6 +142,7 @@ function QuestionCard({
   onEdit: (questionId: number) => void;
   onDelete: (question: Questao) => void;
   onToggleSelection: (questionId: number) => void;
+  canManage: boolean;
 }) {
   const chapterName = question.capitulo_numero
     ? CAP_NOMES[question.capitulo_numero] ?? question.capitulo
@@ -204,20 +210,28 @@ function QuestionCard({
 
       <XStack gap={8} mb={8} mt={12} jc="flex-end" px={4}>
         {mode === 'manage' ? (
-          <>
-            <TouchableOpacity style={styles.actionEdit} onPress={() => onEdit(question.id)}>
-              <Pencil color="#fff" size={14} />
-              <Text color="#fff" fontSize={12} fontWeight="700" ml={4}>
-                Editar
+          canManage ? (
+            <>
+              <TouchableOpacity style={styles.actionEdit} onPress={() => onEdit(question.id)}>
+                <Pencil color="#fff" size={14} />
+                <Text color="#fff" fontSize={12} fontWeight="700" ml={4}>
+                  Editar
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.actionDelete} onPress={() => onDelete(question)}>
+                <Trash2 color="#fff" size={14} />
+                <Text color="#fff" fontSize={12} fontWeight="700" ml={4}>
+                  Excluir
+                </Text>
+              </TouchableOpacity>
+            </>
+          ) : (
+            <View style={styles.readOnlyBadge}>
+              <Text color={palette.darkBlue} fontSize={12} fontWeight="700">
+                Somente leitura
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionDelete} onPress={() => onDelete(question)}>
-              <Trash2 color="#fff" size={14} />
-              <Text color="#fff" fontSize={12} fontWeight="700" ml={4}>
-                Excluir
-              </Text>
-            </TouchableOpacity>
-          </>
+            </View>
+          )
         ) : (
           <TouchableOpacity
             style={selected ? styles.actionRemove : styles.actionAdd}
@@ -252,6 +266,7 @@ export function SharedQuestionViewer({
   const [questions, setQuestions] = useState<Questao[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchById, setSearchById] = useState('');
@@ -291,11 +306,19 @@ export function SharedQuestionViewer({
         if (topicIds.length > 0) params.topic_id = topicIds;
         if (sources.length > 0) params.source = sources;
 
-        const response = await api.get<QuestoesResponse>('/admin/questoes', { params });
+        const response = await api.get<QuestoesResponse>('/questions/browse', { params });
         setQuestions(response.data.questoes);
         setTotalPages(response.data.pages);
         setPage(targetPage);
         setSearched(true);
+        setLoadError(null);
+      } catch (error) {
+        console.error('Erro ao carregar questões:', error);
+        setQuestions([]);
+        setTotalPages(1);
+        setPage(targetPage);
+        setSearched(true);
+        setLoadError('Não foi possível carregar as questões.');
       } finally {
         setLoading(false);
       }
@@ -306,6 +329,12 @@ export function SharedQuestionViewer({
   useEffect(() => {
     loadMeta();
   }, [loadMeta]);
+
+  useEffect(() => {
+    if (!searched) {
+      fetchQuestions(1).catch(() => undefined);
+    }
+  }, [fetchQuestions, searched]);
 
   useFocusEffect(
     useCallback(() => {
@@ -498,6 +527,22 @@ export function SharedQuestionViewer({
             <ActivityIndicator color={palette.primaryBlue} size="large" style={{ marginTop: 24 }} />
           ) : null}
 
+          {!loading && loadError ? (
+            <View style={styles.errorBox}>
+              <Text color={palette.red} fontSize={14}>
+                {loadError}
+              </Text>
+            </View>
+          ) : null}
+
+          {!loading && !loadError && filteredQuestions.length === 0 ? (
+            <View style={styles.emptyBox}>
+              <Text color={palette.darkBlue} fontSize={14}>
+                Nenhuma questão encontrada com os filtros atuais.
+              </Text>
+            </View>
+          ) : null}
+
           {filteredQuestions.map((question, index) => (
             <QuestionCard
               key={question.id}
@@ -508,6 +553,7 @@ export function SharedQuestionViewer({
               onEdit={handleEdit}
               onDelete={handleDelete}
               onToggleSelection={(questionId) => onToggleQuestion?.(questionId)}
+              canManage={Boolean(question.can_manage)}
             />
           ))}
 
@@ -646,6 +692,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 10,
   },
+  readOnlyBadge: {
+    backgroundColor: '#e3eef7',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
   actionEdit: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -692,5 +744,18 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.12,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 2 },
+  },
+  errorBox: {
+    backgroundColor: '#fff3f2',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+  },
+  emptyBox: {
+    backgroundColor: '#eef4f8',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    alignItems: 'center',
   },
 });

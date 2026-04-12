@@ -50,8 +50,8 @@ export default function RegisterScreen() {
   };
   const showAlert = () => {
     Alert.alert(
-      'Email cadastrado com sucesso! Faça login para continuar.',
-      '',
+      'Cadastro realizado!',
+      'Enviamos um link de verificação para o seu email. Clique nele para ativar sua conta e depois faça login.',
       [{ text: 'OK', onPress: () => router.push('/(public)/login') }]
     );
   };

@@ -1,18 +1,19 @@
 """Rotas exclusivas do painel admin — visualizador de questões, SQL viewer e estatísticas."""
 import re
 from flask import Blueprint, jsonify, request
-from sqlalchemy import text
+from sqlalchemy import inspect, text
 from flask_jwt_extended import get_jwt, get_jwt_identity
 from statl.utils.auth_middleware import require_role
 from .. import db
 from ..repositories.questions_repository import _buscar_alternativas_em_lote
+from ..services.admin_analytics_service import admin_dashboard_service
 
 bp = Blueprint('admin', __name__, url_prefix='/admin')
 
 
 # ── Helpers ─────────────────────────────────────────────────────────────────
 
-def _construir_where(chapter_ids, topic_ids, difficulties, sources, professor_id=None):
+def _construir_where(chapter_ids, topic_ids, difficulties, sources):
     """Monta cláusula WHERE parametrizada a partir dos filtros recebidos."""
     filtros, params = [], {}
 
@@ -25,11 +26,13 @@ def _construir_where(chapter_ids, topic_ids, difficulties, sources, professor_id
     if topic_ids:    _in("topic_id",   topic_ids,   "top")
     if difficulties: _in("difficulty", difficulties, "dif")
     if sources:      _in("source",     sources,      "src")
-    if professor_id is not None:
-        filtros.append("q.professor_id = :professor_id")
-        params["professor_id"] = professor_id
-
     return ("WHERE " + " AND ".join(filtros)) if filtros else "", params
+
+
+def _questions_have_professor_id() -> bool:
+    """Compat: old databases may not have the ownership column yet."""
+    columns = inspect(db.engine).get_columns("questions")
+    return any(column["name"] == "professor_id" for column in columns)
 
 
 # ── Visualizador de questões ─────────────────────────────────────────────────
@@ -48,14 +51,15 @@ def visualizar_questoes():
 
     claims = get_jwt()
     role = claims.get("role")
-    professor_id = get_jwt_identity() if role == "professor" else None
+    usuario_id = int(get_jwt_identity())
+    has_professor_id = _questions_have_professor_id()
+    professor_id_select = "q.professor_id," if has_professor_id else "NULL AS professor_id,"
 
     where, params = _construir_where(
         chapter_ids,
         topic_ids,
         difficulties,
         sources,
-        professor_id=professor_id,
     )
     params.update({"limite": por_pagina, "deslocamento": deslocamento})
 
@@ -63,6 +67,7 @@ def visualizar_questoes():
         SELECT
             q.id, q.issue, q.correct_answer, q.solution,
             q.difficulty, q.section, q.source, q.image_q, q.image_s,
+            {professor_id_select}
             c.name   AS capitulo,
             c.number AS capitulo_numero,
             t.name   AS topico
@@ -99,6 +104,9 @@ def visualizar_questoes():
             "topico":          q["topico"],
             "alternativas":    mapa_alternativas.get(q["id"], []),
             "layout":          q["source"] or "apostila",
+            "can_manage":      role == "admin" or (
+                has_professor_id and q["professor_id"] == usuario_id
+            ),
         }
         for q in questoes_raw
     ]
@@ -153,6 +161,12 @@ def stats_aluno_detalhe(usuario_id):
         LIMIT 50
     """), {"uid": usuario_id}).mappings().all()
     return jsonify([dict(r) for r in historico]), 200
+
+
+@bp.route('/stats/dashboard', methods=['GET'])
+@require_role('admin')
+def stats_dashboard():
+    return admin_dashboard_service()
 
 
 # ── SQL Viewer (somente leitura) ─────────────────────────────────────────────

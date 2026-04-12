@@ -3,14 +3,20 @@ from flask_jwt_extended import create_access_token
 from werkzeug.security import generate_password_hash, check_password_hash
 import re
 
-from statl.security.tokens import generate_reset_token, verify_reset_token
-from statl.services.email_service import send_reset_email
+from statl.security.tokens import (
+    generate_reset_token,
+    verify_reset_token,
+    generate_verification_token,
+    verify_verification_token,
+)
+from statl.services.email_service import send_reset_email, send_verification_email
 
 from ..repositories.user_repository import (
     atualizar_senha,
     buscar_usuario_por_email,
     buscar_usuario_por_id,
     criar_usuario,
+    verificar_email_usuario,
 )
 
 EMAIL_REGEX = re.compile(
@@ -43,8 +49,15 @@ def register_user(data):
     if not email_valido(email):
         return None, jsonify({"error": "Email invalido."}), 400
         
-    user = criar_usuario(email, generate_password_hash(password), name)
-    return user, None, 201
+    user_id = criar_usuario(email, generate_password_hash(password), name)
+
+    try:
+        token = generate_verification_token(user_id)
+        send_verification_email(to=email, token=token)
+    except Exception:
+        pass  # não bloqueia o registro se o email falhar
+
+    return user_id, None, 201
 
 
 
@@ -70,6 +83,9 @@ def login_user(data):
 
     if not user.active:
         return None, jsonify({"error": "Conta desativada. Contate o administrador."}), 403
+
+    if not user.email_verified:
+        return None, jsonify({"error": "Verifique seu email antes de fazer login. Cheque sua caixa de entrada."}), 403
 
     token = create_access_token(
         identity=str(user.id),
@@ -98,6 +114,19 @@ def request_password_reset(email: str):
 
 
 
+
+
+def verify_email_token(token: str) -> bool:
+    ''' Verifica o token de email e ativa a conta se válido.
+    '''
+    user_id = verify_verification_token(token)
+    if not user_id:
+        return False
+    user = buscar_usuario_por_id(user_id)
+    if not user:
+        return False
+    verificar_email_usuario(user_id)
+    return True
 
 
 def reset_password(token: str, new_password: str):

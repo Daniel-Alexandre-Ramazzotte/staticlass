@@ -20,6 +20,7 @@ from ..repositories.lists_repository import (
     replace_list_questions,
     update_list_metadata,
 )
+from ..repositories.answer_history_repository import replace_list_answer_history_rows
 from ..repositories.questions_repository import buscar_questoes_por_ids_ordenados
 
 
@@ -410,6 +411,13 @@ def submit_list_service(student_id, list_id, dados):
             is_late,
             normalizadas,
         )
+        replace_list_answer_history_rows(
+            student_id_int,
+            int(submission["id"]),
+            list_id_int,
+            _coerce_datetime(submission["submitted_at"]),
+            normalizadas,
+        )
         db.session.commit()
         return {
             "student_status": "entregue_fora_do_prazo" if is_late else "entregue",
@@ -467,6 +475,19 @@ def list_results_service(professor_id, list_id):
                 }
             )
 
+        risk_students = []
+        for row in resultado["risk_students"]:
+            risk_students.append(
+                {
+                    "student_id": int(row["student_id"]),
+                    "student_name": row["student_name"],
+                    "student_status": _student_status(row),
+                    "submitted_at": _serialize_datetime(row["submitted_at"]),
+                    "score_pct": _serialize_number(row["score_pct"]) if row["score_pct"] is not None else None,
+                    "risk_band": row["risk_band"],
+                }
+            )
+
         per_question = [
             {
                 "question_id": int(row["question_id"]),
@@ -483,7 +504,17 @@ def list_results_service(professor_id, list_id):
                 "submitted_students": int(resultado["summary"]["submitted_students"]),
                 "average_score_pct": _serialize_number(resultado["summary"]["average_score_pct"] or 0),
                 "highest_error_rate_pct": float(resultado["summary"]["highest_error_rate_pct"] or 0),
+                "late_students": int(resultado["summary"]["late_students"]),
+                "at_risk_students": int(resultado["summary"]["at_risk_students"]),
             },
+            "risk_students": risk_students,
+            "score_distribution": [
+                {
+                    "bucket": row["bucket"],
+                    "count": int(row["count"]),
+                }
+                for row in resultado["score_distribution"]
+            ],
             "students": students,
             "per_question": per_question,
             "change_log": _serialize_change_log(resultado["change_log"]),

@@ -14,7 +14,7 @@
 | 2 | Question Bank Expansion | Complete | 3 | QUEST-01, QUEST-02, QUEST-03 |
 | 3 | Gamification | Complete | 4 | GAME-01, GAME-02, GAME-03, GAME-04, GAME-05, GAME-06 |
 | 4 | Professor Lists | Complete | 4/4 | LIST-01, LIST-02, LIST-03, LIST-04, LIST-05, LIST-06, LIST-07 |
-| 5 | Statistics & Analytics | Pending | 3 | STAT-01, STAT-02, STAT-03, STAT-04, STAT-05 |
+| 5 | Statistics & Analytics | Complete | 3/3 | STAT-01, STAT-02, STAT-03, STAT-04, STAT-05 |
 | 6 | Polish & Release | Pending | 3 | — (cross-cutting) |
 
 ---
@@ -173,13 +173,26 @@
 | LIST-05 | Phase 4 | Complete |
 | LIST-06 | Phase 4 | Complete |
 | LIST-07 | Phase 4 | Complete |
-| STAT-01 | Phase 5 | Pending |
-| STAT-02 | Phase 5 | Pending |
-| STAT-03 | Phase 5 | Pending |
-| STAT-04 | Phase 5 | Pending |
-| STAT-05 | Phase 5 | Pending |
+| STAT-01 | Phase 5 | Complete |
+| STAT-02 | Phase 5 | Complete |
+| STAT-03 | Phase 5 | Complete |
+| STAT-04 | Phase 5 | Complete |
+| STAT-05 | Phase 5 | Complete |
 
 **Coverage:** 25/25 v1 requirements mapped. No orphans.
+
+---
+
+## Backlog
+
+### Phase 999.1: Professor Question PR Workflow (BACKLOG)
+
+**Goal:** Professores podem propor criação de novas questões e edições em questões existentes por meio de um fluxo de revisão estilo pull request, com aprovação administrativa antes de publicar no banco principal.
+**Requirements:** TBD
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (promote with /gsd-review-backlog when ready)
 
 ---
 

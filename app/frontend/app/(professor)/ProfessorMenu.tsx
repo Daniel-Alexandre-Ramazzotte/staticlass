@@ -23,7 +23,7 @@ export default function ProfessorMenu() {
       </AppButton>
       <AppButton
         backgroundColor={palette.red}
-        onPress={() => router.push('/(admin)/QuestaoViewer')}
+        onPress={() => router.push('/(app)/QuestionPicker' as never)}
       >
         Gerenciar Questões
       </AppButton>

@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from statl.services.auth_service import register_user, login_user, request_password_reset, reset_password
+from statl.services.auth_service import register_user, login_user, request_password_reset, reset_password, verify_email_token
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -28,6 +28,29 @@ def login():
     return jsonify({"access_token": token})
     
 
+
+
+@bp.route("/verify-email", methods=["GET"])
+def verify_email():
+    ''' Confirma o email do usuário via token enviado por email.
+    '''
+    token = request.args.get("token", "")
+    if not token:
+        return "<h2>Link inválido.</h2><p>O link de verificação está incompleto.</p>", 400
+
+    success = verify_email_token(token)
+    if not success:
+        return (
+            "<h2>Link inválido ou expirado.</h2>"
+            "<p>Solicite um novo cadastro ou entre em contato com o suporte.</p>",
+            400,
+        )
+
+    return (
+        "<h2>Email verificado com sucesso!</h2>"
+        "<p>Sua conta está ativa. Abra o app Staticlass e faça login.</p>",
+        200,
+    )
 
 
 @bp.route("/password-reset", methods=["POST"])

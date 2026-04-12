@@ -47,8 +47,16 @@ def create_app(testing: bool = False):
         from .models import user, chapters, quiz_resultado, questao_diaria  # noqa: F401
         from .models import questions as _modelos_questao                   # noqa: F401
         from .models import listas as _modelos_listas                       # noqa: F401
+        from .models import answer_history as _modelos_answer_history       # noqa: F401
         db.create_all()
         _garantir_schema_incremental(app)
+        from .repositories.answer_history_repository import backfill_list_answer_history
+        try:
+            backfill_list_answer_history()
+            db.session.commit()
+        except Exception:
+            db.session.rollback()
+            raise
 
     return app
 
@@ -120,6 +128,15 @@ def _garantir_schema_incremental(app):
         )
         db.session.execute(
             text("""
+                ALTER TABLE questions
+                ADD COLUMN IF NOT EXISTS professor_id INTEGER REFERENCES users(id) ON DELETE SET NULL
+            """)
+        )
+        db.session.execute(
+            text("CREATE INDEX IF NOT EXISTS idx_questions_professor_id ON questions (professor_id)")
+        )
+        db.session.execute(
+            text("""
                 DO $$
                 BEGIN
                     IF EXISTS (
@@ -160,6 +177,10 @@ def _garantir_schema_incremental(app):
         )
         db.session.execute(
             text("UPDATE users SET streak = 0 WHERE streak IS NULL")
+        )
+        # email_verified — DEFAULT TRUE so existing users are not locked out
+        db.session.execute(
+            text("ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT TRUE")
         )
         db.session.execute(
             text("""
@@ -227,6 +248,22 @@ def _garantir_schema_incremental(app):
             """)
         )
         db.session.execute(
+            text("""
+                CREATE TABLE IF NOT EXISTS answer_history (
+                    id SERIAL PRIMARY KEY,
+                    student_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                    question_id INTEGER NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+                    answered_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    is_correct BOOLEAN NOT NULL,
+                    selected_answer VARCHAR(1) NULL,
+                    source VARCHAR(20) NOT NULL,
+                    source_id INTEGER NOT NULL,
+                    list_id INTEGER NULL REFERENCES lists(id) ON DELETE SET NULL,
+                    UNIQUE (source, source_id, question_id)
+                )
+            """)
+        )
+        db.session.execute(
             text("CREATE INDEX IF NOT EXISTS idx_lists_professor_id ON lists (professor_id)")
         )
         db.session.execute(
@@ -237,6 +274,18 @@ def _garantir_schema_incremental(app):
         )
         db.session.execute(
             text("CREATE INDEX IF NOT EXISTS idx_list_submission_answers_submission_id ON list_submission_answers (submission_id)")
+        )
+        db.session.execute(
+            text("CREATE INDEX IF NOT EXISTS idx_answer_history_student_answered_at ON answer_history (student_id, answered_at DESC)")
+        )
+        db.session.execute(
+            text("CREATE INDEX IF NOT EXISTS idx_answer_history_question_answered_at ON answer_history (question_id, answered_at DESC)")
+        )
+        db.session.execute(
+            text("CREATE INDEX IF NOT EXISTS idx_answer_history_list_answered_at ON answer_history (list_id, answered_at DESC)")
+        )
+        db.session.execute(
+            text("CREATE INDEX IF NOT EXISTS idx_answer_history_source_source_id ON answer_history (source, source_id)")
         )
         db.session.commit()
     except Exception:

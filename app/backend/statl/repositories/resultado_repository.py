@@ -7,10 +7,11 @@ from datetime import date
 
 def salvar_resultado(usuario_id, acertos, total, capitulo_id=None, dificuldade=None):
     """Insere um novo resultado de quiz para o usuário."""
-    db.session.execute(
+    row = db.session.execute(
         text("""
             INSERT INTO quiz_resultados (usuario_id, acertos, total, capitulo_id, dificuldade, criado_em)
             VALUES (:usuario_id, :acertos, :total, :capitulo_id, :dificuldade, CURRENT_TIMESTAMP)
+            RETURNING id
         """),
         {
             "usuario_id":  usuario_id,
@@ -19,8 +20,8 @@ def salvar_resultado(usuario_id, acertos, total, capitulo_id=None, dificuldade=N
             "capitulo_id": capitulo_id,
             "dificuldade": dificuldade,
         },
-    )
-    db.session.commit()
+    ).mappings().one()
+    return int(row["id"])
 
 def buscar_historico(usuario_id, limite=10):
     """Retorna os últimos resultados de quiz do usuário, do mais recente ao mais antigo."""
