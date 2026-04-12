@@ -15,7 +15,7 @@
 | 3 | Gamification | Complete | 4 | GAME-01, GAME-02, GAME-03, GAME-04, GAME-05, GAME-06 |
 | 4 | Professor Lists | Complete | 4/4 | LIST-01, LIST-02, LIST-03, LIST-04, LIST-05, LIST-06, LIST-07 |
 | 5 | Statistics & Analytics | Complete | 3/3 | STAT-01, STAT-02, STAT-03, STAT-04, STAT-05 |
-| 6 | Polish, Release & Turmas | Pending | 3 | — (cross-cutting) |
+| 6 | Polish, Release & Turmas | Pending | 5 | POL-01, POL-02, POL-03 |
 
 ---
 
@@ -132,14 +132,16 @@
 
 **Goal:** The app is stable, tested under real usage conditions, and ready to hand to real students and professors at the start of the semester — including a class (turma) system so professors assign lists to specific groups instead of all students.
 
-**Plans:**
-1. `06-01` — End-to-End Testing & Bug Fixes: Run full manual walkthroughs of every user flow (register → quiz → gamification → list → stats) across the three roles; document and fix blocking bugs found; include email verification flow added post-Phase 5
-2. `06-02` — Production Environment Validation: Verify the app connects correctly to the production PostgreSQL instance on Fly.io (not Docker dev), all environment variables are set, password reset and email verification links resolve correctly, image uploads work
-3. `06-03` — UX Tightening: Address rough edges found in testing — loading states, empty states, error messages, navigation dead ends; ensure the app is usable by someone who has never seen it before
-4. `06-04` — Interactive Attendance Calendar: Replace the static streak calendar on the student profile with a real interactive monthly calendar (locked to current year); each day shows whether the student practiced; integrates with `answer_history` and the existing streak/XP data as the assiduidade source of truth
-5. `06-05` — Sistema de Turmas: Professores criam turmas selecionando alunos cadastrados e publicam listas diretamente para uma turma; alunos veem apenas as listas das turmas em que estão matriculados — substituindo o modelo atual de "publicar para todos"
+**Plans:** 5 plans
 
-**Requirements covered:** (no new requirements — this phase validates all 25 v1 requirements work together in production, plus the additions below)
+Plans:
+- [ ] 06-01-PLAN.md — E2E walkthrough + production config cleanup (debug prints, env vars, .env.example)
+- [ ] 06-02-PLAN.md — Email verification deep link: staticlass:// scheme, verify-email screen, resend flow
+- [ ] 06-03-PLAN.md — Interactive attendance calendar: monthly grid, month navigation, sourced from answer_history
+- [ ] 06-04-PLAN.md — Sistema de Turmas backend: turmas + turma_alunos tables, CRUD API, lists filter
+- [ ] 06-05-PLAN.md — Sistema de Turmas frontend: TurmaManager, TurmaEditor, CreateNewList picker
+
+**Requirements covered:** POL-01, POL-02, POL-03
 
 **Additional requirements added to Phase 6 scope:**
 - `POL-01` — Email Verification: New accounts require email verification before first login; existing users and admin-created accounts are unaffected
@@ -189,8 +191,11 @@
 | STAT-03 | Phase 5 | Complete |
 | STAT-04 | Phase 5 | Complete |
 | STAT-05 | Phase 5 | Complete |
+| POL-01 | Phase 6 | Pending |
+| POL-02 | Phase 6 | Pending |
+| POL-03 | Phase 6 | Pending |
 
-**Coverage:** 25/25 v1 requirements mapped. No orphans.
+**Coverage:** 28/28 v1 requirements mapped. No orphans.
 
 ---
 
