@@ -16,9 +16,7 @@
 | 4 | Professor Lists | Complete | 4/4 | LIST-01, LIST-02, LIST-03, LIST-04, LIST-05, LIST-06, LIST-07 |
 | 5 | Statistics & Analytics | Complete | 3/3 | STAT-01, STAT-02, STAT-03, STAT-04, STAT-05 |
 | 6 | Polish & Release | Pending | 3 | — (cross-cutting) |
-| 7 | Professor Question PR Workflow | Pending | 0 | TBD |
-| 8 | LaTeX List Import | Pending | 0 | TBD |
-| 9 | Sistema de Turmas | Pending | 0 | TBD |
+| 7 | Sistema de Turmas | Pending | 0 | TBD |
 
 ---
 
@@ -194,27 +192,7 @@
 
 ---
 
-### Phase 7: Professor Question PR Workflow
-
-**Goal:** Professores podem propor criação de novas questões e edições em questões existentes por meio de um fluxo de revisão estilo pull request, com aprovação administrativa antes de publicar no banco principal.
-
-**Plans:** TBD
-**Requirements covered:** TBD
-**Depends on:** Phase 1 (auth), Phase 6 (stable release baseline)
-
----
-
-### Phase 8: LaTeX List Import
-
-**Goal:** Professores podem criar listas de exercícios colando ou enviando um arquivo LaTeX — o sistema extrai automaticamente enunciados, alternativas e gabarito e popula o banco de questões, reduzindo o esforço de digitalização de provas e listas físicas.
-
-**Plans:** TBD
-**Requirements covered:** TBD
-**Depends on:** Phase 4 (lists data model), Phase 7 (question authoring workflow)
-
----
-
-### Phase 9: Sistema de Turmas
+### Phase 7: Sistema de Turmas
 
 **Goal:** Professores podem criar turmas selecionando alunos cadastrados no app e publicar listas diretamente para uma turma; alunos veem apenas as listas das turmas em que estão matriculados — substituindo o modelo atual de "publicar para todos".
 
@@ -224,5 +202,23 @@
 
 ---
 
+## Backlog
+
+### Phase 999.1: Professor Question PR Workflow (BACKLOG)
+
+**Goal:** Professores podem propor criação de novas questões e edições em questões existentes por meio de um fluxo de revisão estilo pull request, com aprovação administrativa antes de publicar no banco principal.
+**Requirements:** TBD
+**Plans:** 0 plans
+
+---
+
+### Phase 999.2: LaTeX List Import (BACKLOG)
+
+**Goal:** Professores podem criar listas de exercícios colando ou enviando um arquivo LaTeX — o sistema extrai automaticamente enunciados, alternativas e gabarito e popula o banco de questões, reduzindo o esforço de digitalização de provas e listas físicas.
+**Requirements:** TBD
+**Plans:** 0 plans
+
+---
+
 *Roadmap generated: 2026-04-08*
-*Granularity: standard (9 phases)*
+*Granularity: standard (7 phases)*

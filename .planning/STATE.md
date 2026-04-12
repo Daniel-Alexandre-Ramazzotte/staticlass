@@ -60,6 +60,9 @@ See: `.planning/PROJECT.md` (updated 2026-04-11)
 ## Todos
 
 - Plan release hardening, end-to-end validation, and UX polish for Phase 06
+- Phase 06 expanded scope: email verification flow (already implemented), interactive attendance calendar (06-04), production Fly.io validation
+- Backlog 999.2: LaTeX list import — professor cria listas colando LaTeX com extração automática de questões
+- Backlog 999.3: Sistema de turmas — professor cria turmas, seleciona alunos, publica listas por turma
 
 ## Session Continuity
 
