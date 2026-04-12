@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Settings, Trophy } from '@tamagui/lucide-icons';
 import { palette, primaryFontA } from 'app/constants/style';
@@ -15,28 +15,137 @@ declare global {
   };
 }
 
-const DAYS = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+const MONTH_NAMES = [
+  'Janeiro','Fevereiro','Março','Abril','Maio','Junho',
+  'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'
+];
+const WEEK_LABELS = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
 
-function WeekRow({ row }: { row: (boolean | null)[] }) {
+function MonthCalendar({ studentEmail }: { studentEmail: string }) {
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const [viewYear] = useState(currentYear); // locked to current year (D-13)
+  const [viewMonth, setViewMonth] = useState(today.getMonth() + 1); // 1-based
+  const [practicedDays, setPracticedDays] = useState<number[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    api
+      .get(`/users/analytics/calendar?year=${viewYear}&month=${viewMonth}`)
+      .then((res) => setPracticedDays(res.data?.practiced_days ?? []))
+      .catch(() => setPracticedDays([]))
+      .finally(() => setLoading(false));
+  }, [viewYear, viewMonth, studentEmail]);
+
+  // Build month grid
+  const firstDayOfMonth = new Date(viewYear, viewMonth - 1, 1).getDay(); // 0=Sun
+  const daysInMonth = new Date(viewYear, viewMonth, 0).getDate();
+  const practicedSet = new Set(practicedDays);
+  const todayDay = (today.getFullYear() === viewYear && today.getMonth() + 1 === viewMonth)
+    ? today.getDate()
+    : null;
+
+  // Build flat array: nulls for leading blanks, then day numbers
+  const cells: (number | null)[] = [
+    ...Array(firstDayOfMonth).fill(null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+  ];
+  // Pad to complete final row
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  // Group into rows of 7
+  const rows: (number | null)[][] = [];
+  for (let i = 0; i < cells.length; i += 7) rows.push(cells.slice(i, i + 7));
+
+  const canGoBack = viewMonth > 1; // locked to current year (D-13)
+  const canGoForward = viewMonth < (today.getMonth() + 1); // cannot go past current month (D-12)
+
   return (
-    <View style={styles.weekRow}>
-      {row.map((val, i) => (
-        <View
-          key={i}
-          style={[
-            styles.dayCell,
-            {
-              backgroundColor:
-                val === true ? palette.primaryGreen : val === false ? palette.red : 'rgba(255,255,255,0.3)',
-            },
-          ]}
+    <View style={calStyles.container}>
+      {/* Month navigation header */}
+      <View style={calStyles.navRow}>
+        <TouchableOpacity
+          onPress={() => canGoBack && setViewMonth((m) => m - 1)}
+          disabled={!canGoBack}
+          style={calStyles.navBtn}
         >
-          {val === false ? <Text style={styles.dayCellText}>✕</Text> : null}
-        </View>
-      ))}
+          <Text style={[calStyles.navArrow, !canGoBack && calStyles.navDisabled]}>{'‹'}</Text>
+        </TouchableOpacity>
+        <Text style={calStyles.monthTitle}>
+          {MONTH_NAMES[viewMonth - 1]} {viewYear}
+        </Text>
+        <TouchableOpacity
+          onPress={() => canGoForward && setViewMonth((m) => m + 1)}
+          disabled={!canGoForward}
+          style={calStyles.navBtn}
+        >
+          <Text style={[calStyles.navArrow, !canGoForward && calStyles.navDisabled]}>{'›'}</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Day-of-week labels */}
+      <View style={calStyles.weekLabels}>
+        {WEEK_LABELS.map((d) => (
+          <Text key={d} style={calStyles.weekLabel}>{d}</Text>
+        ))}
+      </View>
+
+      {/* Day grid */}
+      {loading ? (
+        <ActivityIndicator size="small" color={palette.primaryGreen} style={{ marginVertical: 16 }} />
+      ) : (
+        rows.map((row, ri) => (
+          <View key={ri} style={calStyles.row}>
+            {row.map((day, di) => {
+              const isPracticed = day !== null && practicedSet.has(day);
+              const isFuture = day !== null && todayDay !== null && day > todayDay;
+              const isBlank = day === null;
+              return (
+                <View
+                  key={di}
+                  style={[
+                    calStyles.cell,
+                    isPracticed && calStyles.cellPracticed,
+                    isBlank && calStyles.cellBlank,
+                  ]}
+                >
+                  {!isBlank && (
+                    <Text style={[
+                      calStyles.dayText,
+                      isPracticed && calStyles.dayTextPracticed,
+                      isFuture && calStyles.dayTextFuture,
+                    ]}>
+                      {day}
+                    </Text>
+                  )}
+                </View>
+              );
+            })}
+          </View>
+        ))
+      )}
     </View>
   );
 }
+
+const calStyles = StyleSheet.create({
+  container: { marginHorizontal: 16, marginTop: 16, backgroundColor: palette.darkBlue, borderRadius: 16, padding: 16, gap: 8 },
+  navRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
+  navBtn: { paddingHorizontal: 12, paddingVertical: 4 },
+  navArrow: { color: palette.white, fontSize: 24, fontWeight: '700' },
+  navDisabled: { opacity: 0.3 },
+  monthTitle: { color: palette.white, fontSize: 15, fontWeight: '700' },
+  weekLabels: { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 4 },
+  weekLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: '700', width: 36, textAlign: 'center' },
+  row: { flexDirection: 'row', justifyContent: 'space-around' },
+  cell: { width: 36, height: 32, borderRadius: 8, alignItems: 'center', justifyContent: 'center', backgroundColor: 'transparent' },
+  cellPracticed: { backgroundColor: palette.primaryGreen },
+  cellBlank: { backgroundColor: 'transparent' },
+  dayText: { color: 'rgba(255,255,255,0.6)', fontSize: 13 },
+  dayTextPracticed: { color: palette.white, fontWeight: '700' },
+  dayTextFuture: { opacity: 0.3 },
+});
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -45,49 +154,6 @@ export default function ProfileScreen() {
   const [streak, setStreak] = useState<number>(0);
   const [rankPosition, setRankPosition] = useState<number | null>(null);
   const [dadosCarregando, setDadosCarregando] = useState(true);
-  const [calendar, setCalendar] = useState<(boolean | null)[][]>([
-    [null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null],
-    [null, null, null, null, null, null, null],
-  ]);
-
-  const buildCalendar = useCallback((days: string[]): (boolean | null)[][] => {
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
-
-    const toKey = (data: Date) => {
-      const ano = data.getFullYear();
-      const mes = String(data.getMonth() + 1).padStart(2, '0');
-      const dia = String(data.getDate()).padStart(2, '0');
-      return `${ano}-${mes}-${dia}`;
-    };
-
-    const praticados = new Set(days.map((day) => day.slice(0, 10)));
-    const grid: (boolean | null)[][] = [];
-
-    for (let semana = 3; semana >= 0; semana -= 1) {
-      const linha: (boolean | null)[] = [];
-      for (let dia = 0; dia < 7; dia += 1) {
-        const data = new Date(hoje);
-        const diaDaSemanaHoje = hoje.getDay();
-        const offset = semana * 7 + (diaDaSemanaHoje - dia);
-        data.setDate(hoje.getDate() - offset);
-        const chave = toKey(data);
-
-        if (data > hoje) {
-          linha.push(null);
-        } else if (data.getTime() === hoje.getTime() && !praticados.has(chave)) {
-          linha.push(null);
-        } else {
-          linha.push(praticados.has(chave));
-        }
-      }
-      grid.push(linha);
-    }
-
-    return grid;
-  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -101,21 +167,18 @@ export default function ProfileScreen() {
       Promise.all([
         api.get(`/users/profile/${email.trim()}`),
         api.get('/gamification/ranking?page=1'),
-        api.get('/users/analytics/activity'),
       ])
-        .then(([resPerfil, resRanking, resAtividade]) => {
+        .then(([resPerfil, resRanking]) => {
           setXp(resPerfil.data?.xp ?? 0);
           setStreak(resPerfil.data?.streak ?? 0);
           const ownEntry = resRanking.data?.own_entry;
           setRankPosition(ownEntry ? ownEntry.posicao : null);
-          const dias = Array.isArray(resAtividade.data?.days) ? resAtividade.data.days : [];
-          setCalendar(buildCalendar(dias));
         })
         .catch(() => {
           // Mantem os dados anteriores caso algum fetch falhe.
         })
         .finally(() => setDadosCarregando(false));
-    }, [buildCalendar, email, role])
+    }, [email, role])
   );
 
   return (
@@ -168,25 +231,7 @@ export default function ProfileScreen() {
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-        {role === 'aluno' && (
-          <View style={styles.calendarCard}>
-            <View style={styles.weekLabels}>
-              {DAYS.map((d) => (
-                <View key={d} style={styles.weekLabelCell}>
-                  <Text style={styles.weekLabel}>{d}</Text>
-                </View>
-              ))}
-            </View>
-
-            {calendar.map((row, i) => (
-              <WeekRow key={i} row={row} />
-            ))}
-
-            <Text style={styles.calendarFooter}>
-              {streak === 0 ? 'Sequência: 0 dias - pratique hoje!' : `Sequência: ${streak} dias`}
-            </Text>
-          </View>
-        )}
+        {role === 'aluno' && <MonthCalendar studentEmail={email ?? ''} />}
 
         {role === 'aluno' && (
           <>
@@ -308,49 +353,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: 32,
-  },
-  calendarCard: {
-    marginHorizontal: 16,
-    marginTop: 16,
-    backgroundColor: palette.darkBlue,
-    borderRadius: 16,
-    padding: 16,
-    gap: 12,
-  },
-  weekLabels: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 4,
-  },
-  weekLabelCell: {
-    width: 36,
-    alignItems: 'center',
-  },
-  weekLabel: {
-    color: palette.white,
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  weekRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 4,
-  },
-  dayCell: {
-    width: 36,
-    height: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  dayCellText: {
-    color: palette.white,
-    fontSize: 10,
-  },
-  calendarFooter: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 12,
-    textAlign: 'right',
   },
   trophiesRow: {
     flexDirection: 'row',
