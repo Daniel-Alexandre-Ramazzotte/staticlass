@@ -16,6 +16,7 @@
 | 4 | Professor Lists | Complete | 4/4 | LIST-01, LIST-02, LIST-03, LIST-04, LIST-05, LIST-06, LIST-07 |
 | 5 | Statistics & Analytics | Complete | 3/3 | STAT-01, STAT-02, STAT-03, STAT-04, STAT-05 |
 | 6 | Polish, Release & Turmas | Pending | 5 | POL-01, POL-02, POL-03 |
+| 7 | Rich Content nas Questões | Planned | TBD | RICH-01, RICH-02, RICH-03 |
 
 ---
 
@@ -162,6 +163,29 @@ Plans:
 
 ---
 
+### Phase 7: Rich Content nas Questões
+
+**Goal:** Questões, alternativas e resoluções suportam LaTeX inline e imagens com posicionamento livre — professores podem criar conteúdo rico sem sair do app, e alunos visualizam fórmulas e figuras renderizadas corretamente.
+
+**Plans:** TBD
+
+**Requirements covered:** RICH-01, RICH-02, RICH-03
+
+**Requirements:**
+- `RICH-01` — LaTeX Rendering: fórmulas LaTeX inline renderizadas em questões, alternativas e resoluções (usando react-native-mathjax ou similar)
+- `RICH-02` — Imagens em Questões: professores associam imagens a questões com posicionamento configurável (antes, depois ou no meio do texto); 2 questões de exemplo com placeholders estáticos
+- `RICH-03` — Questões de Resposta Aberta: novo tipo de questão sem alternativas fixas; aluno digita a resposta; professor ou gabarito textual faz a correção
+
+**Depends on:** Phase 6
+
+**Success Criteria** (what must be TRUE when this phase completes):
+1. Uma questão com LaTeX (`$\mu = \bar{x}$`) é renderizada como fórmula em todas as telas onde questões aparecem (quiz, lista, resolução)
+2. Um professor cria uma questão com uma imagem posicionada antes do enunciado — alunos veem a imagem acima do texto ao responder
+3. Existe ao menos 1 questão de exemplo com imagem no banco após o seeding de demo data
+4. Um professor cria uma questão de resposta aberta; o aluno a vê no quiz com campo de texto livre em vez de alternativas A–E
+
+---
+
 ## Requirement Coverage
 
 | Requirement | Phase | Status |
@@ -194,8 +218,11 @@ Plans:
 | POL-01 | Phase 6 | Pending |
 | POL-02 | Phase 6 | Pending |
 | POL-03 | Phase 6 | Pending |
+| RICH-01 | Phase 7 | Planned |
+| RICH-02 | Phase 7 | Planned |
+| RICH-03 | Phase 7 | Planned |
 
-**Coverage:** 28/28 v1 requirements mapped. No orphans.
+**Coverage:** 31/31 requirements mapped. No orphans.
 
 ---
 
@@ -216,15 +243,6 @@ Plans:
 **Plans:** 0 plans
 
 ---
-
-### Phase 999.3: Rich Content nas Questões (BACKLOG)
-
-**Goal:** Renderizar LaTeX inline no texto das questões, alternativas e resoluções; associar imagens a questões com posicionamento livre (antes, depois ou no meio do texto); placeholders com imagens estáticas em 2 questões de exemplo; suporte a questões de resposta aberta.
-**Requirements:** TBD
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (promote with /gsd-review-backlog when ready)
 
 ---
 
