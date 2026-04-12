@@ -72,7 +72,7 @@
 | Fold the todo into Phase 5 | Include the shared question-viewer namespace cleanup in this phase | ✓ |
 
 **User's choice:** Fold the todo into Phase 5.
-**Notes:** The user explicitly overrode the recommendation to defer it. The phase now includes moving the shared question viewer/listing out of the admin namespace while keeping admin-only SQL features isolated.
+**Notes:** The user explicitly overrode the recommendation to defer it. The phase now includes moving the shared question viewer/listing out of the admin namespace for shared/professor flows while **keeping admin access to the viewer** and keeping admin-only SQL features isolated.
 
 ---
 

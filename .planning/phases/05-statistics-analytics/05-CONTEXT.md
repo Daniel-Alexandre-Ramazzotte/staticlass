@@ -35,8 +35,9 @@ This phase does NOT add new practice modes, class/group management, notification
 - **D-09:** The first version must include all of these KPIs: **active users in the last 7 days, total answers recorded, accuracy by topic, and activity counts by role (`aluno` / `professor`)**.
 
 ### Shared question-viewer cleanup
-- **D-10:** Fold the pending cleanup into Phase 5: move the shared question viewer out of the admin namespace and expose its shared listing route through a neutral path/endpoint.
-- **D-11:** Preserve admin-only SQL capabilities as admin-only; only the shared question-browsing/viewing surface should be neutralized.
+- **D-10:** Fold the pending cleanup into Phase 5: move the shared question viewer/listing out of the **admin-only namespace semantics** and expose shared browsing through a neutral path/endpoint.
+- **D-11:** Admin must **keep access to the question viewer**. The change is about neutralizing shared routing/endpoint semantics for professor/shared flows, not removing the viewer from admin workflows.
+- **D-12:** Preserve admin-only SQL capabilities as admin-only; only the shared question-browsing/viewing surface should be neutralized.
 
 ### the agent's Discretion
 - Exact schema for `answer_history` beyond the roadmap minimum, as long as it cleanly supports student, professor, and admin analytics.
@@ -46,7 +47,7 @@ This phase does NOT add new practice modes, class/group management, notification
 - Exact route/component structure used to replace the current admin-namespaced shared question viewer.
 
 ### Folded Todos
-- **Move shared question viewer out of admin namespace** — include this pending structural cleanup in Phase 5. The current shared question viewer/listing still carries admin semantics even when used outside admin workflows. This phase should move it to a neutral route/endpoint while preserving admin-only features such as SQL tooling.
+- **Move shared question viewer out of admin namespace** — include this pending structural cleanup in Phase 5. The current shared question viewer/listing still carries admin semantics even when used outside admin workflows. This phase should move shared access to a neutral route/endpoint while **keeping admin access to the viewer intact** and preserving admin-only features such as SQL tooling.
 
 </decisions>
 
@@ -132,6 +133,7 @@ This phase does NOT add new practice modes, class/group management, notification
 - The admin dashboard should read like operational health for the app, not just leaderboard administration.
 - The analytics cutover should be opinionated: Phase 5 is the point where `answer_history` becomes canonical and legacy aggregate analytics stop defining the UX.
 - Even though the shared question-viewer cleanup is not analytics work, the user explicitly wants it bundled into this phase rather than deferred again.
+- Shared question-viewer cleanup means **professor/shared access stops pretending to be admin access**; it does **not** mean the admin loses the viewer.
 
 </specifics>
 
