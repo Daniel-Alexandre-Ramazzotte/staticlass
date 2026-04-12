@@ -19,6 +19,7 @@ from ..services.student_analytics_service import (
     student_activity_service,
     student_dashboard_service,
 )
+from ..repositories.user_repository import listar_alunos
 
 bp = Blueprint('users', __name__, url_prefix='/users')
 
@@ -150,3 +151,13 @@ def analytics_dashboard():
 @jwt_required()
 def analytics_activity():
     return jsonify(student_activity_service(get_jwt_identity())), 200
+
+
+# ── Turmas — professor picks alunos for enrollment ─────────────────────────
+
+@bp.route('/alunos', methods=['GET'])
+@require_role(['professor'])
+def listar_alunos_para_professor():
+    """Returns all registered aluno accounts for turma enrollment picker."""
+    alunos = listar_alunos()
+    return jsonify([{"id": a["id"], "name": a["name"], "email": a["email"]} for a in alunos]), 200
