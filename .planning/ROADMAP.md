@@ -135,9 +135,9 @@
 **Plans:** 5 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — E2E walkthrough + production config cleanup (debug prints, env vars, .env.example)
-- [ ] 06-02-PLAN.md — Email verification deep link: staticlass:// scheme, verify-email screen, resend flow
-- [ ] 06-03-PLAN.md — Interactive attendance calendar: monthly grid, month navigation, sourced from answer_history
+- [x] 06-01-PLAN.md — E2E walkthrough + production config cleanup (debug prints, env vars, .env.example)
+- [x] 06-02-PLAN.md — Email verification deep link: staticlass:// scheme, verify-email screen, resend flow
+- [x] 06-03-PLAN.md — Interactive attendance calendar: monthly grid, month navigation, sourced from answer_history
 - [ ] 06-04-PLAN.md — Sistema de Turmas backend: turmas + turma_alunos tables, CRUD API, lists filter
 - [ ] 06-05-PLAN.md — Sistema de Turmas frontend: TurmaManager, TurmaEditor, CreateNewList picker
 
@@ -214,6 +214,17 @@ Plans:
 **Goal:** Professores podem criar listas de exercícios colando ou enviando um arquivo LaTeX — o sistema extrai automaticamente enunciados, alternativas e gabarito e popula o banco de questões, reduzindo o esforço de digitalização de provas e listas físicas.
 **Requirements:** TBD
 **Plans:** 0 plans
+
+---
+
+### Phase 999.3: Rich Content nas Questões (BACKLOG)
+
+**Goal:** Renderizar LaTeX inline no texto das questões, alternativas e resoluções; associar imagens a questões com posicionamento livre (antes, depois ou no meio do texto); placeholders com imagens estáticas em 2 questões de exemplo; suporte a questões de resposta aberta.
+**Requirements:** TBD
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (promote with /gsd-review-backlog when ready)
 
 ---
 
