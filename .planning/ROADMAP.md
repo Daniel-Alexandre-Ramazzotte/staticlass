@@ -16,6 +16,9 @@
 | 4 | Professor Lists | Complete | 4/4 | LIST-01, LIST-02, LIST-03, LIST-04, LIST-05, LIST-06, LIST-07 |
 | 5 | Statistics & Analytics | Complete | 3/3 | STAT-01, STAT-02, STAT-03, STAT-04, STAT-05 |
 | 6 | Polish & Release | Pending | 3 | — (cross-cutting) |
+| 7 | Professor Question PR Workflow | Pending | 0 | TBD |
+| 8 | LaTeX List Import | Pending | 0 | TBD |
+| 9 | Sistema de Turmas | Pending | 0 | TBD |
 
 ---
 
@@ -133,18 +136,26 @@
 **Goal:** The app is stable, tested under real usage conditions, and ready to hand to real students and professors at the start of the semester.
 
 **Plans:**
-1. `06-01` — End-to-End Testing & Bug Fixes: Run full manual walkthroughs of every user flow (register → quiz → gamification → list → stats) across the three roles; document and fix blocking bugs found
-2. `06-02` — Production Environment Validation: Verify the app connects correctly to the production MySQL instance (not Docker dev), all environment variables are set, password reset links resolve correctly, image uploads work; fix any remaining SQLite/MySQL dialect issues
+1. `06-01` — End-to-End Testing & Bug Fixes: Run full manual walkthroughs of every user flow (register → quiz → gamification → list → stats) across the three roles; document and fix blocking bugs found; include email verification flow added post-Phase 5
+2. `06-02` — Production Environment Validation: Verify the app connects correctly to the production PostgreSQL instance on Fly.io (not Docker dev), all environment variables are set, password reset and email verification links resolve correctly, image uploads work
 3. `06-03` — UX Tightening: Address rough edges found in testing — loading states, empty states, error messages, navigation dead ends; ensure the app is usable by someone who has never seen it before
+4. `06-04` — Interactive Attendance Calendar: Replace the static streak calendar on the student profile with a real interactive monthly calendar (locked to current year); each day shows whether the student practiced; integrates with `answer_history` and the existing streak/XP data as the assiduidade source of truth
 
-**Requirements covered:** (no new requirements — this phase validates all 25 v1 requirements work together in production)
+**Requirements covered:** (no new requirements — this phase validates all 25 v1 requirements work together in production, plus the two additions below)
+
+**Additional requirements added to Phase 6 scope:**
+- `POL-01` — Email Verification: New accounts require email verification before first login; existing users and admin-created accounts are unaffected
+- `POL-02` — Interactive Attendance Calendar: Student profile shows a real interactive monthly calendar reflecting actual practice days from `answer_history`; replaces the current static calendar widget
+
 **Depends on:** Phase 1, Phase 2, Phase 3, Phase 4, Phase 5
 
 **Success Criteria** (what must be TRUE when this phase completes):
 1. A new student account created from scratch can complete a free-practice quiz, see their XP update, view the ranking, and check their stats — all in one uninterrupted session
 2. A professor account can create and publish a list, a student can submit it, and the professor can see that student's result — all without any 500 errors or broken screens
-3. The app runs correctly against the production database with no localhost references remaining in config
+3. The app runs correctly against the production PostgreSQL instance on Fly.io with no localhost references remaining in config
 4. Every screen has a non-empty state or loading indicator — no blank white screens visible to end users
+5. A newly registered student receives a verification email; attempting to log in before verifying returns a clear error message
+6. The student profile calendar is interactive (month navigation), shows real practice days from `answer_history`, and is locked to the current year
 **UI hint**: yes
 
 ---
@@ -183,18 +194,35 @@
 
 ---
 
-## Backlog
-
-### Phase 999.1: Professor Question PR Workflow (BACKLOG)
+### Phase 7: Professor Question PR Workflow
 
 **Goal:** Professores podem propor criação de novas questões e edições em questões existentes por meio de um fluxo de revisão estilo pull request, com aprovação administrativa antes de publicar no banco principal.
-**Requirements:** TBD
-**Plans:** 0 plans
 
-Plans:
-- [ ] TBD (promote with /gsd-review-backlog when ready)
+**Plans:** TBD
+**Requirements covered:** TBD
+**Depends on:** Phase 1 (auth), Phase 6 (stable release baseline)
+
+---
+
+### Phase 8: LaTeX List Import
+
+**Goal:** Professores podem criar listas de exercícios colando ou enviando um arquivo LaTeX — o sistema extrai automaticamente enunciados, alternativas e gabarito e popula o banco de questões, reduzindo o esforço de digitalização de provas e listas físicas.
+
+**Plans:** TBD
+**Requirements covered:** TBD
+**Depends on:** Phase 4 (lists data model), Phase 7 (question authoring workflow)
+
+---
+
+### Phase 9: Sistema de Turmas
+
+**Goal:** Professores podem criar turmas selecionando alunos cadastrados no app e publicar listas diretamente para uma turma; alunos veem apenas as listas das turmas em que estão matriculados — substituindo o modelo atual de "publicar para todos".
+
+**Plans:** TBD
+**Requirements covered:** TBD
+**Depends on:** Phase 4 (lists), Phase 6 (stable release baseline)
 
 ---
 
 *Roadmap generated: 2026-04-08*
-*Granularity: standard (6 phases)*
+*Granularity: standard (9 phases)*
