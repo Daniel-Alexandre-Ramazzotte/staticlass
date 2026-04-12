@@ -138,6 +138,7 @@ def _serialize_professor_detail(row, question_ids: list[int], change_log_entries
         "status": _list_status(row["published"], row["deadline"]),
         "question_ids": question_ids,
         "question_count": int(row["question_count"] or len(question_ids)),
+        "turma_id": row["turma_id"] if row.get("turma_id") is not None else None,
         "change_log": _serialize_change_log(change_log_entries),
     }
 
@@ -255,6 +256,10 @@ def update_list_service(professor_id, list_id, dados):
             professor_id_int,
         )
 
+        turma_id_raw = dados.get("turma_id", "UNSET")
+        update_turma = turma_id_raw != "UNSET"
+        turma_id = int(turma_id_raw) if turma_id_raw not in ("UNSET", None) else None
+
         mudancas: list[str] = []
         if title != atual["title"]:
             mudancas.append(f'título alterado para "{title}"')
@@ -262,8 +267,10 @@ def update_list_service(professor_id, list_id, dados):
             mudancas.append("prazo atualizado")
         if question_ids != current_question_ids:
             mudancas.append(f"questões atualizadas ({len(question_ids)} itens)")
+        if update_turma and turma_id != atual.get("turma_id"):
+            mudancas.append("turma atualizada")
 
-        update_list_metadata(list_id_int, professor_id_int, title, deadline)
+        update_list_metadata(list_id_int, professor_id_int, title, deadline, turma_id=turma_id, update_turma=update_turma)
         replace_list_questions(list_id_int, question_ids)
         if mudancas:
             add_change_log(
