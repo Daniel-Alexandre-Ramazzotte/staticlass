@@ -18,6 +18,7 @@ from ..services.resultado_service import (
 from ..services.student_analytics_service import (
     student_activity_service,
     student_dashboard_service,
+    student_calendar_service,
 )
 from ..repositories.user_repository import listar_alunos
 
@@ -151,6 +152,25 @@ def analytics_dashboard():
 @jwt_required()
 def analytics_activity():
     return jsonify(student_activity_service(get_jwt_identity())), 200
+
+
+@bp.route('/analytics/calendar', methods=['GET'])
+@jwt_required()
+def analytics_calendar():
+    year_str = request.args.get('year', '')
+    month_str = request.args.get('month', '')
+    if not year_str or not month_str:
+        return jsonify({"error": "year e month são obrigatórios"}), 400
+    try:
+        year = int(year_str)
+        month = int(month_str)
+    except ValueError:
+        return jsonify({"error": "year e month devem ser inteiros"}), 400
+    try:
+        result = student_calendar_service(get_jwt_identity(), year, month)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    return jsonify(result), 200
 
 
 # ── Turmas — professor picks alunos for enrollment ─────────────────────────
