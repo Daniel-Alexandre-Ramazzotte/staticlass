@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronLeft } from '@tamagui/lucide-icons';
@@ -8,6 +8,8 @@ import { Button, Input, Text, XStack, YStack } from 'tamagui';
 import { AppButton } from 'app/components/AppButton';
 import { palette, primaryFontA, primaryFontC } from 'app/constants/style';
 import api from 'app/services/api';
+
+type TurmaOption = { id: number; name: string };
 
 type ChangeLogEntry = {
   id: number;
@@ -49,22 +51,32 @@ export default function CreateNewListScreen() {
   const [deadline, setDeadline] = useState('');
   const [questionIds, setQuestionIds] = useState<number[]>([]);
   const [status, setStatus] = useState<ListDetailResponse['status']>('rascunho');
+  const [turmaId, setTurmaId] = useState<number | null>(null);
+  const [turmas, setTurmas] = useState<TurmaOption[]>([]);
   const [changeLog, setChangeLog] = useState<ChangeLogEntry[]>([]);
   const [loading, setLoading] = useState(hasListId);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    api
+      .get<TurmaOption[]>('/turmas')
+      .then((r) => setTurmas(r.data ?? []))
+      .catch(() => undefined);
+  }, []);
 
   const hydrateFromServer = useCallback(async () => {
     if (!hasListId) return;
     setLoading(true);
     setError(null);
     try {
-      const response = await api.get<ListDetailResponse>(`/lists/${listId}`);
+      const response = await api.get<ListDetailResponse & { turma_id?: number | null }>(`/lists/${listId}`);
       setTitle(response.data.title);
       setDeadline(formatDateForInput(response.data.deadline));
       setQuestionIds(response.data.question_ids ?? []);
       setStatus(response.data.status);
       setChangeLog(response.data.change_log ?? []);
+      setTurmaId(response.data.turma_id ?? null);
     } catch {
       setError('Não foi possível carregar essa lista.');
     } finally {
@@ -90,10 +102,11 @@ export default function CreateNewListScreen() {
   const persistDraft = useCallback(async () => {
     if (!ensureMetadata()) return null;
 
-    const payload = {
+    const payload: Record<string, unknown> = {
       title: title.trim(),
       deadline,
       question_ids: questionIds,
+      turma_id: turmaId,
     };
 
     if (hasListId) {
@@ -103,7 +116,7 @@ export default function CreateNewListScreen() {
 
     const response = await api.post<{ id: number }>('/lists', payload);
     return response.data.id;
-  }, [deadline, ensureMetadata, hasListId, listId, questionIds, title]);
+  }, [deadline, ensureMetadata, hasListId, listId, questionIds, title, turmaId]);
 
   const handleSelectQuestions = useCallback(async () => {
     try {
@@ -168,6 +181,7 @@ export default function CreateNewListScreen() {
         title: title.trim(),
         deadline,
         question_ids: questionIds,
+        turma_id: turmaId,
       });
       hydrateFromServer().catch(() => undefined);
     } catch {
@@ -175,7 +189,7 @@ export default function CreateNewListScreen() {
     } finally {
       setSaving(false);
     }
-  }, [deadline, hydrateFromServer, listId, questionIds, title]);
+  }, [deadline, hydrateFromServer, listId, questionIds, title, turmaId]);
 
   const publishDisabled = !title.trim() || !deadline.trim() || questionIds.length < 1 || saving;
 
@@ -240,6 +254,32 @@ export default function CreateNewListScreen() {
                   </Text>
                 </View>
               </XStack>
+            </View>
+
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>Turma (opcional)</Text>
+              <Text color="#54657a" fontSize={13} fontFamily={primaryFontC} mb="$2">
+                Selecione uma turma para publicar apenas para os alunos matriculados. Sem seleção, todos os alunos verão a lista.
+              </Text>
+              <TouchableOpacity
+                style={styles.turmaPicker}
+                onPress={() => {
+                  const options = ['Sem turma (todos os alunos)', ...turmas.map((t) => t.name)];
+                  Alert.alert('Selecionar turma', undefined, [
+                    ...options.map((label, i) => ({
+                      text: label,
+                      onPress: () => setTurmaId(i === 0 ? null : turmas[i - 1].id),
+                    })),
+                    { text: 'Cancelar', style: 'cancel' as const },
+                  ]);
+                }}
+              >
+                <Text color={palette.darkBlue} fontSize={14}>
+                  {turmaId
+                    ? (turmas.find((t) => t.id === turmaId)?.name ?? 'Turma selecionada')
+                    : 'Sem turma (todos os alunos)'}
+                </Text>
+              </TouchableOpacity>
             </View>
 
             <View style={styles.card}>
@@ -386,5 +426,13 @@ const styles = StyleSheet.create({
     padding: 14,
     borderWidth: 1,
     borderColor: '#f2b8b5',
+  },
+  turmaPicker: {
+    borderWidth: 1,
+    borderColor: '#dbe4ee',
+    borderRadius: 10,
+    padding: 12,
+    backgroundColor: '#fff',
+    marginTop: 8,
   },
 });
