@@ -2,9 +2,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios, { AxiosError } from 'axios';
 import { Platform } from 'react-native';
 
+const LOCAL_URL_BASE =
+  Platform.OS === 'web' ? 'http://localhost:5000/' : 'http://10.0.2.2:5000/';
+
 const URL_BASE =
   process.env.EXPO_PUBLIC_API_URL ??
-  (Platform.OS === 'web' ? 'http://localhost:5000/' : 'http://10.0.2.2:5000/');
+  (__DEV__ ? LOCAL_URL_BASE : 'https://staticlass-backend.fly.dev/');
 
 const api = axios.create({
   baseURL: URL_BASE,
