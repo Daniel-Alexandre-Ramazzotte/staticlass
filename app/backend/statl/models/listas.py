@@ -24,6 +24,12 @@ class QuestionList(db.Model):
         default=datetime.utcnow,
         onupdate=datetime.utcnow,
     )
+    turma_id = db.Column(
+        db.Integer,
+        db.ForeignKey("turmas.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
 
 
 class QuestionListQuestion(db.Model):

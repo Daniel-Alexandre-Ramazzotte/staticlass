@@ -46,6 +46,7 @@ def create_app(testing: bool = False):
     with app.app_context():
         from .models import user, chapters, quiz_resultado, questao_diaria  # noqa: F401
         from .models import questions as _modelos_questao                   # noqa: F401
+        from .models import turmas as _modelos_turmas                       # noqa: F401
         from .models import listas as _modelos_listas                       # noqa: F401
         from .models import answer_history as _modelos_answer_history       # noqa: F401
         db.create_all()
@@ -113,8 +114,8 @@ def _configurar_cors(app):
 
 
 def _registrar_blueprints(app):
-    from .routes import admin, auth, gamification, lists, questions, users
-    for blueprint in (auth.bp, questions.bp, users.bp, admin.bp, gamification.bp, lists.bp):
+    from .routes import admin, auth, gamification, lists, questions, users, turmas
+    for blueprint in (auth.bp, questions.bp, users.bp, admin.bp, gamification.bp, lists.bp, turmas.bp):
         app.register_blueprint(blueprint)
 
 
@@ -287,6 +288,33 @@ def _garantir_schema_incremental(app):
         db.session.execute(
             text("CREATE INDEX IF NOT EXISTS idx_answer_history_source_source_id ON answer_history (source, source_id)")
         )
+        db.session.execute(text("""
+            CREATE TABLE IF NOT EXISTS turmas (
+                id SERIAL PRIMARY KEY,
+                professor_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                name VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+        """))
+        db.session.execute(text("""
+            CREATE TABLE IF NOT EXISTS turma_alunos (
+                turma_id INTEGER NOT NULL REFERENCES turmas(id) ON DELETE CASCADE,
+                student_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                PRIMARY KEY (turma_id, student_id)
+            )
+        """))
+        db.session.execute(text("""
+            ALTER TABLE lists ADD COLUMN IF NOT EXISTS turma_id INTEGER REFERENCES turmas(id) ON DELETE SET NULL
+        """))
+        db.session.execute(text(
+            "CREATE INDEX IF NOT EXISTS idx_turmas_professor_id ON turmas (professor_id)"
+        ))
+        db.session.execute(text(
+            "CREATE INDEX IF NOT EXISTS idx_turma_alunos_student_id ON turma_alunos (student_id)"
+        ))
+        db.session.execute(text(
+            "CREATE INDEX IF NOT EXISTS idx_lists_turma_id ON lists (turma_id)"
+        ))
         db.session.commit()
     except Exception:
         db.session.rollback()

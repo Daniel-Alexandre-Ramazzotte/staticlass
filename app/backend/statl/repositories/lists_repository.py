@@ -257,6 +257,14 @@ def list_assigned_lists(student_id: int) -> list[dict]:
             LEFT JOIN list_submissions ls
                 ON ls.list_id = l.id AND ls.student_id = :student_id
             WHERE l.published = TRUE
+              AND (
+                  l.turma_id IS NULL
+                  OR EXISTS (
+                      SELECT 1 FROM turma_alunos
+                      WHERE turma_alunos.turma_id = l.turma_id
+                        AND turma_alunos.student_id = :student_id
+                  )
+              )
             ORDER BY l.deadline ASC, l.created_at DESC, l.id DESC
         """),
         {"student_id": student_id},
