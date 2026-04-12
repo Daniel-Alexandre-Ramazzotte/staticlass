@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from statl.services.auth_service import register_user, login_user, request_password_reset, reset_password, verify_email_token
+from statl.services.auth_service import register_user, login_user, request_password_reset, reset_password, verify_email_token, resend_verification_service
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -51,6 +51,31 @@ def verify_email():
         "<p>Sua conta está ativa. Abra o app Staticlass e faça login.</p>",
         200,
     )
+
+
+@bp.route("/verify-email-token", methods=["POST"])
+def verify_email_token_json():
+    ''' Verifica o token de email via JSON (usado pelo app mobile via deep link).
+    '''
+    data = request.get_json() or {}
+    token = data.get("token", "")
+    if not token:
+        return jsonify({"error": "Token é obrigatório"}), 400
+    success = verify_email_token(token)
+    if not success:
+        return jsonify({"error": "Token inválido ou expirado"}), 400
+    return jsonify({"message": "Email verificado com sucesso"}), 200
+
+
+@bp.route("/resend-verification", methods=["POST"])
+def resend_verification():
+    ''' Reenvia o email de verificação (sempre retorna 200 para evitar enumeração).
+    '''
+    data = request.get_json() or {}
+    email = data.get("email", "")
+    if email:
+        resend_verification_service(email)
+    return jsonify({"message": "Se o email existir e não estiver verificado, um novo link será enviado"}), 200
 
 
 @bp.route("/password-reset", methods=["POST"])

@@ -129,6 +129,21 @@ def verify_email_token(token: str) -> bool:
     return True
 
 
+def resend_verification_service(email: str) -> None:
+    ''' Reenvia o email de verificação se o usuário existir e ainda não verificou.
+    '''
+    user = buscar_usuario_por_email(email)
+    if not user:
+        return
+    if user.email_verified:
+        return
+    try:
+        token = generate_verification_token(user.id)
+        send_verification_email(to=email, token=token)
+    except Exception:
+        pass  # silently fail — do not reveal if email exists
+
+
 def reset_password(token: str, new_password: str):
     ''' Serviço para redefinir a senha do usuário.
     '''
