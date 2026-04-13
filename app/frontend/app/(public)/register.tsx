@@ -1,100 +1,140 @@
 import { useRouter, Stack } from 'expo-router';
 import {
   View,
-  Text,
   Image,
   TextInput,
-  Pressable,
   KeyboardAvoidingView,
-  Alert,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
-import styles from 'app/constants/style';
+import styles, { palette } from 'app/constants/style';
 import { useState } from 'react';
-
+import { Button, Text } from 'tamagui';
 import RegisterNewUserService from 'app/services/RegisterNewUserService';
 import { appName } from 'app/constants/names';
-/*
 
-Tela de registro 
-
-Verificar 
-
-
-
-*/
+type ScreenState = 'form' | 'loading' | 'success';
 
 export default function RegisterScreen() {
-  const router = useRouter(); // Constante do roteador para navegação
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [confirm_password, setConfirmPassword] = useState<string>('');
-  const [errorMessage, setErrorMessage] = useState<string>('');
-  const [name, setName] = useState<string>('');
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirm_password, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [screenState, setScreenState] = useState<ScreenState>('form');
 
   const handleRegister = async () => {
-    // Realiza a lógica de registro aqui
-    // Após o registro bem-sucedido, navega para a tela principal (conjunto de abas)
-    const response = await RegisterNewUserService({
-      email,
-      password,
-      confirm_password,
-      name,
-    });
+    setErrorMessage('');
+    setScreenState('loading');
+    const response = await RegisterNewUserService({ email, password, confirm_password, name });
     if (response?.status !== 201) {
-      setErrorMessage(
-        response?.data?.error ?? 'Erro ao registrar. Tente novamente.'
-      );
+      setErrorMessage(response?.data?.error ?? 'Erro ao registrar. Tente novamente.');
+      setScreenState('form');
     } else {
-      showAlert();
+      setScreenState('success');
     }
   };
-  const showAlert = () => {
-    Alert.alert(
-      'Cadastro realizado!',
-      'Enviamos um link de verificação para o seu email. Clique nele para ativar sua conta e depois faça login.',
-      [{ text: 'OK', onPress: () => router.push('/(public)/login') }]
+
+  if (screenState === 'success') {
+    return (
+      <View style={[styles.mainContainer, { gap: 16, paddingHorizontal: 32 }]}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <Text fontSize={56} color={palette.primaryGreen} fontWeight="bold" textAlign="center">
+          ✓
+        </Text>
+        <Text fontSize={22} color={palette.darkBlue} fontWeight="bold" textAlign="center">
+          Cadastro realizado!
+        </Text>
+        <Text fontSize={15} color="#555" textAlign="center">
+          Enviamos um link de verificação para{'\n'}
+          <Text fontSize={15} color={palette.primaryBlue} fontWeight="bold">{email}</Text>
+          {'\n\n'}Confirme seu email antes de fazer login.
+        </Text>
+        <Button
+          backgroundColor={palette.primaryBlue}
+          pressStyle={{ opacity: 0.75, backgroundColor: palette.darkBlue }}
+          onPress={() => router.replace('/(public)/login')}
+          mt="$4"
+          w="70%"
+          borderRadius={14}
+        >
+          <Text color={palette.offWhite} fontWeight="bold" fontSize={16}>
+            Ir para o login
+          </Text>
+        </Button>
+      </View>
     );
-  };
+  }
+
+  const isLoading = screenState === 'loading';
+
   return (
-    <View style={styles.mainContainer}>
-      <Stack.Screen options={{ headerShown: false }} />
-      <Image
-        source={require('../../assets/images/logo.png')}
-        style={styles.logo}
-      ></Image>
-      <Text style={styles.title}>Cadastre-se no {appName}!</Text>
-      <TextInput
-        style={styles.input}
-        value={name}
-        onChangeText={setName}
-        placeholder="Nome"
-      />
-      <TextInput
-        style={styles.input}
-        value={email}
-        onChangeText={setEmail}
-        placeholder="Email"
-      />
-      <TextInput
-        style={styles.input}
-        value={password}
-        onChangeText={setPassword}
-        placeholder="Senha"
-        secureTextEntry
-      />
-      <TextInput
-        style={styles.input}
-        value={confirm_password}
-        onChangeText={setConfirmPassword}
-        placeholder="Confirmar Senha"
-        secureTextEntry
-      />
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      style={{ flex: 1 }}
+    >
+      <View style={styles.mainContainer}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <Image
+          source={require('../../assets/images/logo.png')}
+          style={styles.logo}
+        />
+        <Text style={styles.title}>Cadastre-se no {appName}!</Text>
 
-      <Text style={styles.errorText}>{errorMessage}</Text>
+        <TextInput
+          style={styles.input}
+          value={name}
+          onChangeText={setName}
+          placeholder="Nome"
+          editable={!isLoading}
+        />
+        <TextInput
+          style={styles.input}
+          value={email}
+          onChangeText={setEmail}
+          placeholder="Email"
+          keyboardType="email-address"
+          autoCapitalize="none"
+          editable={!isLoading}
+        />
+        <TextInput
+          style={styles.input}
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Senha"
+          secureTextEntry
+          editable={!isLoading}
+        />
+        <TextInput
+          style={styles.input}
+          value={confirm_password}
+          onChangeText={setConfirmPassword}
+          placeholder="Confirmar Senha"
+          secureTextEntry
+          editable={!isLoading}
+        />
 
-      <Pressable onPress={handleRegister} style={styles.startButton}>
-        <Text style={styles.startText}>Registrar</Text>
-      </Pressable>
-    </View>
+        {errorMessage ? (
+          <Text style={styles.errorText}>{errorMessage}</Text>
+        ) : null}
+
+        <Button
+          onPress={handleRegister}
+          disabled={isLoading}
+          backgroundColor={isLoading ? palette.grey : palette.primaryBlue}
+          pressStyle={{ opacity: 0.75, backgroundColor: palette.darkBlue }}
+          style={styles.startButton}
+          minWidth={180}
+          borderRadius={14}
+        >
+          {isLoading ? (
+            <ActivityIndicator color={palette.offWhite} size="small" />
+          ) : (
+            <Text style={styles.startText}>Registrar</Text>
+          )}
+        </Button>
+      </View>
+    </KeyboardAvoidingView>
   );
 }

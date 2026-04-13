@@ -139,8 +139,8 @@ Plans:
 - [x] 06-01-PLAN.md — E2E walkthrough + production config cleanup (debug prints, env vars, .env.example)
 - [x] 06-02-PLAN.md — Email verification deep link: staticlass:// scheme, verify-email screen, resend flow
 - [x] 06-03-PLAN.md — Interactive attendance calendar: monthly grid, month navigation, sourced from answer_history
-- [ ] 06-04-PLAN.md — Sistema de Turmas backend: turmas + turma_alunos tables, CRUD API, lists filter
-- [ ] 06-05-PLAN.md — Sistema de Turmas frontend: TurmaManager, TurmaEditor, CreateNewList picker
+- [x] 06-04-PLAN.md — Sistema de Turmas backend: turmas + turma_alunos tables, CRUD API, lists filter
+- [x] 06-05-PLAN.md — Sistema de Turmas frontend: TurmaManager, TurmaEditor, CreateNewList picker
 
 **Requirements covered:** POL-01, POL-02, POL-03
 
@@ -165,13 +165,14 @@ Plans:
 
 ### Phase 7: Rich Content nas Questões
 
-**Goal:** Questões, alternativas e resoluções suportam LaTeX inline e imagens com posicionamento livre — professores podem criar conteúdo rico sem sair do app, e alunos visualizam fórmulas e figuras renderizadas corretamente.
+**Goal:** Questões, alternativas e resoluções suportam LaTeX inline e imagens com posicionamento livre — professores podem criar conteúdo rico sem sair do app, e alunos visualizam fórmulas e figuras renderizadas corretamente. Inclui também a infraestrutura de email em produção para fechar o fluxo de verificação de conta e recuperação de senha.
 
 **Plans:** TBD
 
-**Requirements covered:** RICH-01, RICH-02, RICH-03
+**Requirements covered:** RICH-01, RICH-02, RICH-03, AUTH-05
 
 **Requirements:**
+- `AUTH-05` — Email Delivery em Produção: serviço SMTP (Gmail/SendGrid/Mailgun) configurado e testado em produção; variáveis `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_SENDER_NAME` documentadas em `.env.example`; fluxos de verificação de conta e recuperação de senha validados de ponta a ponta no ambiente Fly.io
 - `RICH-01` — LaTeX Rendering: fórmulas LaTeX inline renderizadas em questões, alternativas e resoluções (usando react-native-mathjax ou similar)
 - `RICH-02` — Imagens em Questões: professores associam imagens a questões com posicionamento configurável (antes, depois ou no meio do texto); 2 questões de exemplo com placeholders estáticos
 - `RICH-03` — Questões de Resposta Aberta: novo tipo de questão sem alternativas fixas; aluno digita a resposta; professor ou gabarito textual faz a correção
@@ -179,10 +180,12 @@ Plans:
 **Depends on:** Phase 6
 
 **Success Criteria** (what must be TRUE when this phase completes):
-1. Uma questão com LaTeX (`$\mu = \bar{x}$`) é renderizada como fórmula em todas as telas onde questões aparecem (quiz, lista, resolução)
-2. Um professor cria uma questão com uma imagem posicionada antes do enunciado — alunos veem a imagem acima do texto ao responder
-3. Existe ao menos 1 questão de exemplo com imagem no banco após o seeding de demo data
-4. Um professor cria uma questão de resposta aberta; o aluno a vê no quiz com campo de texto livre em vez de alternativas A–E
+1. Um aluno se cadastra, recebe o email de verificação, clica no link `staticlass://verify-email?token=...`, e consegue fazer login — tudo em produção (Fly.io)
+2. Um aluno usa "Esqueci minha senha", recebe o email com link `staticlass://reset-password?token=...`, define uma nova senha, e faz login — tudo em produção
+3. Uma questão com LaTeX (`$\mu = \bar{x}$`) é renderizada como fórmula em todas as telas onde questões aparecem (quiz, lista, resolução)
+4. Um professor cria uma questão com uma imagem posicionada antes do enunciado — alunos veem a imagem acima do texto ao responder
+5. Existe ao menos 1 questão de exemplo com imagem no banco após o seeding de demo data
+6. Um professor cria uma questão de resposta aberta; o aluno a vê no quiz com campo de texto livre em vez de alternativas A–E
 
 ---
 
@@ -218,11 +221,12 @@ Plans:
 | POL-01 | Phase 6 | Pending |
 | POL-02 | Phase 6 | Pending |
 | POL-03 | Phase 6 | Pending |
+| AUTH-05 | Phase 7 | Planned |
 | RICH-01 | Phase 7 | Planned |
 | RICH-02 | Phase 7 | Planned |
 | RICH-03 | Phase 7 | Planned |
 
-**Coverage:** 31/31 requirements mapped. No orphans.
+**Coverage:** 32/32 requirements mapped. No orphans.
 
 ---
 

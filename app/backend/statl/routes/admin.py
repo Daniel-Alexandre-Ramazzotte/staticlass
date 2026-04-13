@@ -150,17 +150,33 @@ def stats_alunos():
 @bp.route('/stats/aluno/<int:usuario_id>', methods=['GET'])
 @require_role('admin')
 def stats_aluno_detalhe(usuario_id):
-    """Retorna o histórico de quizzes de um aluno específico (últimos 50)."""
-    historico = db.session.execute(text("""
-        SELECT qr.id, qr.acertos, qr.total, qr.dificuldade, qr.criado_em,
-               c.name AS capitulo_nome
-        FROM quiz_resultados qr
-        LEFT JOIN chapters c ON c.id = qr.capitulo_id
-        WHERE qr.usuario_id = :uid
-        ORDER BY qr.criado_em DESC
-        LIMIT 50
+    """Retorna precisão por capítulo de um aluno, calculada a partir do answer_history."""
+    linhas = db.session.execute(text("""
+        SELECT
+            COALESCE(c.name, 'Geral') AS capitulo_nome,
+            COUNT(*)                                                          AS total_respostas,
+            SUM(CASE WHEN ah.is_correct THEN 1 ELSE 0 END)                   AS acertos,
+            ROUND(
+                SUM(CASE WHEN ah.is_correct THEN 1 ELSE 0 END) * 100.0
+                / NULLIF(COUNT(*), 0),
+                1
+            )                                                                 AS precisao_pct
+        FROM answer_history ah
+        JOIN questions q ON q.id = ah.question_id
+        LEFT JOIN chapters c ON c.id = q.chapter_id
+        WHERE ah.student_id = :uid
+        GROUP BY c.id, c.name
+        ORDER BY c.id NULLS LAST
     """), {"uid": usuario_id}).mappings().all()
-    return jsonify([dict(r) for r in historico]), 200
+    return jsonify([
+        {
+            "capitulo_nome": r["capitulo_nome"],
+            "total_respostas": int(r["total_respostas"]),
+            "acertos": int(r["acertos"]),
+            "precisao_pct": float(r["precisao_pct"] or 0),
+        }
+        for r in linhas
+    ]), 200
 
 
 @bp.route('/stats/dashboard', methods=['GET'])

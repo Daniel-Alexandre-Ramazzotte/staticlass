@@ -16,17 +16,12 @@ export type AlunoStat = {
   media_pct: number;
 };
 
-type HistoricoItem = {
-  id: number;
+type ChapterStat = {
+  capitulo_nome: string;
+  total_respostas: number;
   acertos: number;
-  total: number;
-  dificuldade: number | null;
-  criado_em: string;
-  capitulo_nome: string | null;
+  precisao_pct: number;
 };
-
-const COR_DIFICULDADE: Record<number, string> = { 1: '#4caf50', 2: '#ff9800', 3: '#f44336' };
-const LABEL_DIFICULDADE: Record<number, string> = { 1: 'Fácil', 2: 'Médio', 3: 'Difícil' };
 
 function Medalha({ posicao }: { posicao: number }) {
   if (posicao === 1) return <Text fontSize={20}>🥇</Text>;
@@ -37,7 +32,7 @@ function Medalha({ posicao }: { posicao: number }) {
 
 export function CartaoAluno({ aluno, posicao }: { aluno: AlunoStat; posicao: number }) {
   const [expandido, setExpandido] = useState(false);
-  const [historico, setHistorico] = useState<HistoricoItem[]>([]);
+  const [capitulos, setCapitulos] = useState<ChapterStat[]>([]);
   const [carregando, setCarregando] = useState(false);
 
   const aproveitamento = aluno.total_questoes > 0
@@ -48,16 +43,16 @@ export function CartaoAluno({ aluno, posicao }: { aluno: AlunoStat; posicao: num
 
   const alternarExpansao = useCallback(async () => {
     if (expandido) { setExpandido(false); return; }
-    if (historico.length > 0) { setExpandido(true); return; }
+    if (capitulos.length > 0) { setExpandido(true); return; }
     setCarregando(true);
     try {
       const { data } = await api.get(`/admin/stats/aluno/${aluno.id}`);
-      setHistorico(data as HistoricoItem[]);
+      setCapitulos(data as ChapterStat[]);
       setExpandido(true);
     } finally {
       setCarregando(false);
     }
-  }, [aluno.id, expandido, historico.length]);
+  }, [aluno.id, expandido, capitulos.length]);
 
   return (
     <View style={estilos.cartao}>
@@ -96,37 +91,33 @@ export function CartaoAluno({ aluno, posicao }: { aluno: AlunoStat; posicao: num
         </XStack>
       </TouchableOpacity>
 
-      {expandido && historico.length > 0 && (
+      {expandido && capitulos.length > 0 && (
         <View style={estilos.historico}>
           <Text fontSize={12} fontWeight="bold" color={palette.darkBlue} style={{ marginBottom: 6 }}>
-            Histórico recente
+            Precisão por capítulo
           </Text>
-          {historico.map((item) => {
-            const pct = item.total > 0 ? Math.round((item.acertos / item.total) * 100) : 0;
-            return (
-              <XStack key={item.id} style={estilos.linhaHistorico} ai="center" gap={8}>
-                <Text fontSize={12} color={palette.offBlack} style={{ flex: 1 }}>
-                  {item.capitulo_nome ?? 'Geral'}
-                </Text>
-                {item.dificuldade && (
-                  <View style={[estilos.badge, { backgroundColor: COR_DIFICULDADE[item.dificuldade] }]}>
-                    <Text fontSize={10} color="#fff">{LABEL_DIFICULDADE[item.dificuldade]}</Text>
-                  </View>
-                )}
-                <Text fontSize={12} color={pct >= 70 ? '#4caf50' : '#f44336'} fontWeight="bold">
-                  {item.acertos}/{item.total} ({pct}%)
-                </Text>
-                <Text fontSize={11} color="#aaa">
-                  {new Date(item.criado_em).toLocaleDateString('pt-BR')}
-                </Text>
-              </XStack>
-            );
-          })}
+          {capitulos.map((cap) => (
+            <XStack key={cap.capitulo_nome} style={estilos.linhaHistorico} ai="center" gap={8}>
+              <Text fontSize={12} color={palette.offBlack} style={{ flex: 1 }}>
+                {cap.capitulo_nome}
+              </Text>
+              <Text fontSize={11} color="#999">
+                {cap.acertos}/{cap.total_respostas}
+              </Text>
+              <Text
+                fontSize={13}
+                color={cap.precisao_pct >= 70 ? '#4caf50' : cap.precisao_pct >= 50 ? '#ff9800' : '#f44336'}
+                fontWeight="bold"
+              >
+                {cap.precisao_pct.toFixed(1)}%
+              </Text>
+            </XStack>
+          ))}
         </View>
       )}
 
-      {expandido && historico.length === 0 && (
-        <Text fontSize={12} color="#aaa" style={{ marginTop: 8 }}>Nenhum quiz realizado.</Text>
+      {expandido && capitulos.length === 0 && (
+        <Text fontSize={12} color="#aaa" style={{ marginTop: 8 }}>Nenhuma resposta registrada.</Text>
       )}
     </View>
   );

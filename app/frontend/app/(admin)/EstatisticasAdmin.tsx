@@ -8,6 +8,7 @@ import { Text, XStack, YStack } from 'tamagui';
 import { palette, primaryFontA } from 'app/constants/style';
 import api from 'app/services/api';
 import { useLayout } from '../../src/constants/layout';
+import { AbaAlunos, AlunoStat } from '../../src/components/admin/EstatisticasCompartilhadas';
 
 type DashboardPayload = {
   kpis: {
@@ -62,6 +63,7 @@ export default function EstatisticasAdmin() {
   const router = useRouter();
   const { fs } = useLayout();
   const [data, setData] = useState<DashboardPayload | null>(null);
+  const [alunos, setAlunos] = useState<AlunoStat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,10 +72,15 @@ export default function EstatisticasAdmin() {
       let active = true;
       setLoading(true);
       setError(null);
-      api
-        .get<DashboardPayload>('/admin/stats/dashboard')
-        .then((response) => {
-          if (active) setData(response.data);
+      Promise.all([
+        api.get<DashboardPayload>('/admin/stats/dashboard'),
+        api.get<AlunoStat[]>('/admin/stats/alunos'),
+      ])
+        .then(([dashRes, alunosRes]) => {
+          if (active) {
+            setData(dashRes.data);
+            setAlunos(alunosRes.data);
+          }
         })
         .catch(() => {
           if (active) setError('Não foi possível carregar as estatísticas.');
@@ -184,6 +191,14 @@ export default function EstatisticasAdmin() {
                 </View>
               ))}
             </YStack>
+          </View>
+
+          <View style={styles.section}>
+            <SectionTitle>Desempenho dos alunos</SectionTitle>
+            <Text color="#6c7b8a" fontSize={12} mb="$2">
+              Toque em um aluno para ver a precisão por capítulo.
+            </Text>
+            <AbaAlunos alunos={alunos} />
           </View>
         </ScrollView>
       )}

@@ -133,6 +133,12 @@ def atualizar_questao(dados: dict):
 
 def deletar_questao(questao_id: int):
     try:
+        # Explicitly delete alternatives first — production DBs may not have CASCADE
+        # on alternatives.question_id if the table was created before it was added.
+        db.session.execute(
+            text("DELETE FROM alternatives WHERE question_id = :id"),
+            {"id": questao_id},
+        )
         db.session.execute(
             text(f"DELETE FROM {_TABELA} WHERE id = :id"),
             {"id": questao_id},
