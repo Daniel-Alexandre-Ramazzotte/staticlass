@@ -28,22 +28,48 @@ def create_list(professor_id: int, title: str, deadline: datetime) -> int:
     ).scalar_one()
 
 
-def update_list_metadata(list_id: int, professor_id: int, title: str, deadline: datetime) -> None:
-    db.session.execute(
-        text("""
-            UPDATE lists
-            SET title = :title,
-                deadline = :deadline,
-                updated_at = CURRENT_TIMESTAMP
-            WHERE id = :list_id AND professor_id = :professor_id
-        """),
-        {
-            "list_id": list_id,
-            "professor_id": professor_id,
-            "title": title,
-            "deadline": deadline,
-        },
-    )
+def update_list_metadata(
+    list_id: int,
+    professor_id: int,
+    title: str,
+    deadline: datetime,
+    turma_id: int | None = None,
+    update_turma: bool = False,
+) -> None:
+    if update_turma:
+        db.session.execute(
+            text("""
+                UPDATE lists
+                SET title = :title,
+                    deadline = :deadline,
+                    turma_id = :turma_id,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = :list_id AND professor_id = :professor_id
+            """),
+            {
+                "list_id": list_id,
+                "professor_id": professor_id,
+                "title": title,
+                "deadline": deadline,
+                "turma_id": turma_id,
+            },
+        )
+    else:
+        db.session.execute(
+            text("""
+                UPDATE lists
+                SET title = :title,
+                    deadline = :deadline,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = :list_id AND professor_id = :professor_id
+            """),
+            {
+                "list_id": list_id,
+                "professor_id": professor_id,
+                "title": title,
+                "deadline": deadline,
+            },
+        )
 
 
 def replace_list_questions(list_id: int, question_ids: list[int]) -> None:
@@ -122,6 +148,7 @@ def get_professor_list_row(list_id: int, professor_id: int):
                 l.published_at,
                 l.created_at,
                 l.updated_at,
+                l.turma_id,
                 (SELECT COUNT(*) FROM list_questions lq WHERE lq.list_id = l.id) AS question_count
             FROM lists l
             WHERE l.id = :list_id AND l.professor_id = :professor_id

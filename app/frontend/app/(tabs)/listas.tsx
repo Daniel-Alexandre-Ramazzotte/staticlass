@@ -56,6 +56,12 @@ export default function ListasScreen() {
           Gerenciar Listas
         </AppButton>
         <AppButton
+          backgroundColor={palette.primaryBlue}
+          onPress={() => router.push('/(professor)/TurmaManager')}
+        >
+          Turmas
+        </AppButton>
+        <AppButton
           backgroundColor={palette.red}
           onPress={() =>
             router.push({
