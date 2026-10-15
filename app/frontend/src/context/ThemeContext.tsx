@@ -43,15 +43,15 @@ export type Paleta = typeof paletaClara;
 
 type TipoTema = 'claro' | 'escuro' | 'sistema';
 
-type ContextoTema = {
+type ContextoTemaShape = {
   tema:         TipoTema;
-  temaEfetivo: 'claro' | 'escuro';   // sistema resolvido para claro ou escuro
+  temaEfetivo: 'claro' | 'escuro';
   paleta:       Paleta;
   alternarTema: () => void;
   definirTema:  (t: TipoTema) => void;
 };
 
-const ContextoTema = createContext<ContextoTema>({
+const ContextoTema = createContext<ContextoTemaShape>({
   tema:         'sistema',
   temaEfetivo: 'claro',
   paleta:       paletaClara,

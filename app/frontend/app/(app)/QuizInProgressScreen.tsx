@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Animated, Image, StyleSheet } from 'react-native';
+import { ActivityIndicator, Animated, Image, StyleSheet, TextInput } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter, Stack, useLocalSearchParams } from 'expo-router';
 import styles, { palette } from 'app/constants/style';
 import { CAP_NOMES } from 'app/constants/names';
+import { API_BASE_URL } from 'app/constants/apiBase';
 import api from 'app/services/api';
 import { ChevronLeft } from 'lucide-react-native';
 import { ScrollView, XStack, YStack, Text, View, Button, Progress } from 'tamagui';
@@ -33,11 +34,13 @@ interface Alternative {
 interface QuizQuestion {
   id: number;
   issue: string;
+  question_type?: string | null;
   alternatives: Alternative[];
-  correct_answer: string;
+  correct_answer: string | null;
   solution: string | null;
   image_q: string | null;
   image_s: string | null;
+  image_q_position: 'antes' | 'depois' | 'meio' | null;
   difficulty: number | null;
   chapter_name: string | null;
   chapter_number: number | null;
@@ -54,6 +57,7 @@ interface QuizResultItem {
   solution: string | null;
   image_q: string | null;
   image_s: string | null;
+  image_q_position: 'antes' | 'depois' | 'meio' | null;
 }
 
 function parseIds(val: string | string[] | undefined): number[] | null {
@@ -91,6 +95,7 @@ const QuizInProgressScreen = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [userAnswer, setUserAnswer] = useState('');
+  const [userAnswerVF, setUserAnswerVF] = useState<Record<string, 'V' | 'F'>>({});
   const [counter, setCounter] = useState(0);
   const [userResponses, setUserResponses] = useState<QuizResultItem[]>([]);
   const [currentImageBase64, setCurrentImageBase64] = useState<string | null>(null);
@@ -153,11 +158,15 @@ const QuizInProgressScreen = () => {
         headers: { 'Cache-Control': 'no-cache' },
       });
       const reader = new FileReader();
-      reader.readAsDataURL(response.data);
       reader.onload = () => {
         setCurrentImageBase64(reader.result as string);
         setImageLoading(false);
       };
+      reader.onerror = () => {
+        setCurrentImageBase64(null);
+        setImageLoading(false);
+      };
+      reader.readAsDataURL(response.data);
     } catch {
       setCurrentImageBase64(null);
       setImageLoading(false);
@@ -192,23 +201,45 @@ const QuizInProgressScreen = () => {
   }, [counter, scaleAnim]);
 
   const handleNextQuestion = () => {
-    if (!userAnswer) return;
-
     const current = questions[counter];
+    const qt = current.question_type ?? 'multiple_choice';
+
+    if (qt === 'multiple_choice' && !userAnswer) return;
+    if (qt === 'true_false' && Object.keys(userAnswerVF).length < current.alternatives.length) return;
+
+    let message: 'correct' | 'incorrect' = 'incorrect';
+    let displayAnswer = userAnswer;
+
+    if (qt === 'open_answer') {
+      if (!userAnswer.trim()) return;
+      message = 'correct';
+      displayAnswer = userAnswer;
+    } else if (qt === 'true_false') {
+      const allCorrect = current.alternatives.every(
+        (alt) => (userAnswerVF[alt.letter] === 'V') === alt.is_correct,
+      );
+      message = allCorrect ? 'correct' : 'incorrect';
+      displayAnswer = JSON.stringify(userAnswerVF);
+    } else {
+      message = userAnswer === current.correct_answer ? 'correct' : 'incorrect';
+    }
+
     const result: QuizResultItem = {
-      message: userAnswer === current.correct_answer ? 'correct' : 'incorrect',
-      userAnswer,
+      message,
+      userAnswer: displayAnswer,
       id: current.id,
       issue: current.issue,
-      correct_answer: current.correct_answer,
+      correct_answer: current.correct_answer ?? '',
       solution: current.solution,
       image_q: current.image_q,
       image_s: current.image_s,
+      image_q_position: current.image_q_position,
     };
 
     const newResponses = [...userResponses, result];
     setUserResponses(newResponses);
     setUserAnswer('');
+    setUserAnswerVF({});
 
     if (counter + 1 >= questions.length) {
       router.push({
@@ -230,7 +261,7 @@ const QuizInProgressScreen = () => {
   };
 
   const renderContent = () => {
-    if (loading) return <ActivityIndicator size="large" color="#0000ff" />;
+    if (loading) return <ActivityIndicator size="large" color={palette.primaryBlue} />;
     if (error) return <Text style={styles.errorText}>Erro: {error}</Text>;
     if (!questions.length) {
       return <Text style={styles.errorText}>Nenhuma questão encontrada.</Text>;
@@ -238,6 +269,16 @@ const QuizInProgressScreen = () => {
 
     const current = questions[counter];
     const progress = (counter / questions.length) * 100;
+    const hasQuestionImage = Boolean(current.image_q && current.image_q !== 'null');
+    const questionImageBlock = (
+      <View style={styles.image}>
+        {imageLoading ? (
+          <ActivityIndicator size="large" color={palette.primaryBlue} />
+        ) : currentImageBase64 ? (
+          <Image source={{ uri: currentImageBase64 }} style={styles.image} resizeMode="contain" />
+        ) : null}
+      </View>
+    );
 
     return (
       <ScrollView>
@@ -283,7 +324,7 @@ const QuizInProgressScreen = () => {
                 <QuizTag
                   label={
                     current.chapter_number
-                      ? CAP_NOMES[current.chapter_number] ?? `Cap. ${current.chapter_number}`
+                      ? CAP_NOMES[current.chapter_number] ?? current.chapter_name
                       : current.chapter_name
                   }
                   color={palette.darkBlue}
@@ -301,66 +342,106 @@ const QuizInProgressScreen = () => {
                   }
                   color={
                     current.difficulty === 1
-                      ? '#388e3c'
+                      ? palette.primaryGreen
                       : current.difficulty === 2
-                        ? '#f57c00'
-                        : '#c62828'
+                        ? palette.warn
+                        : palette.red
                   }
                 />
               ) : null}
               {current.source ? (
                 <QuizTag
                   label={current.source.toUpperCase()}
-                  color={isListMode ? palette.primaryGreen : '#7b1fa2'}
+                  color={isListMode ? palette.primaryGreen : palette.lightBlue}
                 />
               ) : null}
             </XStack>
             <YStack gap="$4" ai="center">
-              <MathText fontSize={16} color="#1a1a1a" style={styles.issueText}>
+              {hasQuestionImage && current.image_q_position === 'antes' ? questionImageBlock : null}
+              <MathText fontSize={16} color="#1a1a1a" style={styles.issueText} apiBase={API_BASE_URL}>
                 {current.issue}
               </MathText>
-              {current.image_q && current.image_q !== 'null' ? (
-                <View style={styles.image}>
-                  {imageLoading ? (
-                    <ActivityIndicator size="large" color="#0000ff" />
-                  ) : currentImageBase64 ? (
-                    <Image source={{ uri: currentImageBase64 }} style={styles.image} resizeMode="contain" />
-                  ) : null}
-                </View>
-              ) : null}
+              {hasQuestionImage && current.image_q_position !== 'antes' && current.image_q_position !== 'meio'
+                ? questionImageBlock
+                : null}
             </YStack>
           </YStack>
 
           <YStack backgroundColor={palette.primaryBlue} px="$5" py="$6" gap="$3">
             <YStack style={styles.buttonContainer} gap="$3">
-              {current.alternatives.map((alt) => (
-                <Button
-                  key={alt.letter}
-                  onPress={() => setUserAnswer(alt.letter)}
-                  borderRadius={25}
-                  pressStyle={{ opacity: 0.8 }}
-                  height="auto"
-                  minHeight={50}
-                  py="$3"
-                  backgroundColor={userAnswer === alt.letter ? palette.lightBlue : palette.darkBlue}
-                >
-                  <XStack f={1} ai="flex-start" w="100%" px="$4" gap="$2">
-                    <Text color={palette.offWhite} fontWeight="bold" fontSize={18}>
-                      {alt.letter})
-                    </Text>
-                    <MathText fontSize={16} color={palette.offWhite} style={{ flex: 1 }}>
-                      {alt.text}
+              {(current.question_type ?? 'multiple_choice') === 'open_answer' ? (
+                <TextInput
+                  value={userAnswer}
+                  onChangeText={setUserAnswer}
+                  placeholder="Digite sua resposta..."
+                  placeholderTextColor="#ccc"
+                  multiline
+                  style={{
+                    backgroundColor: palette.darkBlue, color: '#fff',
+                    borderRadius: 12, padding: 12, fontSize: 15, minHeight: 80,
+                    borderWidth: 1, borderColor: palette.lightBlue,
+                  }}
+                />
+              ) : (current.question_type ?? 'multiple_choice') === 'true_false' ? (
+                current.alternatives.map((alt) => (
+                  <YStack key={alt.letter} gap="$1">
+                    <MathText fontSize={14} color={palette.offWhite} apiBase={API_BASE_URL}>
+                      {`${alt.letter}) ${alt.text}`}
                     </MathText>
-                  </XStack>
-                </Button>
-              ))}
+                    <XStack gap="$2">
+                      <Button
+                        flex={1} size="$3" borderRadius={8}
+                        backgroundColor={userAnswerVF[alt.letter] === 'V' ? palette.primaryGreen : palette.darkBlue}
+                        onPress={() => setUserAnswerVF((prev) => ({ ...prev, [alt.letter]: 'V' }))}
+                      >
+                        <Text color={palette.white} fontWeight="bold">Verdadeiro</Text>
+                      </Button>
+                      <Button
+                        flex={1} size="$3" borderRadius={8}
+                        backgroundColor={userAnswerVF[alt.letter] === 'F' ? palette.red : palette.darkBlue}
+                        onPress={() => setUserAnswerVF((prev) => ({ ...prev, [alt.letter]: 'F' }))}
+                      >
+                        <Text color={palette.white} fontWeight="bold">Falso</Text>
+                      </Button>
+                    </XStack>
+                  </YStack>
+                ))
+              ) : (
+                current.alternatives.map((alt) => (
+                  <Button
+                    key={alt.letter}
+                    onPress={() => setUserAnswer(alt.letter)}
+                    borderRadius={25}
+                    pressStyle={{ opacity: 0.8 }}
+                    height="auto"
+                    minHeight={50}
+                    py="$3"
+                    backgroundColor={userAnswer === alt.letter ? palette.lightBlue : palette.darkBlue}
+                  >
+                    <XStack f={1} ai="flex-start" w="100%" px="$4" gap="$2">
+                      <Text color={palette.offWhite} fontWeight="bold" fontSize={18}>
+                        {alt.letter})
+                      </Text>
+                      <MathText fontSize={16} color={palette.offWhite} style={{ flex: 1 }} apiBase={API_BASE_URL}>
+                        {alt.text}
+                      </MathText>
+                    </XStack>
+                  </Button>
+                ))
+              )}
             </YStack>
           </YStack>
 
           <AppButton
             mt="auto"
             buttonSize="big"
-            type={userAnswer ? 'secondary' : 'inactive'}
+            type={
+              (current.question_type ?? 'multiple_choice') === 'open_answer'
+                ? (userAnswer.trim() ? 'secondary' : 'inactive')
+                : (current.question_type === 'true_false'
+                    ? (Object.keys(userAnswerVF).length >= current.alternatives.length ? 'secondary' : 'inactive')
+                    : (userAnswer ? 'secondary' : 'inactive'))
+            }
             onPress={handleNextQuestion}
           >
             CONFIRMAR

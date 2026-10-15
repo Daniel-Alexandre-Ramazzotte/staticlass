@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Settings, Trophy } from '@tamagui/lucide-icons';
 import { palette, primaryFontA } from 'app/constants/style';
@@ -149,11 +149,36 @@ const calStyles = StyleSheet.create({
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const { signOut, role, email, name } = useAuth();
+  const { signOut, role, email, name, emailVerified, markEmailVerified } = useAuth();
   const [xp, setXp] = useState<number>(0);
   const [streak, setStreak] = useState<number>(0);
   const [rankPosition, setRankPosition] = useState<number | null>(null);
   const [dadosCarregando, setDadosCarregando] = useState(true);
+  const [otpCode, setOtpCode] = useState('');
+  const [otpError, setOtpError] = useState('');
+  const [otpLoading, setOtpLoading] = useState(false);
+
+  const handleVerifyOtp = async () => {
+    setOtpError('');
+    setOtpLoading(true);
+    try {
+      await api.post('/auth/verify-code', { email, code: otpCode });
+      await markEmailVerified();
+      setOtpCode('');
+    } catch (err: any) {
+      setOtpError(err.response?.data?.error ?? 'Código inválido.');
+    } finally {
+      setOtpLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    try {
+      await api.post('/auth/resend-verification', { email });
+    } catch {
+      // silent
+    }
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -231,6 +256,37 @@ export default function ProfileScreen() {
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
+        {!emailVerified && (
+          <View style={verificationBannerStyles.container}>
+            <Text style={verificationBannerStyles.title}>⚠ Email não verificado</Text>
+            <Text style={verificationBannerStyles.subtitle}>
+              Digite o código de 6 dígitos enviado para {email}
+            </Text>
+            <TextInput
+              style={[verificationBannerStyles.input]}
+              value={otpCode}
+              onChangeText={setOtpCode}
+              placeholder="000000"
+              keyboardType="number-pad"
+              maxLength={6}
+              textAlign="center"
+            />
+            {otpError ? <Text style={verificationBannerStyles.error}>{otpError}</Text> : null}
+            <TouchableOpacity
+              style={[verificationBannerStyles.button, otpLoading || otpCode.length < 6 ? { opacity: 0.5 } : {}]}
+              onPress={handleVerifyOtp}
+              disabled={otpLoading || otpCode.length < 6}
+            >
+              {otpLoading
+                ? <ActivityIndicator color="#fff" size="small" />
+                : <Text style={verificationBannerStyles.buttonText}>Verificar</Text>}
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleResendOtp} style={{ marginTop: 6 }}>
+              <Text style={verificationBannerStyles.resend}>Reenviar código</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {role === 'aluno' && <MonthCalendar studentEmail={email ?? ''} />}
 
         {role === 'aluno' && (
@@ -367,5 +423,56 @@ const styles = StyleSheet.create({
   buttonSection: {
     paddingHorizontal: 24,
     marginTop: 24,
+  },
+});
+
+const verificationBannerStyles = StyleSheet.create({
+  container: {
+    margin: 16,
+    padding: 16,
+    backgroundColor: '#fff8e1',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#ffb300',
+    gap: 10,
+  },
+  title: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#e65100',
+  },
+  subtitle: {
+    fontSize: 13,
+    color: '#555',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    fontSize: 22,
+    letterSpacing: 8,
+    textAlign: 'center',
+    backgroundColor: '#fff',
+  },
+  error: {
+    color: '#f65151',
+    fontSize: 13,
+  },
+  button: {
+    backgroundColor: '#55bf44',
+    borderRadius: 10,
+    padding: 12,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 15,
+  },
+  resend: {
+    color: '#0074c3',
+    fontSize: 13,
+    textAlign: 'center',
   },
 });

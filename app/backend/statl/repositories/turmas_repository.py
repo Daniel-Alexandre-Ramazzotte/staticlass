@@ -7,21 +7,25 @@ def create_turma(professor_id: int, name: str) -> dict:
         text(
             "INSERT INTO turmas (professor_id, name, created_at)"
             " VALUES (:pid, :name, CURRENT_TIMESTAMP)"
+            " RETURNING id, name, professor_id, created_at"
         ),
         {"pid": professor_id, "name": name},
-    )
-    db.session.flush()
-    # Fetch back with lastrowid for SQLite compatibility (no RETURNING)
-    turma_id = row.lastrowid
-    fetched = db.session.execute(
-        text("SELECT id, name, professor_id, created_at FROM turmas WHERE id = :id"),
-        {"id": turma_id},
     ).fetchone()
     db.session.commit()
-    return dict(fetched._mapping)
+    return dict(row._mapping)
 
 
-def list_turmas_by_professor(professor_id: int) -> list:
+def list_turmas_by_professor(professor_id: int | None) -> list:
+    if professor_id is None:
+        return db.session.execute(
+            text("""
+                SELECT t.id, t.name, t.created_at, COUNT(ta.student_id) AS student_count
+                FROM turmas t
+                LEFT JOIN turma_alunos ta ON ta.turma_id = t.id
+                GROUP BY t.id, t.name, t.created_at
+                ORDER BY t.created_at DESC
+            """),
+        ).mappings().all()
     return db.session.execute(
         text("""
             SELECT t.id, t.name, t.created_at, COUNT(ta.student_id) AS student_count
@@ -86,6 +90,26 @@ def get_turma_students(turma_id: int) -> list:
         """),
         {"tid": turma_id},
     ).mappings().all()
+
+
+def is_student_enrolled(turma_id: int, student_id: int) -> bool:
+    row = db.session.execute(
+        text("SELECT 1 FROM turma_alunos WHERE turma_id = :tid AND student_id = :sid"),
+        {"tid": turma_id, "sid": student_id},
+    ).fetchone()
+    return row is not None
+
+
+def add_single_student(turma_id: int, student_id: int) -> None:
+    db.session.execute(
+        text(
+            "INSERT INTO turma_alunos (turma_id, student_id)"
+            " VALUES (:tid, :sid)"
+            " ON CONFLICT DO NOTHING"
+        ),
+        {"tid": turma_id, "sid": student_id},
+    )
+    db.session.commit()
 
 
 def validate_student_ids(student_ids: list) -> bool:

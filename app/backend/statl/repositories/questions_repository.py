@@ -1,3 +1,5 @@
+import json as _json
+
 from .. import db
 from sqlalchemy import text
 from collections import defaultdict
@@ -5,8 +7,8 @@ from collections import defaultdict
 _TABELA = "questions"
 
 _CAMPOS_ATUALIZAVEIS = {
-    "issue", "correct_answer", "solution", "image_q", "image_s",
-    "section", "source", "difficulty", "needs_fix", "chapter_id", "topic_id",
+    "issue", "question_type", "correct_answer", "solution", "image_q", "image_s",
+    "image_q_position", "section", "source", "difficulty", "needs_fix", "chapter_id", "topic_id",
 }
 
 
@@ -41,30 +43,32 @@ def buscar_alternativas_por_questao(questao_id: int) -> list[dict]:
 
 def adicionar_questao(dados: dict) -> int:
     params = {
-        "issue":        dados.get("issue"),
+        "issue":          dados.get("issue"),
+        "question_type":  dados.get("question_type", "multiple_choice"),
         "correct_answer": dados.get("correct_answer"),
-        "solution":     dados.get("solution"),
-        "image_q":      dados.get("image_q"),
-        "image_s":      dados.get("image_s"),
-        "section":      dados.get("section"),
-        "source":       dados.get("source"),
-        "difficulty":   dados.get("difficulty"),
-        "needs_fix":    bool(dados.get("needs_fix", False)),
-        "chapter_id":   dados.get("chapter_id"),
-        "topic_id":     dados.get("topic_id"),
-        "professor_id": dados.get("professor_id"),
+        "solution":       dados.get("solution"),
+        "image_q":        dados.get("image_q"),
+        "image_s":        dados.get("image_s"),
+        "image_q_position": dados.get("image_q_position", "depois"),
+        "section":        dados.get("section"),
+        "source":         dados.get("source"),
+        "difficulty":     dados.get("difficulty"),
+        "needs_fix":      bool(dados.get("needs_fix", False)),
+        "chapter_id":     dados.get("chapter_id"),
+        "topic_id":       dados.get("topic_id"),
+        "professor_id":   dados.get("professor_id"),
     }
     alternativas = dados.get("alternatives", [])
     try:
         novo_id = db.session.execute(
             text("""
                 INSERT INTO questions
-                    (issue, correct_answer, solution, image_q, image_s,
-                     section, source, difficulty, needs_fix,
+                    (issue, question_type, correct_answer, solution, image_q, image_s,
+                     image_q_position, section, source, difficulty, needs_fix,
                      chapter_id, topic_id, professor_id)
                 VALUES
-                    (:issue, :correct_answer, :solution, :image_q, :image_s,
-                     :section, :source, :difficulty, :needs_fix,
+                    (:issue, :question_type, :correct_answer, :solution, :image_q, :image_s,
+                     :image_q_position, :section, :source, :difficulty, :needs_fix,
                      :chapter_id, :topic_id, :professor_id)
                 RETURNING id
             """),
@@ -211,6 +215,7 @@ def buscar_questoes_por_ids_ordenados(ids_questoes: list[int]) -> list[dict]:
                 q.solution,
                 q.image_q,
                 q.image_s,
+                q.image_q_position,
                 q.difficulty,
                 q.source,
                 c.name AS chapter_name,
@@ -233,6 +238,7 @@ def buscar_questoes_por_ids_ordenados(ids_questoes: list[int]) -> list[dict]:
             "solution": linha["solution"],
             "image_q": linha["image_q"],
             "image_s": linha["image_s"],
+            "image_q_position": linha["image_q_position"],
             "difficulty": linha["difficulty"],
             "chapter_name": linha["chapter_name"],
             "chapter_number": linha["chapter_number"],
@@ -251,7 +257,10 @@ def buscar_questoes_filtradas(
     difficulty=None,
     source=None,
 ) -> list[dict]:
-    condicoes = ["EXISTS (SELECT 1 FROM alternatives a WHERE a.question_id = q.id)"]
+    condicoes = [
+        "(q.question_type = 'open_answer' "
+        "OR EXISTS (SELECT 1 FROM alternatives a WHERE a.question_id = q.id))"
+    ]
     params: dict = {"n": quantidade}
 
     def _adicionar_in(coluna: str, valor, prefixo: str):
@@ -294,6 +303,24 @@ def buscar_capitulos() -> list[dict]:
     ).mappings().all()
 
 
+def buscar_secoes_unicas(professor_id=None, role: str = "professor") -> list[str]:
+    if role == "admin":
+        linhas = db.session.execute(
+            text("SELECT DISTINCT section FROM questions WHERE section IS NOT NULL AND section <> '' ORDER BY section"),
+        ).fetchall()
+    else:
+        linhas = db.session.execute(
+            text("""
+                SELECT DISTINCT section FROM questions
+                WHERE section IS NOT NULL AND section <> ''
+                  AND professor_id = :pid
+                ORDER BY section
+            """),
+            {"pid": professor_id},
+        ).fetchall()
+    return [row[0] for row in linhas]
+
+
 def buscar_topicos(chapter_id=None) -> list[dict]:
     if chapter_id:
         return db.session.execute(
@@ -303,6 +330,104 @@ def buscar_topicos(chapter_id=None) -> list[dict]:
     return db.session.execute(
         text("SELECT * FROM topics ORDER BY chapter_id, id"),
     ).mappings().all()
+
+
+# ── Propostas de alteração ───────────────────────────────────────────────────
+
+def _parse_json(val):
+    if isinstance(val, (dict, list)):
+        return val
+    if isinstance(val, str):
+        try:
+            return _json.loads(val)
+        except Exception:
+            return {}
+    return {}
+
+
+def criar_proposta(question_id: int, proposer_id: int, changes: dict, reason: str = None) -> int:
+    from ..models.questions import QuestionProposal
+    proposta = QuestionProposal(
+        question_id=question_id,
+        proposer_id=proposer_id,
+        changes=changes,
+        reason=reason,
+    )
+    db.session.add(proposta)
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
+    return proposta.id
+
+
+def listar_propostas(status: str = None) -> list[dict]:
+    where = "WHERE qp.status = :status" if status else ""
+    params = {"status": status} if status else {}
+    linhas = db.session.execute(
+        text(f"""
+            SELECT
+                qp.id, qp.question_id, qp.proposer_id, qp.status,
+                qp.changes, qp.reason, qp.admin_note,
+                qp.created_at, qp.reviewed_by, qp.reviewed_at,
+                u.name AS proposer_name,
+                q.issue AS question_issue
+            FROM question_proposals qp
+            JOIN users u ON u.id = qp.proposer_id
+            JOIN questions q ON q.id = qp.question_id
+            {where}
+            ORDER BY qp.created_at DESC
+        """),
+        params,
+    ).mappings().all()
+    result = []
+    for r in linhas:
+        d = dict(r)
+        d['changes'] = _parse_json(d.get('changes'))
+        if d.get('created_at') and not isinstance(d['created_at'], str):
+            d['created_at'] = d['created_at'].isoformat()
+        if d.get('reviewed_at') and not isinstance(d['reviewed_at'], str):
+            d['reviewed_at'] = d['reviewed_at'].isoformat()
+        result.append(d)
+    return result
+
+
+def buscar_proposta_por_id(proposal_id: int) -> dict | None:
+    from ..models.questions import QuestionProposal
+    p = db.session.get(QuestionProposal, proposal_id)
+    if not p:
+        return None
+    return {
+        "id": p.id,
+        "question_id": p.question_id,
+        "proposer_id": p.proposer_id,
+        "status": p.status,
+        "changes": p.changes or {},
+        "reason": p.reason,
+        "admin_note": p.admin_note,
+        "created_at": p.created_at.isoformat() if p.created_at else None,
+        "reviewed_by": p.reviewed_by,
+        "reviewed_at": p.reviewed_at.isoformat() if p.reviewed_at else None,
+    }
+
+
+def atualizar_status_proposta(proposal_id: int, status: str, reviewer_id: int, admin_note: str = None):
+    from ..models.questions import QuestionProposal
+    from datetime import datetime, timezone
+    p = db.session.get(QuestionProposal, proposal_id)
+    if not p:
+        raise ValueError("proposta não encontrada")
+    p.status = status
+    p.reviewed_by = reviewer_id
+    p.reviewed_at = datetime.now(timezone.utc)
+    if admin_note is not None:
+        p.admin_note = admin_note
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        raise
 
 
 # ── Aliases para compatibilidade com código existente ──────────────────────

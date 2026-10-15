@@ -8,14 +8,21 @@ Uso:
 """
 
 import argparse
-import os
 import sqlite3
+from collections import Counter
 from pathlib import Path
-from dotenv import load_dotenv
+
 from statl.utils.normalize import normalize_numbering
 
+from .utils.migration_utils import (
+    get_engine,
+    get_or_create_chapter,
+    get_or_create_topic,
+    upsert_alternatives,
+    upsert_question,
+)
+
 _SCRIPT_DIR = Path(__file__).resolve().parent
-load_dotenv(_SCRIPT_DIR.parent / ".env")
 _DEFAULT_DB = _SCRIPT_DIR.parent.parent.parent / "banco_questoes" / "questoes.db"
 
 
@@ -31,86 +38,80 @@ def _get_sqlite_data(sqlite_path: Path):
     return chapters, topics, questions, alternatives
 
 
+def _build_import_original_id(question, duplicated_original_ids: set[str]) -> str:
+    raw_original_id = (question["original_id"] or "").strip()
+    if raw_original_id and raw_original_id not in duplicated_original_ids:
+        return raw_original_id
+    if raw_original_id:
+        return f"{raw_original_id}__sqlite_{question['id']}"
+    return f"sqlite__{question['id']}"
+
+
 def run_migration(sqlite_path: Path):
-    import sqlalchemy as sa
     from sqlalchemy import text
 
-    db_url = os.getenv("DATABASE_URL", "")
-    if db_url.startswith("postgres://"):
-        db_url = db_url.replace("postgres://", "postgresql://", 1)
-    if not db_url:
-        raise SystemExit("DATABASE_URL não definida.")
-
-    engine = sa.create_engine(db_url)
+    engine = get_engine()
     chapters, topics, questions, alternatives = _get_sqlite_data(sqlite_path)
+    duplicated_original_ids = {
+        original_id
+        for original_id, count in Counter(
+            q["original_id"] for q in questions if q["original_id"]
+        ).items()
+        if count > 1
+    }
 
     with engine.begin() as conn:
         print(f"Importando {len(chapters)} capítulos...")
-        for ch in chapters:
-            exists = conn.execute(
-                text("SELECT id FROM chapters WHERE id = :id"),
-                {"id": ch["id"]},
-            ).fetchone()
-            if not exists:
-                conn.execute(
-                    text("INSERT INTO chapters (id, name, number) VALUES (:id, :name, :number)"),
-                    {"id": ch["id"], "name": ch["name"], "number": ch["number"]},
-                )
+        sqlite_chapter_to_pg: dict[int, int] = {
+            ch["id"]: get_or_create_chapter(conn, name=ch["name"], number=ch["number"])
+            for ch in chapters
+        }
 
         print(f"Importando {len(topics)} tópicos...")
+        sqlite_topic_to_pg: dict[int, int] = {}
         for tp in topics:
-            exists = conn.execute(
-                text("SELECT id FROM topics WHERE id = :id"),
-                {"id": tp["id"]},
-            ).fetchone()
-            if not exists:
-                conn.execute(
-                    text("INSERT INTO topics (id, name, chapter_id) VALUES (:id, :name, :chapter_id)"),
-                    {"id": tp["id"], "name": tp["name"], "chapter_id": tp["chapter_id"]},
-                )
+            pg_chapter_id = sqlite_chapter_to_pg.get(tp["chapter_id"])
+            if pg_chapter_id is None:
+                continue
+            sqlite_topic_to_pg[tp["id"]] = get_or_create_topic(
+                conn, name=tp["name"], chapter_id=pg_chapter_id
+            )
 
         sqlite_id_to_pg_id: dict[int, int] = {}
         print(f"Importando {len(questions)} questões...")
+        if duplicated_original_ids:
+            print(
+                "  Fonte com original_id duplicado detectado:"
+                f" {len(duplicated_original_ids)} chaves serão desambiguadas com o id SQLite"
+            )
         imported = skipped = 0
         for q in questions:
             if not q["answer_key"]:
                 skipped += 1
                 continue
 
-            exists = conn.execute(
-                text("SELECT id FROM questions WHERE original_id = :oid"),
-                {"oid": q["original_id"]},
-            ).fetchone()
-            if exists:
-                sqlite_id_to_pg_id[q["id"]] = exists[0]
+            import_original_id = _build_import_original_id(q, duplicated_original_ids)
+
+            inserted_id, foi_inserida = upsert_question(
+                conn,
+                {
+                    "issue": normalize_numbering(q["statement"]),
+                    "original_id": import_original_id,
+                    "correct_answer": q["answer_key"],
+                    "solution": normalize_numbering(q["explanation"] or ""),
+                    "chapter_id": sqlite_chapter_to_pg.get(q["chapter_id"]),
+                    "topic_id": sqlite_topic_to_pg.get(q["topic_id"]),
+                    "difficulty": q["difficulty"],
+                    "section": q["section"],
+                    "needs_fix": bool(q["needs_fix"]),
+                    "source": "outro",
+                },
+            )
+            sqlite_id_to_pg_id[q["id"]] = inserted_id
+            if not foi_inserida:
                 skipped += 1
                 continue
 
-            result = conn.execute(
-                text(
-                    """
-                    INSERT INTO questions
-                        (issue, correct_answer, solution, original_id, section,
-                         difficulty, needs_fix, chapter_id, topic_id)
-                    VALUES
-                        (:issue, :correct_answer, :solution, :original_id, :section,
-                         :difficulty, :needs_fix, :chapter_id, :topic_id)
-                    RETURNING id
-                    """
-                ),
-                {
-                    "issue": normalize_numbering(q["statement"]),
-                    "correct_answer": q["answer_key"],
-                    "solution": normalize_numbering(q["explanation"] or ""),
-                    "original_id": q["original_id"],
-                    "section": q["section"],
-                    "difficulty": q["difficulty"],
-                    "needs_fix": bool(q["needs_fix"]),
-                    "chapter_id": q["chapter_id"],
-                    "topic_id": q["topic_id"],
-                },
-            )
-            sqlite_id_to_pg_id[q["id"]] = result.scalar()
             imported += 1
 
         print(f"  {imported} importadas, {skipped} já existiam")
@@ -121,28 +122,17 @@ def run_migration(sqlite_path: Path):
             pg_qid = sqlite_id_to_pg_id.get(alt["question_id"])
             if pg_qid is None:
                 continue
-            exists = conn.execute(
-                text("SELECT id FROM alternatives WHERE question_id = :qid AND letter = :letter"),
-                {"qid": pg_qid, "letter": alt["letter"]},
-            ).fetchone()
-            if exists:
-                alt_skipped += 1
-                continue
-            conn.execute(
-                text(
-                    """
-                    INSERT INTO alternatives (question_id, letter, text, is_correct)
-                    VALUES (:question_id, :letter, :text, :is_correct)
-                    """
-                ),
-                {
-                    "question_id": pg_qid,
+            inseridas = upsert_alternatives(
+                conn,
+                pg_qid,
+                [{
                     "letter": alt["letter"],
                     "text": normalize_numbering(alt["text"]),
                     "is_correct": bool(alt["is_correct"]),
-                },
+                }],
             )
-            alt_imported += 1
+            alt_imported += inseridas
+            alt_skipped += 1 - inseridas
 
         print(f"  {alt_imported} alternativas importadas, {alt_skipped} puladas")
 

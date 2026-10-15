@@ -21,14 +21,14 @@ bp = Blueprint("lists", __name__, url_prefix="/lists")
 
 
 @bp.route("", methods=["POST"])
-@require_role(["professor"])
+@require_role(["professor", "admin"])
 def create_list():
     resposta, status = create_list_service(get_jwt_identity(), request.get_json() or {})
     return jsonify(resposta), status
 
 
 @bp.route("", methods=["GET"])
-@require_role(["professor"])
+@require_role(["professor", "admin"])
 def get_lists():
     resposta, status = professor_lists_service(get_jwt_identity())
     return jsonify(resposta), status
@@ -42,14 +42,14 @@ def assigned_lists():
 
 
 @bp.route("/<int:list_id>", methods=["GET"])
-@require_role(["professor"])
+@require_role(["professor", "admin"])
 def get_list_detail(list_id: int):
     resposta, status = professor_list_detail_service(get_jwt_identity(), list_id)
     return jsonify(resposta), status
 
 
 @bp.route("/<int:list_id>", methods=["PUT"])
-@require_role(["professor"])
+@require_role(["professor", "admin"])
 def update_list(list_id: int):
     resposta, status = update_list_service(
         get_jwt_identity(),
@@ -60,7 +60,7 @@ def update_list(list_id: int):
 
 
 @bp.route("/<int:list_id>/publish", methods=["POST"])
-@require_role(["professor"])
+@require_role(["professor", "admin"])
 def publish_list_route(list_id: int):
     resposta, status = publish_list_service(get_jwt_identity(), list_id)
     return jsonify(resposta), status
@@ -99,7 +99,7 @@ def get_my_list_result(list_id: int):
 
 
 @bp.route("/<int:list_id>/results", methods=["GET"])
-@require_role(["professor"])
+@require_role(["professor", "admin"])
 def get_list_results_route(list_id: int):
     resposta, status = list_results_service(get_jwt_identity(), list_id)
     return jsonify(resposta), status

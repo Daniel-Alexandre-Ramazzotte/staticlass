@@ -1,0 +1,63 @@
+{
+  "slug": "problemas-pesquisa",
+  "title": "Problemas de Pesquisa Aplicados",
+  "lang": "r",
+  "sourceFile": "05-problemas-pesquisa-aplicados.qmd",
+  "generatedAt": "2026-07-26T15:16:36.612Z",
+  "toc": [
+    {
+      "level": 1,
+      "text": "Problemas de Pesquisa Aplicados",
+      "blockId": "problemas-pesquisa-b000"
+    },
+    {
+      "level": 2,
+      "text": "Comparação de métodos de medição em medicina",
+      "blockId": "problemas-pesquisa-b001"
+    },
+    {
+      "level": 3,
+      "text": "Concordância × Correlação",
+      "blockId": "problemas-pesquisa-b002"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "problemas-pesquisa-b000",
+      "type": "prose",
+      "markdown": "# Problemas de Pesquisa Aplicados\n\nO ensino de Estatística muitas vezes começa pelo nome dos métodos: teste *t*, correlação, regressão, ANOVA, qui-quadrado. Essa ordem parece eficiente, mas cria um vício perigoso: o estudante aprende a procurar uma técnica que se encaixe nos dados antes de formular com precisão o problema de pesquisa. O resultado é uma estatística de cardápio, em que a pergunta científica é substituída por uma decisão operacional sobre qual botão apertar.\n\nEste capítulo parte de outra direção. Em vez de perguntar \"qual método devo aplicar?\", vamos perguntar primeiro \"qual decisão de pesquisa precisa ser tomada?\", \"qual quantidade precisa ser estimada?\", \"qual tipo de erro comprometeria a conclusão?\" e \"o desenho do estudo permite responder isso?\". A estatística entra depois, como linguagem para formalizar a incerteza, não como uma lista de receitas.\n\nProblemas aplicados raramente chegam organizados como exemplos de livro-texto. Eles misturam contexto, instrumentos, custos, vieses, variabilidade, objetivos práticos e consequências de decisão. Por isso, cada tópico deste capítulo será guiado por um caso real ou plausível, com tags de área e assunto para deixar claro o contexto de aplicação."
+    },
+    {
+      "id": "problemas-pesquisa-b001",
+      "type": "prose",
+      "markdown": "## Comparação de métodos de medição em medicina\n\n**Tags:** `medicina`, `comparação-de-métodos`, `concordância`, `viés`, `repetibilidade`\n\nEste tópico é baseado no artigo \"Measurement in Medicine: The Analysis of Method Comparison Studies\", de D. G. Altman e J. M. Bland (1983). O problema discutido pelos autores aparece com frequência em pesquisas médicas: um pesquisador quer saber se um novo método de medição, mais barato, rápido ou simples, pode substituir um método já estabelecido. Exemplos incluem medidas de pressão arterial, idade gestacional ou volume cardíaco.\n\nA pergunta de pesquisa não é \"os dois métodos estão correlacionados?\". Em geral, eles devem estar correlacionados, pois tentam medir a mesma quantidade. A pergunta relevante é: **os métodos concordam o suficiente para que um possa substituir o outro no uso clínico pretendido?**\n\nEssa mudança de pergunta altera toda a análise. Comparar médias pode esconder grandes discordâncias individuais: dois métodos podem ter a mesma média e ainda assim discordar muito paciente a paciente. Calcular apenas a correlação também é insuficiente, porque a correlação depende da variabilidade entre indivíduos; uma amostra com pacientes muito diferentes pode gerar uma correlação alta mesmo quando a concordância clínica é ruim. Regressão simples, quando usada mecanicamente, desloca o foco para associação e predição, mas não responde diretamente se as diferenças entre métodos são aceitáveis.\n\nO caminho estatístico deve começar pela estrutura do problema. Primeiro, avaliar a repetibilidade de cada método: se o mesmo método medisse o mesmo paciente novamente, quanta variação seria esperada? Depois, comparar diretamente as diferenças entre os métodos para cada indivíduo. A média dessas diferenças descreve o viés relativo; a dispersão das diferenças descreve o erro de concordância. Um gráfico das diferenças contra a média das duas medidas ajuda a visualizar viés, outliers e mudanças de erro ao longo da escala de medição.\n\nO ponto central do caso é pedagógico: o método estatístico correto não nasce do formato da tabela, mas da pergunta substantiva. Em medicina, a decisão final não é se um coeficiente é significativo; é se o erro observado é pequeno o bastante para não prejudicar uma decisão clínica."
+    },
+    {
+      "id": "problemas-pesquisa-b002",
+      "type": "prose",
+      "markdown": "### Concordância × Correlação\n\nUma forma simples de separar os conceitos é simular quatro situações. O código abaixo reproduz a lógica do script `Desktop/josmar  simulacao concordancia.r`: em cada cenário comparamos um gráfico de dispersão com a linha de identidade contra um gráfico de Bland-Altman. O código fica recolhido por padrão, mas pode ser expandido pelo leitor."
+    },
+    {
+      "id": "problemas-pesquisa-b003",
+      "type": "code",
+      "lang": "r",
+      "code": "library(ggplot2)\n\nset.seed(123)\n\nplot_scatter_identity <- function(df, titulo) {\n  ggplot(df, aes(x = x, y = y)) +\n    geom_point(alpha = 0.6) +\n    geom_abline(\n      slope = 1, intercept = 0,\n      color = \"red\", linetype = \"dashed\"\n    ) +\n    labs(title = titulo, x = \"Método A\", y = \"Método B\") +\n    theme_minimal()\n}\n\nplot_bland_altman <- function(df, titulo) {\n  df$media <- (df$x + df$y) / 2\n  df$diff <- df$y - df$x\n\n  mean_diff <- mean(df$diff)\n  sd_diff <- sd(df$diff)\n\n  ggplot(df, aes(x = media, y = diff)) +\n    geom_point(alpha = 0.6) +\n    geom_hline(yintercept = mean_diff, color = \"blue\") +\n    geom_hline(\n      yintercept = mean_diff + 1.96 * sd_diff,\n      linetype = \"dashed\", color = \"red\"\n    ) +\n    geom_hline(\n      yintercept = mean_diff - 1.96 * sd_diff,\n      linetype = \"dashed\", color = \"red\"\n    ) +\n    labs(\n      title = paste(\"Bland-Altman -\", titulo),\n      x = \"Média\", y = \"Diferença (B - A)\"\n    ) +\n    theme_minimal()\n}\n\nx1 <- rnorm(200, 50, 10)\ny1 <- x1 + 20\ndf1 <- data.frame(x = x1, y = y1)\n\n# Mesmo ruído de medição do cenário 3 (sd = 1, boa concordância absoluta),\n# mas com uma faixa de valores de x muito mais estreita (sd = 0,1 em vez de\n# 10). Isso ilustra o problema da restrição de amplitude: a correlação cai\n# para perto de zero mesmo quando as medições continuam concordando bem.\nx2 <- rnorm(200, 50, 0.1)\ny2 <- x2 + rnorm(200, 0, 1)\ndf2 <- data.frame(x = x2, y = y2)\n\nx3 <- rnorm(200, 50, 10)\ny3 <- x3 + rnorm(200, 0, 1)\ndf3 <- data.frame(x = x3, y = y3)\n\nx4 <- rnorm(200, 50, 10)\ny4 <- rnorm(200, 50, 10)\ndf4 <- data.frame(x = x4, y = y4)\n\nplots <- list(\n  plot_scatter_identity(df1, \"Alta correlação, baixa concordância\"),\n  plot_bland_altman(df1, \"alta correlação / baixa concordância\"),\n  plot_scatter_identity(df2, \"Baixa correlação, alta concordância\"),\n  plot_bland_altman(df2, \"baixa correlação / alta concordância\"),\n  plot_scatter_identity(df3, \"Alta correlação, alta concordância\"),\n  plot_bland_altman(df3, \"alta correlação / alta concordância\"),\n  plot_scatter_identity(df4, \"Baixa correlação, baixa concordância\"),\n  plot_bland_altman(df4, \"baixa correlação / baixa concordância\")\n)\n\ngrid::grid.newpage()\ngrid::pushViewport(grid::viewport(layout = grid::grid.layout(4, 2)))\n\nfor (i in seq_along(plots)) {\n  print(\n    plots[[i]],\n    vp = grid::viewport(\n      layout.pos.row = ceiling(i / 2),\n      layout.pos.col = ifelse(i %% 2 == 1, 1, 2)\n    )\n  )\n}"
+    },
+    {
+      "id": "problemas-pesquisa-b004",
+      "type": "prose",
+      "markdown": "O quarto caso é o mais útil para discutir o erro interpretativo. Nele, os dois métodos foram simulados com a mesma média populacional, mas sem concordância par a par. O teste t para médias simples formula:\n\n- $H_0: \\mu_A = \\mu_B$, isto é, as médias marginais dos métodos são iguais.\n- $H_1: \\mu_A \\ne \\mu_B$, isto é, as médias marginais dos métodos são diferentes.\n\nEsse teste trata as medições dos métodos A e B como se fossem duas amostras independentes e pergunta apenas se uma média global difere da outra. O teste t pareado formula:\n\n- $H_0: \\mu_D = 0$, em que $D = A - B$, isto é, o viés médio entre os métodos é zero.\n- $H_1: \\mu_D \\ne 0$, isto é, há viés médio entre os métodos.\n\nO teste pareado respeita que cada par de medidas pertence ao mesmo indivíduo, mas ainda assim testa apenas viés médio. Ele não prova concordância clínica; para isso precisamos olhar a dispersão das diferenças."
+    },
+    {
+      "id": "problemas-pesquisa-b005",
+      "type": "code",
+      "lang": "r",
+      "code": "teste_t_medias <- t.test(x4, y4, paired = FALSE)\nteste_t_pareado <- t.test(x4, y4, paired = TRUE)\n\ndiff_b_menos_a <- y4 - x4\nresumo_caso_4 <- data.frame(\n  medida = c(\n    \"Correlação\",\n    \"Média do método A\",\n    \"Média do método B\",\n    \"Diferença média (B - A)\",\n    \"Desvio padrão das diferenças\",\n    \"Limite inferior de concordância\",\n    \"Limite superior de concordância\",\n    \"p-valor: teste t para médias simples\",\n    \"p-valor: teste t pareado\"\n  ),\n  valor = c(\n    cor(x4, y4),\n    mean(x4),\n    mean(y4),\n    mean(diff_b_menos_a),\n    sd(diff_b_menos_a),\n    mean(diff_b_menos_a) - 1.96 * sd(diff_b_menos_a),\n    mean(diff_b_menos_a) + 1.96 * sd(diff_b_menos_a),\n    teste_t_medias$p.value,\n    teste_t_pareado$p.value\n  )\n)\n\nknitr::kable(\n  resumo_caso_4,\n  digits = 3,\n  caption = \"Resumo do caso 4: baixa correlação e baixa concordância.\"\n)"
+    },
+    {
+      "id": "problemas-pesquisa-b006",
+      "type": "prose",
+      "markdown": "No caso 4, o teste t para médias simples não rejeita $H_0$ porque as médias globais dos métodos são parecidas. Se a análise parasse ali, poderíamos concluir incorretamente que os métodos são equivalentes. Essa é a armadilha: igualdade de médias não implica concordância entre medidas individuais.\n\nO teste pareado também não rejeita a hipótese de viés médio zero, mas ele deixa claro que a pergunta é sobre as diferenças par a par. O gráfico de Bland-Altman e os limites de concordância mostram o problema substantivo: as diferenças individuais podem variar aproximadamente de -26 a 25 unidades, uma amplitude grande para muitos contextos clínicos. Portanto, a conclusão correta não é \"os métodos são iguais\"; é \"não há evidência de viés médio relevante nesta simulação, mas a concordância individual é ruim\"."
+    }
+  ]
+}

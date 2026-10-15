@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from .. import db
 from sqlalchemy import text
 
@@ -25,14 +27,57 @@ def buscar_usuario_por_id(usuario_id):
     return row
 
 
-def criar_usuario(email, senha_hash, nome):
+def criar_usuario(email, senha_hash, nome, ra=None, ano_ingresso=None):
+    resultado = db.session.execute(
+        text("""
+            INSERT INTO users (email, password_hash, name, role, active, xp, email_verified, ra, ano_ingresso)
+            VALUES (:email, :senha_hash, :nome, 'aluno', TRUE, 0, FALSE, :ra, :ano_ingresso)
+            RETURNING id
+        """),
+        {"email": email, "senha_hash": senha_hash, "nome": nome, "ra": ra, "ano_ingresso": ano_ingresso},
+    )
+    new_id = resultado.scalar()
+    db.session.commit()
+    return new_id
+
+
+def buscar_usuario_por_ra(ra):
+    result = db.session.execute(
+        text("SELECT * FROM users WHERE ra = :ra"),
+        {"ra": ra},
+    )
+    row = result.fetchone()
+    result.close()
+    return row
+
+
+def set_otp_code(usuario_id, code, expires_at):
+    db.session.execute(
+        text("UPDATE users SET otp_code = :code, otp_expires_at = :exp WHERE id = :id"),
+        {"code": code, "exp": expires_at, "id": usuario_id},
+    )
+    db.session.commit()
+
+
+def clear_otp_code(usuario_id):
+    db.session.execute(
+        text("UPDATE users SET otp_code = NULL, otp_expires_at = NULL WHERE id = :id"),
+        {"id": usuario_id},
+    )
+    db.session.commit()
+
+
+def criar_usuario_pendente(email, nome_placeholder):
+    import secrets
+    senha_inutilizavel = secrets.token_hex(32)
+    from werkzeug.security import generate_password_hash
     resultado = db.session.execute(
         text("""
             INSERT INTO users (email, password_hash, name, role, active, xp, email_verified)
             VALUES (:email, :senha_hash, :nome, 'aluno', TRUE, 0, FALSE)
             RETURNING id
         """),
-        {"email": email, "senha_hash": senha_hash, "nome": nome},
+        {"email": email, "senha_hash": generate_password_hash(senha_inutilizavel), "nome": nome_placeholder},
     )
     new_id = resultado.scalar()
     db.session.commit()
@@ -104,7 +149,7 @@ def listar_professores():
 
 def listar_alunos():
     return db.session.execute(
-        text("SELECT id, name, email FROM users WHERE role = 'aluno' ORDER BY name"),
+        text("SELECT id, name, email, ano_ingresso FROM users WHERE role = 'aluno' ORDER BY name"),
     ).mappings().all()
 
 

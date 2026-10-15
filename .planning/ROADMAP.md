@@ -16,7 +16,9 @@
 | 4 | Professor Lists | Complete | 4/4 | LIST-01, LIST-02, LIST-03, LIST-04, LIST-05, LIST-06, LIST-07 |
 | 5 | Statistics & Analytics | Complete | 3/3 | STAT-01, STAT-02, STAT-03, STAT-04, STAT-05 |
 | 6 | Polish, Release & Turmas | Pending | 5 | POL-01, POL-02, POL-03 |
-| 7 | Rich Content nas Questões | Planned | TBD | RICH-01, RICH-02, RICH-03 |
+| 7 | Data Integrity & Migration Refactor | Complete | 2 | DATA-01, DATA-02 |
+| 8 | Rich Content nas Questões | Partial — AUTH-05 needs real production SMTP access | TBD | RICH-01, RICH-02, RICH-03, AUTH-05 |
+| 9 | Admin Teaching Tools & Ano de Ingresso | Complete | 1 | TUR-03, TUR-04, LIST-08 |
 
 ---
 
@@ -163,7 +165,56 @@ Plans:
 
 ---
 
-### Phase 7: Rich Content nas Questões
+### Phase 9: Admin Teaching Tools & Ano de Ingresso
+
+**Goal:** Admin gains the same teaching tools as professors (create/manage turmas, create/publish lists), the student directory gains an "ano de ingresso" field that acts as a filter in the turma enrollment UI — the field is a placeholder in v1 and will be populated once the registration screen is updated to collect it.
+
+**Plans:** TBD
+
+**Requirements:**
+- `TUR-03` — Admin Turma Management: Admin can create, view, edit, and delete turmas from the admin menu; admin sees all turmas across all professors and can manage enrollments globally
+- `TUR-04` — Ano de Ingresso Filter: The turma editor (for both professor and admin) shows an "ano de ingresso" filter in the student list; the `ano_ingresso` column is added to the `users` table as a nullable integer; the field is unpopulated in v1 but the filter UI and API param are ready; collecting the value at registration is deferred to a follow-up
+- `LIST-08` — Admin Lista Creation: Admin can create and publish lists from the admin menu; the question picker is a full tableview with filters (chapter, difficulty, source) and per-row manual selection; published lists can optionally target a turma; admin-created lists follow the same submission/analytics flow as professor-created lists
+
+**Depends on:** Phase 6 (turmas backend + professor turma UI already in place), Phase 5 (answer_history feeds list analytics)
+
+**Success Criteria** (what must be TRUE when this phase completes):
+1. An admin opens the admin menu, taps "Turmas", creates a turma named "Turma Admin Teste", enrolls two students filtered by a (possibly empty) ano de ingresso field, and saves — the turma appears in the list
+2. An admin opens the admin menu, taps "Criar Lista", sees a scrollable tableview of questions, applies a chapter filter, selects 5 questions manually, names the list, sets a deadline, optionally targets a turma, and publishes — enrolled students see it on their home screen
+3. The `ano_ingresso` column exists on the `users` table; `GET /users/alunos` returns it (null for existing users); the turma editor filter shows the field and filters the list client-side (no alunos have data yet — the filtered list should show all alunos when the filter is blank)
+4. Professor's turma editor also shows the ano de ingresso filter (same component reused)
+
+---
+
+### Phase 7: Data Integrity & Migration Refactor
+
+**Goal:** The question bank is clean and the import pipeline is trustworthy — no duplicate alternatives can exist, the schema has DB-level constraints enforcing that, and the two remaining migration scripts share a unified utility layer that is idempotent by construction. `migrate_bcb.py` is deleted.
+
+**Plans:** 2 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — Duplicate alternatives audit, dedup, UNIQUE constraint, original_id refactor
+- [ ] 07-02-PLAN.md — Migration script unification (migration_utils.py), migrate_bcb deletion, fragile apostila dedup replaced with content-hash original_id
+
+**Requirements covered:** DATA-01, DATA-02
+
+**Requirements:**
+- `DATA-01` — Duplicate Alternatives Fix & ID Refactor: the `alternatives` table gets a `UNIQUE(question_id, letter)` constraint; existing duplicate rows are removed via a one-shot dedup query; migration scripts updated to use `ON CONFLICT DO NOTHING`; `original_id` gets a DB-level uniqueness guarantee
+- `DATA-02` — Migration Script Unification: `migrate_questoes.py` and `migrate_apostila.py` refactored to use a shared `migration_utils.py` module; `migrate_bcb.py` deleted; `migrate_apostila.py` uses content-hash `original_id` instead of fragile `issue LIKE` snippet dedup; sequence corruption from explicit-ID inserts eliminated
+
+**Depends on:** Phase 6
+
+**Success Criteria** (what must be TRUE when this phase completes):
+1. Zero `(question_id, letter)` duplicate pairs in the `alternatives` table
+2. `alternatives` table has a `UNIQUE(question_id, letter)` DB constraint — application bugs cannot re-introduce duplicates
+3. `migrate_bcb.py` does not exist in the repository
+4. Running `migrate_questoes` or `migrate_apostila` twice produces 0 new rows on the second run
+5. `migrate_apostila.py` uses `original_id` (content-hash based) — no `issue LIKE` text matching remains
+6. Backend tests pass
+
+---
+
+### Phase 8: Rich Content nas Questões
 
 **Goal:** Questões, alternativas e resoluções suportam LaTeX inline e imagens com posicionamento livre — professores podem criar conteúdo rico sem sair do app, e alunos visualizam fórmulas e figuras renderizadas corretamente. Inclui também a infraestrutura de email em produção para fechar o fluxo de verificação de conta e recuperação de senha.
 
@@ -177,7 +228,7 @@ Plans:
 - `RICH-02` — Imagens em Questões: professores associam imagens a questões com posicionamento configurável (antes, depois ou no meio do texto); 2 questões de exemplo com placeholders estáticos
 - `RICH-03` — Questões de Resposta Aberta: novo tipo de questão sem alternativas fixas; aluno digita a resposta; professor ou gabarito textual faz a correção
 
-**Depends on:** Phase 6
+**Depends on:** Phase 7
 
 **Success Criteria** (what must be TRUE when this phase completes):
 1. Um aluno se cadastra, recebe o email de verificação, clica no link `staticlass://verify-email?token=...`, e consegue fazer login — tudo em produção (Fly.io)
@@ -221,12 +272,17 @@ Plans:
 | POL-01 | Phase 6 | Pending |
 | POL-02 | Phase 6 | Pending |
 | POL-03 | Phase 6 | Pending |
-| AUTH-05 | Phase 7 | Planned |
-| RICH-01 | Phase 7 | Planned |
-| RICH-02 | Phase 7 | Planned |
-| RICH-03 | Phase 7 | Planned |
+| DATA-01 | Phase 7 | Complete |
+| DATA-02 | Phase 7 | Complete |
+| AUTH-05 | Phase 8 | Not started — needs real SMTP creds + Fly.io access, out of reach for an AI agent session |
+| RICH-01 | Phase 8 | Complete (was already built; fixed a bug where open_answer/no-alternative questions were silently excluded from every quiz) |
+| RICH-02 | Phase 8 | Complete |
+| RICH-03 | Phase 8 | Complete (was already built end-to-end; same exclusion bug fixed) |
+| TUR-03 | Phase 9 | Complete (scoped to own turmas per 08-CONTEXT.md D-01) |
+| TUR-04 | Phase 9 | Complete |
+| LIST-08 | Phase 9 | Complete |
 
-**Coverage:** 32/32 requirements mapped. No orphans.
+**Coverage:** 37/37 requirements mapped. No orphans.
 
 ---
 

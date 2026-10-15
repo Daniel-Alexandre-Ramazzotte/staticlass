@@ -1,0 +1,249 @@
+{
+  "slug": "dicas-ia",
+  "title": "Dicas de Geração de Código com IA",
+  "lang": null,
+  "sourceFile": "C-dicas-ia.qmd",
+  "generatedAt": "2026-07-26T15:16:36.644Z",
+  "toc": [
+    {
+      "level": 1,
+      "text": "Dicas de Geração de Código com IA",
+      "blockId": "dicas-ia-b000"
+    },
+    {
+      "level": 2,
+      "text": "Por que usar IA para programação estatística?",
+      "blockId": "dicas-ia-b001"
+    },
+    {
+      "level": 2,
+      "text": "Como escrever bons prompts para código estatístico",
+      "blockId": "dicas-ia-b003"
+    },
+    {
+      "level": 3,
+      "text": "1. Seja específico sobre o contexto",
+      "blockId": "dicas-ia-b004"
+    },
+    {
+      "level": 3,
+      "text": "2. Especifique a linguagem e as bibliotecas",
+      "blockId": "dicas-ia-b005"
+    },
+    {
+      "level": 3,
+      "text": "3. Forneça o formato dos dados",
+      "blockId": "dicas-ia-b006"
+    },
+    {
+      "level": 3,
+      "text": "4. Peça explicações",
+      "blockId": "dicas-ia-b007"
+    },
+    {
+      "level": 3,
+      "text": "5. Itere sobre a resposta",
+      "blockId": "dicas-ia-b008"
+    },
+    {
+      "level": 2,
+      "text": "Exemplos práticos",
+      "blockId": "dicas-ia-b009"
+    },
+    {
+      "level": 3,
+      "text": "Exemplo 1: Gerar tabela de frequências em R",
+      "blockId": "dicas-ia-b010"
+    },
+    {
+      "level": 3,
+      "text": "Exemplo 2: Regressão linear em Python",
+      "blockId": "dicas-ia-b011"
+    },
+    {
+      "level": 3,
+      "text": "Exemplo 3: Teste de hipótese com interpretação",
+      "blockId": "dicas-ia-b012"
+    },
+    {
+      "level": 2,
+      "text": "Ciladas comuns: quando a IA erra",
+      "blockId": "dicas-ia-b013"
+    },
+    {
+      "level": 3,
+      "text": "Alucinações",
+      "blockId": "dicas-ia-b014"
+    },
+    {
+      "level": 3,
+      "text": "Resultados numéricos incorretos",
+      "blockId": "dicas-ia-b015"
+    },
+    {
+      "level": 3,
+      "text": "Código funcional mas ineficiente",
+      "blockId": "dicas-ia-b016"
+    },
+    {
+      "level": 2,
+      "text": "Ferramentas recomendadas",
+      "blockId": "dicas-ia-b018"
+    },
+    {
+      "level": 2,
+      "text": "Ética e integridade acadêmica",
+      "blockId": "dicas-ia-b020"
+    },
+    {
+      "level": 3,
+      "text": "O que é aceitável",
+      "blockId": "dicas-ia-b021"
+    },
+    {
+      "level": 3,
+      "text": "O que exige cuidado",
+      "blockId": "dicas-ia-b022"
+    },
+    {
+      "level": 3,
+      "text": "Recomendações gerais",
+      "blockId": "dicas-ia-b023"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "dicas-ia-b000",
+      "type": "prose",
+      "markdown": "# Dicas de Geração de Código com IA\n\nAs IAs são ferramentas extremamente úteis e válidas no contexto da programação. Primeiramente, nenhuma IA fará milagres — você precisa ser claro e evidente nas suas perguntas. Como diria algum matemático: \"Uma pergunta bem formulada já está respondida.\"\n\nExistem tarefas de programação que até o mais experiente dos programadores terá que ler a documentação de várias bibliotecas e raciocinar muito tempo para executar. A IA facilita esse trabalho, gerando o código pesado enquanto você foca na lógica do problema.\n\nComo diriam muitos programadores, a tarefa de gerar código é a mais trivial. O importante é juntar aqueles códigos em algo que faça sentido. Outra coisa que dizem é que se passa muito mais tempo **debugando** (corrigindo) um código do que gerando ele em si: primeiro se pensa a lógica, depois os problemas são solucionados um a um. E é aí que a IA entra como aliada. A IA tem o papel de gerar código e nós temos o papel de checar se ele faz sentido."
+    },
+    {
+      "id": "dicas-ia-b001",
+      "type": "prose",
+      "markdown": "## Por que usar IA para programação estatística?\n\nNa prática estatística, você frequentemente precisa:\n\n- Lembrar a sintaxe exata de uma função que usa raramente\n- Converter fórmulas matemáticas em código funcional\n- Criar visualizações que exigem muita configuração\n- Adaptar código de um formato para outro (ex: R para Python)\n- Tratar dados com formatos inconsistentes\n\nPara todas essas tarefas, uma IA generativa pode economizar horas de trabalho. Mas o ponto chave é: **você precisa entender o que o código faz** para verificar se está correto."
+    },
+    {
+      "id": "dicas-ia-b002",
+      "type": "callout",
+      "calloutType": "important",
+      "title": "Princípio fundamental",
+      "markdown": "A IA é uma ferramenta de **produtividade**, não de **substituição**. Você precisa ter conhecimento suficiente para avaliar criticamente o que ela produz."
+    },
+    {
+      "id": "dicas-ia-b003",
+      "type": "prose",
+      "markdown": "## Como escrever bons prompts para código estatístico\n\nA qualidade do código gerado depende diretamente da qualidade do seu prompt (pergunta/instrução). Aqui estão diretrizes práticas:"
+    },
+    {
+      "id": "dicas-ia-b004",
+      "type": "prose",
+      "markdown": "### 1. Seja específico sobre o contexto\n\n**Ruim:**\n> \"Faça um gráfico dos meus dados.\"\n\n**Bom:**\n> \"Tenho um DataFrame em R chamado `dados` com as colunas `idade` (numérica), `salario` (numérica) e `setor` (categórica com 3 níveis: 'Indústria', 'Comércio', 'Serviços'). Quero um gráfico de dispersão de idade vs. salário, colorido por setor, usando ggplot2, com título e rótulos em português.\""
+    },
+    {
+      "id": "dicas-ia-b005",
+      "type": "prose",
+      "markdown": "### 2. Especifique a linguagem e as bibliotecas\n\n**Ruim:**\n> \"Como faço um teste t?\"\n\n**Bom:**\n> \"Em R, usando a função t.test(), como faço um teste t para duas amostras independentes comparando o vetor `grupo_a` com o vetor `grupo_b`, assumindo variâncias desiguais? Mostre como interpretar a saída.\""
+    },
+    {
+      "id": "dicas-ia-b006",
+      "type": "prose",
+      "markdown": "### 3. Forneça o formato dos dados\n\nQuando possível, mostre um exemplo dos seus dados:\n\n> \"Meus dados CSV têm este formato:\n> ```\n> nome;idade;nota;aprovado\n> Ana;22;8.5;sim\n> Bruno;25;6.0;nao\n> ```\n> O separador é ponto e vírgula e o decimal é ponto. Como importo isso em Python com Pandas e calculo a média das notas por status de aprovação?\""
+    },
+    {
+      "id": "dicas-ia-b007",
+      "type": "prose",
+      "markdown": "### 4. Peça explicações\n\n> \"Faça um intervalo de confiança de 95% para a média em R e **explique cada linha do código** para que eu entenda o que está acontecendo.\""
+    },
+    {
+      "id": "dicas-ia-b008",
+      "type": "prose",
+      "markdown": "### 5. Itere sobre a resposta\n\nSe o primeiro resultado não for perfeito, refine:\n\n> \"O código funcionou, mas quero que o gráfico use as cores #448EE3 e #2D4188 e que o eixo Y comece em zero.\""
+    },
+    {
+      "id": "dicas-ia-b009",
+      "type": "prose",
+      "markdown": "## Exemplos práticos"
+    },
+    {
+      "id": "dicas-ia-b010",
+      "type": "prose",
+      "markdown": "### Exemplo 1: Gerar tabela de frequências em R\n\n**Prompt:**\n> \"Em R, tenho um vetor chamado `notas` com 30 valores numéricos entre 0 e 10. Quero criar uma tabela de distribuição de frequências com 5 classes de amplitude igual, contendo: limite inferior, limite superior, frequência absoluta, frequência relativa e frequência acumulada. Use apenas funções básicas do R.\""
+    },
+    {
+      "id": "dicas-ia-b011",
+      "type": "prose",
+      "markdown": "### Exemplo 2: Regressão linear em Python\n\n**Prompt:**\n> \"Em Python, usando statsmodels, tenho um DataFrame `df` com colunas `preco` e `area`. Quero ajustar uma regressão linear simples (preco ~ area), exibir o resumo (summary), e criar um gráfico de dispersão com a reta ajustada usando matplotlib. Inclua a equação e o R-quadrado no gráfico.\""
+    },
+    {
+      "id": "dicas-ia-b012",
+      "type": "prose",
+      "markdown": "### Exemplo 3: Teste de hipótese com interpretação\n\n**Prompt:**\n> \"Em R, tenho dois vetores: `antes` e `depois`, que representam medidas do mesmo grupo de 20 pacientes antes e depois de um tratamento. Faça um teste t pareado com nível de significância de 5%, mostre o código completo e escreva uma interpretação textual do resultado no formato de um relatório.\""
+    },
+    {
+      "id": "dicas-ia-b013",
+      "type": "prose",
+      "markdown": "## Ciladas comuns: quando a IA erra"
+    },
+    {
+      "id": "dicas-ia-b014",
+      "type": "prose",
+      "markdown": "### Alucinações\n\nA IA pode inventar funções que não existem, parâmetros incorretos ou bibliotecas fictícias. Isso é chamado de **alucinação**.\n\n**Como detectar:**\n\n- Se uma função parece muito conveniente e você nunca ouviu falar dela, verifique na documentação oficial\n- Execute o código — se der erro de \"função não encontrada\", provavelmente foi inventada\n- Desconfie de bibliotecas com nomes muito específicos que você não conhece"
+    },
+    {
+      "id": "dicas-ia-b015",
+      "type": "prose",
+      "markdown": "### Resultados numéricos incorretos\n\nA IA pode aplicar a fórmula errada ou usar parâmetros estatísticos trocados (ex: usar desvio padrão populacional quando deveria ser amostral).\n\n**Como verificar:**\n\n- Calcule exemplos simples na mão e compare com o resultado do código\n- Se o código for em Python/NumPy, verifique se a função usa `ddof=1` quando o desvio padrão **amostral** é o que se quer — por padrão, `numpy.std()`/`numpy.var()` calculam o desvio/variância **populacional** (`ddof=0`). Em R, `sd()` e `var()` já usam a fórmula amostral por padrão, sem precisar de nenhum argumento extra — o que exige atenção em R é outra coisa: o argumento `na.rm = TRUE`, que controla se valores ausentes (`NA`) são descartados do cálculo, um problema diferente (dados faltantes, não populacional-vs-amostral)\n- Confira a interpretação dos resultados com o material do curso"
+    },
+    {
+      "id": "dicas-ia-b016",
+      "type": "prose",
+      "markdown": "### Código funcional mas ineficiente\n\nA IA pode gerar código que funciona, mas que usa loops desnecessários onde operações vetorizadas seriam mais apropriadas. Isso é especialmente relevante em R e Python com grandes volumes de dados."
+    },
+    {
+      "id": "dicas-ia-b017",
+      "type": "callout",
+      "calloutType": "warning",
+      "title": "Regra de ouro",
+      "markdown": "**Sempre execute o código gerado pela IA e verifique os resultados antes de usá-los em qualquer trabalho ou relatório.** Nunca confie cegamente na saída de uma IA."
+    },
+    {
+      "id": "dicas-ia-b018",
+      "type": "prose",
+      "markdown": "## Ferramentas recomendadas\n\n| Ferramenta | Tipo | Acesso | Melhor para |\n|:-----------|:-----|:-------|:------------|\n| **ChatGPT** (OpenAI) | Chatbot | Web / App | Perguntas gerais, explicações, geração de código |\n| **Claude** (Anthropic) | Chatbot | Web / App / API | Análise detalhada, código longo, raciocínio estatístico |\n| **Claude Code** | CLI | Terminal | Projetos maiores, edição de arquivos, automação |\n| **GitHub Copilot** | Autocompletar | VS Code / RStudio | Sugestões em tempo real enquanto programa |\n| **Google Gemini** | Chatbot | Web / Colab | Integração com Google Colab e dados Google |\n\n_Ferramentas de IA para Programação_"
+    },
+    {
+      "id": "dicas-ia-b019",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Dica",
+      "markdown": "Para estudantes, o **ChatGPT** e o **Claude** oferecem versões gratuitas que são mais do que suficientes para as tarefas deste livro. O **GitHub Copilot** é gratuito para estudantes com o [GitHub Student Developer Pack](https://education.github.com/pack)."
+    },
+    {
+      "id": "dicas-ia-b020",
+      "type": "prose",
+      "markdown": "## Ética e integridade acadêmica\n\nO uso de IA na vida acadêmica levanta questões importantes que você deve considerar:"
+    },
+    {
+      "id": "dicas-ia-b021",
+      "type": "prose",
+      "markdown": "### O que é aceitável\n\n- Usar IA para **aprender**: pedir explicações, exemplos, analogias\n- Usar IA para **depurar**: encontrar erros no seu código\n- Usar IA para **consultar sintaxe**: lembrar como usar uma função específica\n- Usar IA como **ponto de partida**: gerar um esqueleto de código que você entende e modifica"
+    },
+    {
+      "id": "dicas-ia-b022",
+      "type": "prose",
+      "markdown": "### O que exige cuidado\n\n- **Copiar código sem entender**: se você não consegue explicar o que cada linha faz, você não aprendeu\n- **Não citar o uso de IA**: em trabalhos acadêmicos, seja transparente sobre o uso de ferramentas de IA\n- **Usar IA em avaliações**: respeite as regras do seu professor e da sua instituição — cada disciplina pode ter políticas diferentes\n- **Confiar cegamente**: resultados de IA podem estar errados, especialmente em interpretações estatísticas"
+    },
+    {
+      "id": "dicas-ia-b023",
+      "type": "prose",
+      "markdown": "### Recomendações gerais\n\n1. **Transparência**: sempre informe ao professor quando usar IA em trabalhos\n2. **Compreensão**: só use código que você consegue explicar\n3. **Verificação**: sempre confira os resultados com cálculos manuais ou fontes confiáveis\n4. **Aprendizado**: use a IA como **tutora**, não como **substituta**"
+    },
+    {
+      "id": "dicas-ia-b024",
+      "type": "callout",
+      "calloutType": "note",
+      "title": "Sobre este livro",
+      "markdown": "Este próprio livro foi desenvolvido com o auxílio de IA (Claude Code), demonstrando na prática o uso ético e produtivo dessas ferramentas. Todo o conteúdo foi revisado e validado pelo autor, que utilizou a IA como ferramenta de produtividade para redigir, formatar e organizar o material, sempre mantendo o controle sobre o conteúdo técnico e pedagógico."
+    }
+  ]
+}

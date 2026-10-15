@@ -1,0 +1,550 @@
+{
+  "slug": "python-intro",
+  "title": "Introdução ao Python",
+  "lang": "python",
+  "sourceFile": "B-intro-python.qmd",
+  "generatedAt": "2026-07-26T15:16:36.642Z",
+  "toc": [
+    {
+      "level": 1,
+      "text": "Introducao ao Python",
+      "blockId": "python-intro-b000"
+    },
+    {
+      "level": 2,
+      "text": "Google Colab: Programar sem instalar nada",
+      "blockId": "python-intro-b002"
+    },
+    {
+      "level": 3,
+      "text": "Como comecar",
+      "blockId": "python-intro-b003"
+    },
+    {
+      "level": 3,
+      "text": "Vantagens do Colab",
+      "blockId": "python-intro-b004"
+    },
+    {
+      "level": 2,
+      "text": "Sintaxe basica, variaveis e tipos",
+      "blockId": "python-intro-b006"
+    },
+    {
+      "level": 3,
+      "text": "Variaveis e atribuicao",
+      "blockId": "python-intro-b007"
+    },
+    {
+      "level": 3,
+      "text": "Estruturas de dados basicas",
+      "blockId": "python-intro-b009"
+    },
+    {
+      "level": 3,
+      "text": "Operacoes basicas",
+      "blockId": "python-intro-b011"
+    },
+    {
+      "level": 3,
+      "text": "Estruturas de controle",
+      "blockId": "python-intro-b013"
+    },
+    {
+      "level": 3,
+      "text": "Funcoes",
+      "blockId": "python-intro-b015"
+    },
+    {
+      "level": 2,
+      "text": "NumPy: Computacao numerica",
+      "blockId": "python-intro-b017"
+    },
+    {
+      "level": 2,
+      "text": "Pandas: Analise de dados",
+      "blockId": "python-intro-b019"
+    },
+    {
+      "level": 3,
+      "text": "Criar e importar DataFrames",
+      "blockId": "python-intro-b020"
+    },
+    {
+      "level": 3,
+      "text": "Explorar os dados",
+      "blockId": "python-intro-b022"
+    },
+    {
+      "level": 3,
+      "text": "Selecionar e filtrar",
+      "blockId": "python-intro-b024"
+    },
+    {
+      "level": 3,
+      "text": "Criar e modificar colunas",
+      "blockId": "python-intro-b026"
+    },
+    {
+      "level": 3,
+      "text": "Agrupar e resumir (groupby)",
+      "blockId": "python-intro-b028"
+    },
+    {
+      "level": 3,
+      "text": "Ordenar e remover duplicatas",
+      "blockId": "python-intro-b030"
+    },
+    {
+      "level": 3,
+      "text": "Lidar com valores ausentes",
+      "blockId": "python-intro-b032"
+    },
+    {
+      "level": 2,
+      "text": "Visualizacao com Matplotlib e Seaborn",
+      "blockId": "python-intro-b034"
+    },
+    {
+      "level": 3,
+      "text": "Histograma",
+      "blockId": "python-intro-b036"
+    },
+    {
+      "level": 3,
+      "text": "Boxplot",
+      "blockId": "python-intro-b038"
+    },
+    {
+      "level": 3,
+      "text": "Grafico de dispersao (scatter)",
+      "blockId": "python-intro-b040"
+    },
+    {
+      "level": 3,
+      "text": "Grafico de barras",
+      "blockId": "python-intro-b042"
+    },
+    {
+      "level": 3,
+      "text": "Salvar graficos",
+      "blockId": "python-intro-b044"
+    },
+    {
+      "level": 2,
+      "text": "scipy.stats: Distribuicoes de probabilidade",
+      "blockId": "python-intro-b046"
+    },
+    {
+      "level": 3,
+      "text": "Distribuicao Normal",
+      "blockId": "python-intro-b048"
+    },
+    {
+      "level": 3,
+      "text": "Distribuicao Binomial",
+      "blockId": "python-intro-b050"
+    },
+    {
+      "level": 3,
+      "text": "Distribuicao t de Student",
+      "blockId": "python-intro-b052"
+    },
+    {
+      "level": 3,
+      "text": "Testes de hipoteses",
+      "blockId": "python-intro-b054"
+    },
+    {
+      "level": 2,
+      "text": "statsmodels: Regressao Linear",
+      "blockId": "python-intro-b056"
+    },
+    {
+      "level": 3,
+      "text": "Regressao Linear Simples",
+      "blockId": "python-intro-b058"
+    },
+    {
+      "level": 3,
+      "text": "Interpretar a saida",
+      "blockId": "python-intro-b060"
+    },
+    {
+      "level": 3,
+      "text": "Visualizar a regressao",
+      "blockId": "python-intro-b062"
+    },
+    {
+      "level": 2,
+      "text": "Tabela de equivalencia: R vs Python",
+      "blockId": "python-intro-b064"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "python-intro-b000",
+      "type": "prose",
+      "markdown": "# Introducao ao Python\n\nPython e uma das linguagens de programacao mais populares do mundo, especialmente nas areas de ciencia de dados, aprendizado de maquina e estatistica. Neste apendice, apresentamos os fundamentos necessarios para aplicar conceitos estatisticos em Python, com foco nas bibliotecas mais utilizadas para analise de dados."
+    },
+    {
+      "id": "python-intro-b001",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Por que Python?",
+      "markdown": "Python e gratuito, possui uma comunidade imensa e e amplamente utilizado na industria e na academia. Saber R **e** Python torna voce um profissional muito mais completo na area de dados."
+    },
+    {
+      "id": "python-intro-b002",
+      "type": "prose",
+      "markdown": "## Google Colab: Programar sem instalar nada\n\nO [Google Colab](https://colab.research.google.com/) e uma plataforma gratuita que permite escrever e executar codigo Python diretamente no navegador, sem necessidade de instalacao. Ele funciona como um caderno (notebook) interativo."
+    },
+    {
+      "id": "python-intro-b003",
+      "type": "prose",
+      "markdown": "### Como comecar\n\n1. Acesse <https://colab.research.google.com/>\n2. Faca login com sua conta Google\n3. Clique em **\"Novo notebook\"**\n4. Escreva codigo nas celulas e pressione `Shift + Enter` para executar"
+    },
+    {
+      "id": "python-intro-b004",
+      "type": "prose",
+      "markdown": "### Vantagens do Colab\n\n- Zero instalacao --- tudo roda na nuvem\n- Ja vem com as bibliotecas mais comuns pre-instaladas (NumPy, Pandas, Matplotlib, etc.)\n- Salva automaticamente no Google Drive\n- Permite compartilhar notebooks facilmente\n- Oferece acesso gratuito a GPUs para computacao pesada"
+    },
+    {
+      "id": "python-intro-b005",
+      "type": "callout",
+      "calloutType": "note",
+      "title": "Instalando bibliotecas no Colab",
+      "markdown": "Se precisar de uma biblioteca que nao esta pre-instalada, use:\n```{python}\n# No Colab, use ! antes de comandos do terminal\n# !pip install nome_da_biblioteca\n```"
+    },
+    {
+      "id": "python-intro-b006",
+      "type": "prose",
+      "markdown": "## Sintaxe basica, variaveis e tipos"
+    },
+    {
+      "id": "python-intro-b007",
+      "type": "prose",
+      "markdown": "### Variaveis e atribuicao\n\nEm Python, o operador de atribuicao e `=`. Nao e necessario declarar o tipo da variavel --- Python infere automaticamente."
+    },
+    {
+      "id": "python-intro-b008",
+      "type": "code",
+      "lang": "python",
+      "code": "# Numericos\nx = 10          # int (inteiro)\ny = 3.14        # float (decimal)\nz = 2 + 3j      # complex (numero complexo)\n\n# Strings (texto)\nnome = \"Maria\"\nfrase = 'Ola, mundo!'\ntexto_longo = \"\"\"Este texto\npode ter varias linhas\"\"\"\n\n# Booleanos (logicos)\nativo = True\nfalha = False\n\n# Verificar o tipo de uma variavel\ntype(x)      # <class 'int'>\ntype(nome)   # <class 'str'>\ntype(ativo)  # <class 'bool'>"
+    },
+    {
+      "id": "python-intro-b009",
+      "type": "prose",
+      "markdown": "### Estruturas de dados basicas"
+    },
+    {
+      "id": "python-intro-b010",
+      "type": "code",
+      "lang": "python",
+      "code": "# Lista: colecao ordenada e mutavel (equivalente a vetor em R)\nnumeros = [1, 2, 3, 4, 5]\nnomes = [\"Ana\", \"Bruno\", \"Carla\"]\nmista = [1, \"texto\", True, 3.14]  # Pode misturar tipos\n\n# Acessar elementos (indice comeca em 0!)\nnumeros[0]    # 1 (primeiro elemento)\nnumeros[-1]   # 5 (ultimo elemento)\nnumeros[1:3]  # [2, 3] (fatiamento: do indice 1 ao 2)\n\n# Tupla: colecao ordenada e imutavel\ncoordenadas = (10.5, 20.3)\ndias_semana = (\"seg\", \"ter\", \"qua\", \"qui\", \"sex\")\n\n# Dicionario: pares chave-valor (equivalente a lista nomeada em R)\naluno = {\n    \"nome\": \"Joao\",\n    \"idade\": 22,\n    \"nota\": 8.5\n}\naluno[\"nome\"]   # \"Joao\"\naluno[\"nota\"]   # 8.5\n\n# Conjunto: colecao sem duplicatas\nvalores = {1, 2, 3, 2, 1}  # {1, 2, 3}"
+    },
+    {
+      "id": "python-intro-b011",
+      "type": "prose",
+      "markdown": "### Operacoes basicas"
+    },
+    {
+      "id": "python-intro-b012",
+      "type": "code",
+      "lang": "python",
+      "code": "# Aritmeticas\n10 + 3    # 13 (adicao)\n10 - 3    # 7 (subtracao)\n10 * 3    # 30 (multiplicacao)\n10 / 3    # 3.333... (divisao)\n10 // 3   # 3 (divisao inteira)\n10 % 3    # 1 (modulo/resto)\n10 ** 3   # 1000 (potenciacao)\n\n# Comparacao\n5 == 5    # True\n5 != 3    # True\n5 > 3     # True\n5 <= 3    # False\n\n# Logicas\nTrue and False   # False\nTrue or False    # True\nnot True         # False"
+    },
+    {
+      "id": "python-intro-b013",
+      "type": "prose",
+      "markdown": "### Estruturas de controle"
+    },
+    {
+      "id": "python-intro-b014",
+      "type": "code",
+      "lang": "python",
+      "code": "# if/elif/else (note: Python usa indentacao, nao chaves!)\nx = 7\nif x < 5:\n    print(\"x e menor que 5\")\nelif x < 10:\n    print(\"x esta entre 5 e 10\")\nelse:\n    print(\"x e 10 ou maior\")\n\n# for loop\nfor i in range(5):       # 0, 1, 2, 3, 4\n    print(i)\n\nfor nome in [\"Ana\", \"Bruno\", \"Carla\"]:\n    print(f\"Ola, {nome}!\")  # f-string: formatacao elegante\n\n# while loop\ncontador = 5\nwhile contador > 0:\n    print(contador)\n    contador -= 1\n\n# List comprehension (forma compacta de criar listas)\nquadrados = [x**2 for x in range(1, 11)]\n# [1, 4, 9, 16, 25, 36, 49, 64, 81, 100]\n\npares = [x for x in range(1, 21) if x % 2 == 0]\n# [2, 4, 6, 8, 10, 12, 14, 16, 18, 20]"
+    },
+    {
+      "id": "python-intro-b015",
+      "type": "prose",
+      "markdown": "### Funcoes"
+    },
+    {
+      "id": "python-intro-b016",
+      "type": "code",
+      "lang": "python",
+      "code": "# Definir uma funcao\ndef saudacao(nome):\n    \"\"\"Retorna uma mensagem de saudacao.\"\"\"\n    return f\"Ola, {nome}! Bem-vindo(a) ao Python.\"\n\nsaudacao(\"Maria\")  # \"Ola, Maria! Bem-vindo(a) ao Python.\"\n\n# Funcao com valor padrao\ndef calcular_imc(peso, altura, arredondar=2):\n    imc = peso / (altura ** 2)\n    return round(imc, arredondar)\n\ncalcular_imc(70, 1.75)     # 22.86\ncalcular_imc(70, 1.75, 4)  # 22.8571\n\n# Funcao com multiplos retornos\ndef estatisticas(dados):\n    import numpy as np\n    return {\n        \"media\": np.mean(dados),\n        \"mediana\": np.median(dados),\n        \"desvio\": np.std(dados, ddof=1)\n    }\n\nresultado = estatisticas([7.5, 8.0, 6.5, 9.0, 7.0])\nresultado[\"media\"]  # 7.6"
+    },
+    {
+      "id": "python-intro-b017",
+      "type": "prose",
+      "markdown": "## NumPy: Computacao numerica\n\n[NumPy](https://numpy.org/) e a biblioteca fundamental para computacao numerica em Python. Ela fornece arrays multidimensionais eficientes e funcoes matematicas."
+    },
+    {
+      "id": "python-intro-b018",
+      "type": "code",
+      "lang": "python",
+      "code": "import numpy as np\n\n# Criar arrays\na = np.array([1, 2, 3, 4, 5])\nb = np.array([10, 20, 30, 40, 50])\n\n# Operacoes vetorizadas (elemento a elemento)\na + b       # array([11, 22, 33, 44, 55])\na * b       # array([ 10,  40,  90, 160, 250])\na ** 2      # array([ 1,  4,  9, 16, 25])\n\n# Funcoes estatisticas\nnp.mean(a)     # 3.0 (media)\nnp.median(a)   # 3.0 (mediana)\nnp.std(a)      # 1.414 (desvio padrao populacional)\nnp.std(a, ddof=1)  # 1.581 (desvio padrao amostral)\nnp.var(a)      # 2.0 (variancia)\nnp.sum(a)      # 15 (soma)\nnp.min(a)      # 1\nnp.max(a)      # 5\n\n# Sequencias\nnp.arange(0, 10, 2)        # array([0, 2, 4, 6, 8])\nnp.linspace(0, 1, 5)       # array([0., 0.25, 0.5, 0.75, 1.])\n\n# Numeros aleatorios\nnp.random.seed(42)                   # Para reprodutibilidade\nnp.random.normal(0, 1, 1000)         # 1000 valores da Normal(0,1)\nnp.random.uniform(0, 10, 100)        # 100 valores da Uniforme(0,10)\nnp.random.choice([1,2,3,4,5], 10)    # 10 sorteios com reposicao\n\n# Matrizes\nmatriz = np.array([[1, 2, 3],\n                   [4, 5, 6]])\nmatriz.shape    # (2, 3) - 2 linhas, 3 colunas\nmatriz.T        # Transposta\nnp.dot(matriz, matriz.T)  # Multiplicacao matricial"
+    },
+    {
+      "id": "python-intro-b019",
+      "type": "prose",
+      "markdown": "## Pandas: Analise de dados\n\n[Pandas](https://pandas.pydata.org/) e a principal biblioteca para manipulacao e analise de dados tabulares em Python. O objeto central e o **DataFrame**, equivalente ao `data.frame` do R."
+    },
+    {
+      "id": "python-intro-b020",
+      "type": "prose",
+      "markdown": "### Criar e importar DataFrames"
+    },
+    {
+      "id": "python-intro-b021",
+      "type": "code",
+      "lang": "python",
+      "code": "import pandas as pd\n\n# Criar um DataFrame manualmente\ndados = pd.DataFrame({\n    \"nome\": [\"Ana\", \"Bruno\", \"Carla\", \"Diego\", \"Eva\"],\n    \"idade\": [22, 25, 23, 28, 21],\n    \"nota\": [8.5, 7.0, 9.2, 6.5, 8.0],\n    \"cidade\": [\"Maringa\", \"Curitiba\", \"Maringa\", \"Londrina\", \"Curitiba\"]\n})\n\nprint(dados)\n\n# Importar CSV\ndados = pd.read_csv(\"caminho/para/arquivo.csv\")\n\n# CSV com separador brasileiro (ponto e virgula)\ndados = pd.read_csv(\"arquivo.csv\", sep=\";\", decimal=\",\")\n\n# CSV com encoding especifico\ndados = pd.read_csv(\"arquivo.csv\", encoding=\"utf-8\")\ndados = pd.read_csv(\"arquivo.csv\", encoding=\"latin1\")\n\n# Importar Excel\ndados = pd.read_excel(\"arquivo.xlsx\")\ndados = pd.read_excel(\"arquivo.xlsx\", sheet_name=\"Planilha2\")"
+    },
+    {
+      "id": "python-intro-b022",
+      "type": "prose",
+      "markdown": "### Explorar os dados"
+    },
+    {
+      "id": "python-intro-b023",
+      "type": "code",
+      "lang": "python",
+      "code": "# Primeiras e ultimas linhas\ndados.head()        # 5 primeiras linhas\ndados.head(10)      # 10 primeiras\ndados.tail()        # 5 ultimas\n\n# Informacoes gerais\ndados.info()        # Tipos de cada coluna, valores nulos\ndados.describe()    # Estatisticas descritivas das colunas numericas\ndados.shape         # (linhas, colunas)\ndados.columns       # Nomes das colunas\ndados.dtypes        # Tipo de cada coluna"
+    },
+    {
+      "id": "python-intro-b024",
+      "type": "prose",
+      "markdown": "### Selecionar e filtrar"
+    },
+    {
+      "id": "python-intro-b025",
+      "type": "code",
+      "lang": "python",
+      "code": "# Selecionar colunas\ndados[\"nome\"]                    # Uma coluna (retorna Series)\ndados[[\"nome\", \"nota\"]]          # Varias colunas (retorna DataFrame)\n\n# Filtrar linhas\ndados[dados[\"nota\"] > 8]                        # Nota maior que 8\ndados[dados[\"cidade\"] == \"Maringa\"]              # Cidade = Maringa\ndados[(dados[\"nota\"] > 7) & (dados[\"idade\"] < 25)]  # Condicoes combinadas\n\n# Filtrar com isin (equivalente a %in% do R)\ndados[dados[\"cidade\"].isin([\"Maringa\", \"Curitiba\"])]\n\n# Selecionar por posicao\ndados.iloc[0]        # Primeira linha\ndados.iloc[0:3]      # Linhas 0, 1, 2\ndados.iloc[:, 0:2]   # Todas as linhas, colunas 0 e 1\n\n# Selecionar por nome\ndados.loc[0, \"nome\"]            # Valor especifico\ndados.loc[:, [\"nome\", \"nota\"]]  # Todas as linhas, colunas especificas"
+    },
+    {
+      "id": "python-intro-b026",
+      "type": "prose",
+      "markdown": "### Criar e modificar colunas"
+    },
+    {
+      "id": "python-intro-b027",
+      "type": "code",
+      "lang": "python",
+      "code": "# Criar nova coluna\ndados[\"aprovado\"] = dados[\"nota\"] >= 7\n\n# Criar com condicao (equivalente a ifelse do R)\nimport numpy as np\ndados[\"status\"] = np.where(dados[\"nota\"] >= 7, \"Aprovado\", \"Reprovado\")\n\n# Modificar coluna existente\ndados[\"nota\"] = dados[\"nota\"].round(1)\n\n# Renomear colunas\ndados = dados.rename(columns={\"nome\": \"aluno\", \"nota\": \"nota_final\"})"
+    },
+    {
+      "id": "python-intro-b028",
+      "type": "prose",
+      "markdown": "### Agrupar e resumir (groupby)\n\nO `groupby` do Pandas e equivalente ao `group_by` + `summarise` do dplyr."
+    },
+    {
+      "id": "python-intro-b029",
+      "type": "code",
+      "lang": "python",
+      "code": "# Agrupar por cidade e calcular estatisticas\nresumo = dados.groupby(\"cidade\").agg(\n    media_nota=(\"nota\", \"mean\"),\n    desvio_nota=(\"nota\", \"std\"),\n    contagem=(\"nota\", \"count\")\n).reset_index()\n\nprint(resumo)\n\n# Formas alternativas\ndados.groupby(\"cidade\")[\"nota\"].mean()      # Media por cidade\ndados.groupby(\"cidade\")[\"nota\"].describe()  # Descritivo completo\n\n# Agrupar por varias colunas\ndados.groupby([\"cidade\", \"aprovado\"])[\"nota\"].mean()\n\n# Contar ocorrencias (equivalente a count do dplyr)\ndados[\"cidade\"].value_counts()"
+    },
+    {
+      "id": "python-intro-b030",
+      "type": "prose",
+      "markdown": "### Ordenar e remover duplicatas"
+    },
+    {
+      "id": "python-intro-b031",
+      "type": "code",
+      "lang": "python",
+      "code": "# Ordenar\ndados.sort_values(\"nota\")                          # Crescente\ndados.sort_values(\"nota\", ascending=False)         # Decrescente\ndados.sort_values([\"cidade\", \"nota\"], ascending=[True, False])  # Multiplas colunas\n\n# Remover duplicatas\ndados.drop_duplicates()                    # Todas as colunas\ndados.drop_duplicates(subset=[\"cidade\"])   # Baseado em coluna(s)"
+    },
+    {
+      "id": "python-intro-b032",
+      "type": "prose",
+      "markdown": "### Lidar com valores ausentes"
+    },
+    {
+      "id": "python-intro-b033",
+      "type": "code",
+      "lang": "python",
+      "code": "# Verificar valores nulos\ndados.isnull().sum()         # Contagem de nulos por coluna\n\n# Remover linhas com valores nulos\ndados.dropna()               # Remove qualquer linha com nulo\ndados.dropna(subset=[\"nota\"])  # Remove se nota for nula\n\n# Preencher valores nulos\ndados[\"nota\"].fillna(0)                     # Preencher com zero\ndados[\"nota\"].fillna(dados[\"nota\"].mean())  # Preencher com a media"
+    },
+    {
+      "id": "python-intro-b034",
+      "type": "prose",
+      "markdown": "## Visualizacao com Matplotlib e Seaborn\n\n[Matplotlib](https://matplotlib.org/) e a biblioteca base de visualizacao, enquanto [Seaborn](https://seaborn.pydata.org/) e construida sobre ela com estilos mais bonitos e funcoes estatisticas integradas."
+    },
+    {
+      "id": "python-intro-b035",
+      "type": "code",
+      "lang": "python",
+      "code": "import matplotlib.pyplot as plt\nimport seaborn as sns\n\n# Configurar estilo\nsns.set_theme(style=\"whitegrid\")"
+    },
+    {
+      "id": "python-intro-b036",
+      "type": "prose",
+      "markdown": "### Histograma"
+    },
+    {
+      "id": "python-intro-b037",
+      "type": "code",
+      "lang": "python",
+      "code": "# Com Matplotlib\nplt.figure(figsize=(8, 5))\nplt.hist(dados[\"nota\"], bins=10, color=\"#448EE3\", edgecolor=\"white\")\nplt.title(\"Distribuicao das Notas\")\nplt.xlabel(\"Nota\")\nplt.ylabel(\"Frequencia\")\nplt.show()\n\n# Com Seaborn (mais elegante)\nplt.figure(figsize=(8, 5))\nsns.histplot(dados[\"nota\"], bins=10, kde=True, color=\"#448EE3\")\nplt.title(\"Distribuicao das Notas com Curva de Densidade\")\nplt.xlabel(\"Nota\")\nplt.ylabel(\"Frequencia\")\nplt.show()"
+    },
+    {
+      "id": "python-intro-b038",
+      "type": "prose",
+      "markdown": "### Boxplot"
+    },
+    {
+      "id": "python-intro-b039",
+      "type": "code",
+      "lang": "python",
+      "code": "# Boxplot simples\nplt.figure(figsize=(8, 5))\nsns.boxplot(x=\"cidade\", y=\"nota\", data=dados, palette=\"Blues\")\nplt.title(\"Distribuicao das Notas por Cidade\")\nplt.xlabel(\"Cidade\")\nplt.ylabel(\"Nota\")\nplt.show()\n\n# Boxplot com pontos individuais\nplt.figure(figsize=(8, 5))\nsns.boxplot(x=\"cidade\", y=\"nota\", data=dados, palette=\"Blues\", width=0.5)\nsns.stripplot(x=\"cidade\", y=\"nota\", data=dados, color=\"black\", alpha=0.5, jitter=True)\nplt.title(\"Notas por Cidade (com pontos)\")\nplt.show()"
+    },
+    {
+      "id": "python-intro-b040",
+      "type": "prose",
+      "markdown": "### Grafico de dispersao (scatter)"
+    },
+    {
+      "id": "python-intro-b041",
+      "type": "code",
+      "lang": "python",
+      "code": "# Scatter simples\nplt.figure(figsize=(8, 5))\nplt.scatter(dados[\"idade\"], dados[\"nota\"], color=\"#448EE3\", s=80, alpha=0.7)\nplt.title(\"Idade vs. Nota\")\nplt.xlabel(\"Idade\")\nplt.ylabel(\"Nota\")\nplt.show()\n\n# Scatter com cores por grupo\nplt.figure(figsize=(8, 5))\nsns.scatterplot(x=\"idade\", y=\"nota\", hue=\"cidade\", data=dados, s=100)\nplt.title(\"Idade vs. Nota por Cidade\")\nplt.show()\n\n# Scatter com linha de regressao\nplt.figure(figsize=(8, 5))\nsns.regplot(x=\"idade\", y=\"nota\", data=dados, color=\"#2D4188\",\n            scatter_kws={\"s\": 80}, line_kws={\"color\": \"red\"})\nplt.title(\"Idade vs. Nota com Regressao\")\nplt.show()"
+    },
+    {
+      "id": "python-intro-b042",
+      "type": "prose",
+      "markdown": "### Grafico de barras"
+    },
+    {
+      "id": "python-intro-b043",
+      "type": "code",
+      "lang": "python",
+      "code": "# Contagem por categoria\nplt.figure(figsize=(8, 5))\nsns.countplot(x=\"cidade\", data=dados, palette=\"Blues\")\nplt.title(\"Quantidade de Alunos por Cidade\")\nplt.xlabel(\"Cidade\")\nplt.ylabel(\"Contagem\")\nplt.show()\n\n# Media por categoria\nresumo = dados.groupby(\"cidade\")[\"nota\"].mean().reset_index()\nplt.figure(figsize=(8, 5))\nsns.barplot(x=\"cidade\", y=\"nota\", data=resumo, palette=\"Blues\")\nplt.title(\"Nota Media por Cidade\")\nplt.xlabel(\"Cidade\")\nplt.ylabel(\"Nota Media\")\nplt.show()"
+    },
+    {
+      "id": "python-intro-b044",
+      "type": "prose",
+      "markdown": "### Salvar graficos"
+    },
+    {
+      "id": "python-intro-b045",
+      "type": "code",
+      "lang": "python",
+      "code": "# Salvar o grafico atual\nplt.savefig(\"meu_grafico.png\", dpi=300, bbox_inches=\"tight\")\nplt.savefig(\"meu_grafico.pdf\", bbox_inches=\"tight\")  # Vetorial"
+    },
+    {
+      "id": "python-intro-b046",
+      "type": "prose",
+      "markdown": "## scipy.stats: Distribuicoes de probabilidade\n\nO modulo `scipy.stats` fornece funcoes para trabalhar com distribuicoes de probabilidade, testes de hipoteses e muito mais."
+    },
+    {
+      "id": "python-intro-b047",
+      "type": "code",
+      "lang": "python",
+      "code": "from scipy import stats\nimport numpy as np"
+    },
+    {
+      "id": "python-intro-b048",
+      "type": "prose",
+      "markdown": "### Distribuicao Normal"
+    },
+    {
+      "id": "python-intro-b049",
+      "type": "code",
+      "lang": "python",
+      "code": "from scipy.stats import norm\n\n# Criar uma distribuicao Normal com media=0 e desvio=1 (padrao)\ndist_normal = norm(loc=0, scale=1)\n\n# Calcular probabilidades\ndist_normal.cdf(1.96)     # P(Z <= 1.96) = 0.975\ndist_normal.cdf(0)        # P(Z <= 0) = 0.5\n\n# Quantis (inverso da CDF)\ndist_normal.ppf(0.975)    # z tal que P(Z <= z) = 0.975 -> 1.96\ndist_normal.ppf(0.025)    # z tal que P(Z <= z) = 0.025 -> -1.96\n\n# Funcao de densidade (PDF)\ndist_normal.pdf(0)        # f(0) = 0.3989\n\n# Gerar amostras aleatorias\namostra = dist_normal.rvs(size=1000, random_state=42)\n\n# Distribuicao Normal com outros parametros\nsalarios = norm(loc=5000, scale=1200)  # Media 5000, desvio 1200\nsalarios.cdf(7000)     # P(Salario <= 7000)\n1 - salarios.cdf(7000) # P(Salario > 7000)"
+    },
+    {
+      "id": "python-intro-b050",
+      "type": "prose",
+      "markdown": "### Distribuicao Binomial"
+    },
+    {
+      "id": "python-intro-b051",
+      "type": "code",
+      "lang": "python",
+      "code": "from scipy.stats import binom\n\n# Binomial com n=10 tentativas e p=0.3 de sucesso\ndist_binom = binom(n=10, p=0.3)\n\n# P(X = 3) - probabilidade exata\ndist_binom.pmf(3)       # 0.2668\n\n# P(X <= 3) - probabilidade acumulada\ndist_binom.cdf(3)       # 0.6496\n\n# P(X > 3) = 1 - P(X <= 3)\n1 - dist_binom.cdf(3)   # 0.3504\n\n# Media e variancia teoricas\ndist_binom.mean()   # 3.0 (n * p)\ndist_binom.var()    # 2.1 (n * p * (1-p))\n\n# Gerar amostras\namostra = dist_binom.rvs(size=1000, random_state=42)"
+    },
+    {
+      "id": "python-intro-b052",
+      "type": "prose",
+      "markdown": "### Distribuicao t de Student"
+    },
+    {
+      "id": "python-intro-b053",
+      "type": "code",
+      "lang": "python",
+      "code": "from scipy.stats import t\n\n# t de Student com 10 graus de liberdade\ndist_t = t(df=10)\n\n# Quantis (valores criticos)\ndist_t.ppf(0.975)     # t_critico para IC 95% bilateral\ndist_t.ppf(0.95)      # t_critico para IC 90% bilateral\n\n# Probabilidades\ndist_t.cdf(2.228)     # P(T <= 2.228) com 10 gl"
+    },
+    {
+      "id": "python-intro-b054",
+      "type": "prose",
+      "markdown": "### Testes de hipoteses"
+    },
+    {
+      "id": "python-intro-b055",
+      "type": "code",
+      "lang": "python",
+      "code": "# Teste t para uma amostra\namostra = [23, 25, 28, 22, 27, 26, 24, 29, 21, 25]\nresultado = stats.ttest_1samp(amostra, popmean=25)\nprint(f\"Estatistica t: {resultado.statistic:.4f}\")\nprint(f\"p-valor: {resultado.pvalue:.4f}\")\n\n# Teste t para duas amostras independentes\ngrupo_a = [85, 90, 78, 92, 88, 76, 95, 89]\ngrupo_b = [72, 68, 80, 75, 71, 77, 69, 74]\nresultado = stats.ttest_ind(grupo_a, grupo_b)\nprint(f\"Estatistica t: {resultado.statistic:.4f}\")\nprint(f\"p-valor: {resultado.pvalue:.4f}\")\n\n# Teste qui-quadrado de independencia\ntabela = np.array([[30, 10],\n                   [20, 40]])\nchi2, p_valor, gl, esperado = stats.chi2_contingency(tabela)\nprint(f\"Qui-quadrado: {chi2:.4f}\")\nprint(f\"p-valor: {p_valor:.4f}\")\nprint(f\"Graus de liberdade: {gl}\")\n\n# Teste de normalidade (Shapiro-Wilk)\namostra = np.random.normal(0, 1, 100)\nstat, p_valor = stats.shapiro(amostra)\nprint(f\"Estatistica W: {stat:.4f}, p-valor: {p_valor:.4f}\")"
+    },
+    {
+      "id": "python-intro-b056",
+      "type": "prose",
+      "markdown": "## statsmodels: Regressao Linear\n\nO [statsmodels](https://www.statsmodels.org/) e a principal biblioteca Python para modelos estatisticos, com saidas detalhadas semelhantes a softwares estatisticos tradicionais."
+    },
+    {
+      "id": "python-intro-b057",
+      "type": "code",
+      "lang": "python",
+      "code": "import statsmodels.api as sm\nimport statsmodels.formula.api as smf\nimport pandas as pd\nimport numpy as np"
+    },
+    {
+      "id": "python-intro-b058",
+      "type": "prose",
+      "markdown": "### Regressao Linear Simples"
+    },
+    {
+      "id": "python-intro-b059",
+      "type": "code",
+      "lang": "python",
+      "code": "# Dados de exemplo\nnp.random.seed(42)\nn = 50\nhoras_estudo = np.random.uniform(1, 10, n)\nnota = 3 + 0.8 * horas_estudo + np.random.normal(0, 1, n)\n\ndados = pd.DataFrame({\n    \"horas\": horas_estudo,\n    \"nota\": nota\n})\n\n# Metodo 1: Usando formula (semelhante ao R!)\nmodelo = smf.ols(\"nota ~ horas\", data=dados).fit()\n\n# Ver os resultados completos\nprint(modelo.summary())\n\n# Acessar coeficientes\nprint(f\"Intercepto: {modelo.params['Intercept']:.4f}\")\nprint(f\"Coeficiente (horas): {modelo.params['horas']:.4f}\")\nprint(f\"R-quadrado: {modelo.rsquared:.4f}\")\nprint(f\"R-quadrado ajustado: {modelo.rsquared_adj:.4f}\")\n\n# Metodo 2: Usando matrizes (mais explicito)\nX = sm.add_constant(dados[\"horas\"])  # Adicionar coluna de 1s (intercepto)\nmodelo2 = sm.OLS(dados[\"nota\"], X).fit()\nprint(modelo2.summary())"
+    },
+    {
+      "id": "python-intro-b060",
+      "type": "prose",
+      "markdown": "### Interpretar a saida"
+    },
+    {
+      "id": "python-intro-b061",
+      "type": "code",
+      "lang": "python",
+      "code": "# Coeficientes e seus p-valores\nprint(modelo.params)       # Coeficientes estimados\nprint(modelo.pvalues)      # p-valores\nprint(modelo.conf_int())   # Intervalos de confianca (95%)\n\n# Diagnostico\nprint(modelo.resid)        # Residuos\nprint(modelo.fittedvalues) # Valores ajustados\n\n# Fazer previsoes\nnovas_horas = pd.DataFrame({\"horas\": [5, 7, 10]})\nprevisao = modelo.predict(novas_horas)\nprint(previsao)"
+    },
+    {
+      "id": "python-intro-b062",
+      "type": "prose",
+      "markdown": "### Visualizar a regressao"
+    },
+    {
+      "id": "python-intro-b063",
+      "type": "code",
+      "lang": "python",
+      "code": "import matplotlib.pyplot as plt\nimport seaborn as sns\n\n# Grafico com linha de regressao\nplt.figure(figsize=(8, 5))\nsns.regplot(x=\"horas\", y=\"nota\", data=dados,\n            scatter_kws={\"color\": \"#448EE3\", \"s\": 60, \"alpha\": 0.7},\n            line_kws={\"color\": \"#2D4188\"})\nplt.title(\"Regressao: Horas de Estudo vs. Nota\")\nplt.xlabel(\"Horas de Estudo\")\nplt.ylabel(\"Nota\")\n\n# Adicionar equacao no grafico\nb0 = modelo.params['Intercept']\nb1 = modelo.params['horas']\nr2 = modelo.rsquared\nplt.text(2, 10, f\"y = {b0:.2f} + {b1:.2f}x\\nR² = {r2:.3f}\",\n         fontsize=12, bbox=dict(boxstyle=\"round\", facecolor=\"wheat\"))\nplt.show()\n\n# Grafico de residuos\nfig, axes = plt.subplots(1, 2, figsize=(12, 5))\n\n# Residuos vs valores ajustados\naxes[0].scatter(modelo.fittedvalues, modelo.resid, color=\"#448EE3\", alpha=0.7)\naxes[0].axhline(y=0, color=\"red\", linestyle=\"--\")\naxes[0].set_title(\"Residuos vs Valores Ajustados\")\naxes[0].set_xlabel(\"Valores Ajustados\")\naxes[0].set_ylabel(\"Residuos\")\n\n# QQ-plot dos residuos\nsm.qqplot(modelo.resid, line=\"s\", ax=axes[1])\naxes[1].set_title(\"QQ-Plot dos Residuos\")\n\nplt.tight_layout()\nplt.show()"
+    },
+    {
+      "id": "python-intro-b064",
+      "type": "prose",
+      "markdown": "## Tabela de equivalencia: R vs Python\n\n| Tarefa | R | Python |\n|:-------|:--|:-------|\n| **Importar CSV** | `read.csv(\"arquivo.csv\")` | `pd.read_csv(\"arquivo.csv\")` |\n| **Ver primeiras linhas** | `head(dados)` | `dados.head()` |\n| **Estrutura dos dados** | `str(dados)` | `dados.info()` |\n| **Resumo estatistico** | `summary(dados)` | `dados.describe()` |\n| **Dimensoes** | `dim(dados)` | `dados.shape` |\n| **Media** | `mean(x)` | `np.mean(x)` ou `dados[\"x\"].mean()` |\n| **Mediana** | `median(x)` | `np.median(x)` ou `dados[\"x\"].median()` |\n| **Desvio padrao** | `sd(x)` | `np.std(x, ddof=1)` ou `dados[\"x\"].std()` |\n| **Filtrar linhas** | `filter(dados, x > 5)` | `dados[dados[\"x\"] > 5]` |\n| **Selecionar colunas** | `select(dados, x, y)` | `dados[[\"x\", \"y\"]]` |\n| **Criar coluna** | `mutate(dados, z = x + y)` | `dados[\"z\"] = dados[\"x\"] + dados[\"y\"]` |\n| **Agrupar e resumir** | `group_by(dados, g) %>% summarise(m = mean(x))` | `dados.groupby(\"g\")[\"x\"].mean()` |\n| **Ordenar** | `arrange(dados, x)` | `dados.sort_values(\"x\")` |\n| **Histograma** | `hist(x)` ou `geom_histogram()` | `plt.hist(x)` ou `sns.histplot(x)` |\n| **Boxplot** | `boxplot(x ~ g)` ou `geom_boxplot()` | `sns.boxplot(x=\"g\", y=\"x\")` |\n| **Dispersao** | `plot(x, y)` ou `geom_point()` | `plt.scatter(x, y)` ou `sns.scatterplot()` |\n| **Regressao linear** | `lm(y ~ x, data=dados)` | `smf.ols(\"y ~ x\", data=dados).fit()` |\n| **Teste t** | `t.test(x, mu=0)` | `stats.ttest_1samp(x, 0)` |\n| **Normal: P(X<=x)** | `pnorm(x)` | `norm.cdf(x)` |\n| **Normal: quantil** | `qnorm(p)` | `norm.ppf(p)` |\n| **Normal: amostras** | `rnorm(n)` | `norm.rvs(size=n)` |\n| **Binomial: P(X=k)** | `dbinom(k, n, p)` | `binom.pmf(k, n, p)` |\n\n_Equivalencia R vs Python para Tarefas Estatisticas Comuns_"
+    },
+    {
+      "id": "python-intro-b065",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Dica final",
+      "markdown": "Para aprofundar seus conhecimentos em Python para ciencia de dados, recomendamos:\n\n- [Python Data Science Handbook](https://jakevdp.github.io/PythonDataScienceHandbook/) (Jake VanderPlas) --- gratuito e online\n- [Pandas Documentation](https://pandas.pydata.org/docs/) --- documentacao oficial\n- [Seaborn Tutorial](https://seaborn.pydata.org/tutorial.html) --- galeria de exemplos"
+    }
+  ]
+}

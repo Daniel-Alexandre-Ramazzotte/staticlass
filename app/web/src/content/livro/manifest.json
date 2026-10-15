@@ -1,0 +1,79 @@
+[
+  {
+    "slug": "prefacio",
+    "title": "Prefácio",
+    "lang": null,
+    "group": "prefacio",
+    "file": "prefacio.json"
+  },
+  {
+    "slug": "descritiva",
+    "title": "Estatística Descritiva",
+    "lang": "r",
+    "group": "capitulo",
+    "file": "descritiva.json"
+  },
+  {
+    "slug": "probabilidade",
+    "title": "Probabilidade",
+    "lang": "r",
+    "group": "capitulo",
+    "file": "probabilidade.json"
+  },
+  {
+    "slug": "inferencia",
+    "title": "Inferência Estatística",
+    "lang": "r",
+    "group": "capitulo",
+    "file": "inferencia.json"
+  },
+  {
+    "slug": "regressao",
+    "title": "Regressão Linear Simples",
+    "lang": "r",
+    "group": "capitulo",
+    "file": "regressao.json"
+  },
+  {
+    "slug": "problemas-pesquisa",
+    "title": "Problemas de Pesquisa Aplicados",
+    "lang": "r",
+    "group": "capitulo",
+    "file": "problemas-pesquisa.json"
+  },
+  {
+    "slug": "r-intro",
+    "title": "Introdução ao R",
+    "lang": "r",
+    "group": "apendice",
+    "file": "r-intro.json"
+  },
+  {
+    "slug": "python-intro",
+    "title": "Introdução ao Python",
+    "lang": "python",
+    "group": "apendice",
+    "file": "python-intro.json"
+  },
+  {
+    "slug": "dicas-ia",
+    "title": "Dicas de Geração de Código com IA",
+    "lang": null,
+    "group": "apendice",
+    "file": "dicas-ia.json"
+  },
+  {
+    "slug": "quarto-git-tutorial",
+    "title": "Tutorial: Quarto, Git e Claude Code",
+    "lang": null,
+    "group": "apendice",
+    "file": "quarto-git-tutorial.json"
+  },
+  {
+    "slug": "creditos",
+    "title": "Créditos e Agradecimentos",
+    "lang": null,
+    "group": "apendice",
+    "file": "creditos.json"
+  }
+]

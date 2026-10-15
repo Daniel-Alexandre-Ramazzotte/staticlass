@@ -149,11 +149,11 @@ class TestResendVerificationEndpoint:
         assert response.status_code == 200
 
     def test_resend_sends_email_to_unverified_user(self, app, client):
-        """Resend sends a new email when user exists and is not verified."""
+        """Resend sends a new OTP email when user exists and is not verified."""
         with patch("statl.services.email_service.mail"):
             _register(client, email="resend2@example.com")
 
-        with patch("statl.services.auth_service.send_verification_email") as mock_send:
+        with patch("statl.services.auth_service.send_otp_email") as mock_send:
             client.post("/auth/resend-verification", json={"email": "resend2@example.com"})
             mock_send.assert_called_once()
 

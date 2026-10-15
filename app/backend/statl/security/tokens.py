@@ -53,3 +53,17 @@ def verify_reset_token(token: str, expiration: int = 900):
         return None  # token inválido
 
     return data["user_id"]
+
+
+def generate_invite_token(email: str, turma_id: int) -> str:
+    serializer = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
+    return serializer.dumps({"email": email, "turma_id": turma_id}, salt="turma-invite")
+
+
+def verify_invite_token(token: str, expiration: int = 604800) -> dict | None:
+    serializer = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
+    try:
+        data = serializer.loads(token, salt="turma-invite", max_age=expiration)
+    except (SignatureExpired, BadSignature):
+        return None
+    return data

@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import text
 
@@ -6,7 +6,7 @@ from .. import db
 
 
 def _cutoff_7d() -> datetime:
-    return datetime.utcnow() - timedelta(days=7)
+    return datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=7)
 
 
 def get_admin_dashboard_rows() -> dict:

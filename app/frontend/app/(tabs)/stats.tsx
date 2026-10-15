@@ -121,7 +121,7 @@ export default function StatsTab() {
             <MetricCard
               label="Atividade de professores"
               value={String(data.kpis.professor_activity_7d)}
-              tone="#f57c00"
+              tone={palette.warn}
             />
           </XStack>
 
@@ -137,10 +137,10 @@ export default function StatsTab() {
                           {topic.topic_name}
                         </Text>
                         <Text color="#6c7b8a" fontSize={12}>
-                          {topic.chapter_name ?? 'Sem capítulo'} • {topic.answered_count} respostas
+                          {topic.chapter_name ?? 'Sem assunto'} • {topic.answered_count} respostas
                         </Text>
                       </YStack>
-                      <Text color={topic.accuracy_pct >= 70 ? palette.primaryGreen : '#f57c00'} fontSize={15} fontWeight="800">
+                      <Text color={topic.accuracy_pct >= 70 ? palette.primaryGreen : palette.warn} fontSize={15} fontWeight="800">
                         {topic.accuracy_pct.toFixed(1)}%
                       </Text>
                     </XStack>

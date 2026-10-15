@@ -5,8 +5,10 @@ const RegisterNewUserService = async (data: {
   password: string;
   confirm_password: string;
   name: string;
+  ra?: string;
+  is_uem?: boolean;
+  ano_ingresso?: number;
 }) => {
-  console.log(data);
   try {
     const response = await api.post('/auth/register', data);
     return response;

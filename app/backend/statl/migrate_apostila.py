@@ -11,12 +11,8 @@ Uso:
 """
 
 import argparse
-import os
-from pathlib import Path
-from dotenv import load_dotenv
 
-_SCRIPT_DIR = Path(__file__).resolve().parent
-load_dotenv(_SCRIPT_DIR.parent / ".env")
+from .utils.migration_utils import content_hash, get_engine, upsert_alternatives, upsert_question
 
 # ---------------------------------------------------------------------------
 # Definição das questões
@@ -1257,89 +1253,65 @@ QUESTIONS = [
 ]
 
 
+_CHAPTER_NAMES = {
+    1: "Estatística Descritiva",
+    2: "Probabilidade",
+    3: "Inferência Estatística",
+    4: "Regressão Linear Simples",
+}
+
+
 def run(dry_run: bool = False) -> None:
-    import sqlalchemy as sa
-    from sqlalchemy import text
+    from .utils.migration_utils import get_or_create_chapter
 
-    db_url = os.getenv("DATABASE_URL", "")
-    if db_url.startswith("postgres://"):
-        db_url = db_url.replace("postgres://", "postgresql://", 1)
-    if not db_url:
-        raise SystemExit("DATABASE_URL não definida.")
-
-    engine = sa.create_engine(db_url)
+    engine = get_engine()
 
     with engine.begin() as conn:
-        # Busca os IDs dos capítulos pelo número
-        chapters = conn.execute(
-            text("SELECT id, number FROM chapters ORDER BY number")
-        ).fetchall()
-        chapter_map = {row[1]: row[0] for row in chapters}
-
-        if not chapter_map:
-            raise SystemExit("Nenhum capítulo encontrado. Execute a migração principal primeiro.")
-
         inserted = 0
         skipped = 0
 
         for q in QUESTIONS:
-            chapter_id = chapter_map.get(q["chapter_num"])
-            if not chapter_id:
+            chapter_name = _CHAPTER_NAMES.get(q["chapter_num"])
+            if not chapter_name:
                 print(f"  [WARN] Capítulo {q['chapter_num']} não encontrado — pulando questão")
                 skipped += 1
                 continue
+            chapter_id = get_or_create_chapter(conn, name=chapter_name, number=q["chapter_num"])
+
+            original_id = content_hash(q["issue"], q["correct_answer"], prefix="apostila__")
 
             if dry_run:
                 preview = q["issue"][:80].replace("\n", " ").strip()
-                print(f"  [DRY] cap={q['chapter_num']}, src={q['source']}, resp={q['correct_answer']}: {preview}...")
+                print(f"  [DRY] original_id={original_id}, cap={q['chapter_num']}, "
+                      f"src={q['source']}, resp={q['correct_answer']}: {preview}...")
                 inserted += 1
                 continue
 
-            # Verifica se a questão já existe (por trecho do enunciado)
-            issue_snippet = q["issue"][:100]
-            exists = conn.execute(
-                text("SELECT 1 FROM questions WHERE issue LIKE :snippet LIMIT 1"),
-                {"snippet": f"{issue_snippet[:80]}%"},
-            ).fetchone()
-
-            if exists:
-                skipped += 1
-                continue
-
-            # Insere questão
-            result = conn.execute(
-                text("""
-                    INSERT INTO questions
-                        (issue, correct_answer, solution, difficulty, chapter_id, source, needs_fix)
-                    VALUES
-                        (:issue, :correct_answer, :solution, :difficulty, :chapter_id, :source, false)
-                    RETURNING id
-                """),
+            new_id, foi_inserida = upsert_question(
+                conn,
                 {
                     "issue": q["issue"],
+                    "original_id": original_id,
                     "correct_answer": q["correct_answer"],
                     "solution": q.get("solution"),
-                    "difficulty": q["difficulty"],
                     "chapter_id": chapter_id,
+                    "difficulty": q["difficulty"],
                     "source": q["source"],
                 },
             )
-            new_id = result.scalar()
 
-            # Insere alternativas
-            for alt in q["alternatives"]:
-                conn.execute(
-                    text("""
-                        INSERT INTO alternatives (question_id, letter, text, is_correct)
-                        VALUES (:qid, :letter, :text, :is_correct)
-                    """),
-                    {
-                        "qid": new_id,
-                        "letter": alt["letter"],
-                        "text": alt["text"],
-                        "is_correct": alt["letter"] == q["correct_answer"],
-                    },
-                )
+            if not foi_inserida:
+                skipped += 1
+                continue
+
+            upsert_alternatives(
+                conn,
+                new_id,
+                [
+                    {"letter": alt["letter"], "text": alt["text"], "is_correct": alt["letter"] == q["correct_answer"]}
+                    for alt in q["alternatives"]
+                ],
+            )
 
             inserted += 1
             if inserted % 10 == 0:

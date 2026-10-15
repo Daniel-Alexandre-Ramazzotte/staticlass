@@ -39,7 +39,7 @@ export function CartaoAluno({ aluno, posicao }: { aluno: AlunoStat; posicao: num
     ? Math.round((aluno.total_acertos / aluno.total_questoes) * 100)
     : 0;
 
-  const corAproveitamento = aproveitamento >= 70 ? '#4caf50' : aproveitamento >= 50 ? '#ff9800' : '#f44336';
+  const corAproveitamento = aproveitamento >= 70 ? palette.primaryGreen : aproveitamento >= 50 ? palette.warn : palette.red;
 
   const alternarExpansao = useCallback(async () => {
     if (expandido) { setExpandido(false); return; }
@@ -106,7 +106,7 @@ export function CartaoAluno({ aluno, posicao }: { aluno: AlunoStat; posicao: num
               </Text>
               <Text
                 fontSize={13}
-                color={cap.precisao_pct >= 70 ? '#4caf50' : cap.precisao_pct >= 50 ? '#ff9800' : '#f44336'}
+                color={cap.precisao_pct >= 70 ? palette.primaryGreen : cap.precisao_pct >= 50 ? palette.warn : palette.red}
                 fontWeight="bold"
               >
                 {cap.precisao_pct.toFixed(1)}%

@@ -220,7 +220,7 @@ export default function AddProfessor() {
             )}
 
             {!!errorMessage && (
-              <Text color="#ff4c4c" fontSize={14} fontWeight="600">
+              <Text color={palette.red} fontSize={14} fontWeight="600">
                 {errorMessage}
               </Text>
             )}

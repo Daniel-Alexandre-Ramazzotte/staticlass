@@ -1,5 +1,13 @@
 from flask import Blueprint, jsonify, request
-from statl.services.auth_service import register_user, login_user, request_password_reset, reset_password, verify_email_token, resend_verification_service
+from statl.services.auth_service import (
+    register_user,
+    login_user,
+    request_password_reset,
+    reset_password,
+    verify_email_token,
+    resend_verification_service,
+    verify_otp_service,
+)
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -76,6 +84,52 @@ def resend_verification():
     if email:
         resend_verification_service(email)
     return jsonify({"message": "Se o email existir e não estiver verificado, um novo link será enviado"}), 200
+
+
+@bp.route("/verify-code", methods=["POST"])
+def verify_code():
+    data = request.get_json() or {}
+    email = data.get("email", "")
+    code = data.get("code", "")
+    if not email or not code:
+        return jsonify({"error": "Email e código são obrigatórios"}), 400
+    success, message = verify_otp_service(email, code)
+    if not success:
+        return jsonify({"error": message}), 400
+    return jsonify({"message": "Email verificado com sucesso"}), 200
+
+
+@bp.route("/invite/<token>", methods=["GET"])
+def get_invite(token):
+    from statl.services.invite_service import get_invite_metadata
+    data, error = get_invite_metadata(token)
+    if error:
+        return jsonify({"error": error}), 400
+    return jsonify(data), 200
+
+
+@bp.route("/complete-invite", methods=["POST"])
+def complete_invite():
+    from statl.services.invite_service import complete_invite_registration
+    data = request.get_json() or {}
+    token = data.get("token", "")
+    name = data.get("name", "")
+    password = data.get("password", "")
+    confirm = data.get("confirm_password", "")
+    ra = data.get("ra", None)
+    is_uem = data.get("is_uem", False)
+
+    if not token or not name or not password:
+        return jsonify({"error": "Campos obrigatórios ausentes"}), 400
+    if password != confirm:
+        return jsonify({"error": "As senhas não coincidem"}), 400
+    if is_uem and not ra:
+        return jsonify({"error": "RA é obrigatório para alunos da UEM"}), 400
+
+    success, message = complete_invite_registration(token, name, password, ra)
+    if not success:
+        return jsonify({"error": message}), 400
+    return jsonify({"message": "Cadastro concluído com sucesso"}), 200
 
 
 @bp.route("/password-reset", methods=["POST"])

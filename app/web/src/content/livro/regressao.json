@@ -1,0 +1,451 @@
+{
+  "slug": "regressao",
+  "title": "Regressão Linear Simples",
+  "lang": "r",
+  "sourceFile": "04-regressao.qmd",
+  "generatedAt": "2026-07-26T15:16:36.611Z",
+  "toc": [
+    {
+      "level": 1,
+      "text": "Regressão Linear Simples",
+      "blockId": "regressao-b000"
+    },
+    {
+      "level": 2,
+      "text": "Introdução: Relações entre Variáveis",
+      "blockId": "regressao-b001"
+    },
+    {
+      "level": 3,
+      "text": "Diagramas de dispersão",
+      "blockId": "regressao-b002"
+    },
+    {
+      "level": 3,
+      "text": "Correlação vs. Causalidade",
+      "blockId": "regressao-b004"
+    },
+    {
+      "level": 2,
+      "text": "O Modelo Linear Simples",
+      "blockId": "regressao-b011"
+    },
+    {
+      "level": 3,
+      "text": "Pressupostos do modelo",
+      "blockId": "regressao-b013"
+    },
+    {
+      "level": 2,
+      "text": "Estimação por Mínimos Quadrados (OLS)",
+      "blockId": "regressao-b016"
+    },
+    {
+      "level": 3,
+      "text": "Ideia geométrica",
+      "blockId": "regressao-b017"
+    },
+    {
+      "level": 3,
+      "text": "Derivação das fórmulas",
+      "blockId": "regressao-b018"
+    },
+    {
+      "level": 3,
+      "text": "Cálculo manual (exemplo)",
+      "blockId": "regressao-b021"
+    },
+    {
+      "level": 2,
+      "text": "Coeficiente de Determinação ($R^2$)",
+      "blockId": "regressao-b024"
+    },
+    {
+      "level": 3,
+      "text": "Decomposição da variabilidade",
+      "blockId": "regressao-b025"
+    },
+    {
+      "level": 2,
+      "text": "Análise de Resíduos",
+      "blockId": "regressao-b030"
+    },
+    {
+      "level": 3,
+      "text": "Gráficos diagnósticos",
+      "blockId": "regressao-b033"
+    },
+    {
+      "level": 2,
+      "text": "Aplicação em R",
+      "blockId": "regressao-b036"
+    },
+    {
+      "level": 3,
+      "text": "Passo 1: Exploração visual",
+      "blockId": "regressao-b037"
+    },
+    {
+      "level": 3,
+      "text": "Passo 2: Ajuste do modelo",
+      "blockId": "regressao-b040"
+    },
+    {
+      "level": 3,
+      "text": "Passo 3: Predição",
+      "blockId": "regressao-b045"
+    },
+    {
+      "level": 3,
+      "text": "Passo 4: Análise de resíduos",
+      "blockId": "regressao-b047"
+    },
+    {
+      "level": 3,
+      "text": "Passo 5: Visualização completa",
+      "blockId": "regressao-b051"
+    },
+    {
+      "level": 2,
+      "text": "Resumo",
+      "blockId": "regressao-b055"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "regressao-b000",
+      "type": "prose",
+      "markdown": "# Regressão Linear Simples\n\nNos capítulos anteriores, aprendemos a descrever variáveis individualmente (Estatística Descritiva) e a fazer inferências sobre parâmetros populacionais (Inferência Estatística). Agora, daremos um passo além: investigar a **relação entre duas variáveis quantitativas**. A ferramenta fundamental para isso é a **Regressão Linear Simples**."
+    },
+    {
+      "id": "regressao-b001",
+      "type": "prose",
+      "markdown": "## Introdução: Relações entre Variáveis\n\nMuitas perguntas de pesquisa envolvem a relação entre duas variáveis:\n\n- Alunos que estudam mais horas obtêm notas mais altas?\n- Funcionários com mais experiência recebem salários maiores?\n- O consumo de combustível de um carro depende da velocidade?"
+    },
+    {
+      "id": "regressao-b002",
+      "type": "prose",
+      "markdown": "### Diagramas de dispersão\n\nO primeiro passo para investigar a relação entre duas variáveis quantitativas é construir um **diagrama de dispersão** (*scatter plot*), no qual cada observação é representada por um ponto no plano cartesiano."
+    },
+    {
+      "id": "regressao-b003",
+      "type": "code",
+      "lang": "r",
+      "code": "# Carregar dados\ndados <- read.csv(\"dados/pesquisa_exemplo.csv\")\n\n# Diagrama de dispersão: horas_estudo vs nota_final\nplot(dados$horas_estudo, dados$nota_final,\n     xlab = \"Horas de Estudo\",\n     ylab = \"Nota Final\",\n     main = \"Relação entre Horas de Estudo e Nota Final\",\n     pch = 19,\n     col = \"#448EE3\")"
+    },
+    {
+      "id": "regressao-b004",
+      "type": "prose",
+      "markdown": "### Correlação vs. Causalidade"
+    },
+    {
+      "id": "regressao-b005",
+      "type": "callout",
+      "calloutType": "note",
+      "title": "Definição",
+      "markdown": "O **coeficiente de correlação de Pearson** ($r$) mede a intensidade e a direção da relação **linear** entre duas variáveis quantitativas:\n\n$$\nr = \\frac{\\sum_{i=1}^{n}(x_i - \\bar{x})(y_i - \\bar{y})}{\\sqrt{\\sum_{i=1}^{n}(x_i - \\bar{x})^2 \\cdot \\sum_{i=1}^{n}(y_i - \\bar{y})^2}}\n$$\n\nO valor de $r$ varia entre $-1$ e $+1$."
+    },
+    {
+      "id": "regressao-b006",
+      "type": "prose",
+      "markdown": "**Interpretação:**\n\n| Valor de $r$ | Interpretação |\n|---|---|\n| $r = +1$ | Correlação linear positiva perfeita |\n| $0{,}7 \\leq r < 1$ | Correlação positiva forte |\n| $0{,}3 \\leq r < 0{,}7$ | Correlação positiva moderada |\n| $0 < r < 0{,}3$ | Correlação positiva fraca |\n| $r = 0$ | Ausência de correlação linear |\n| $r < 0$ | Correlação negativa (análogo) |"
+    },
+    {
+      "id": "regressao-b007",
+      "type": "callout",
+      "calloutType": "warning",
+      "title": "Atenção",
+      "markdown": "**Correlação não implica causalidade.** Duas variáveis podem estar correlacionadas por diversos motivos: relação causal direta, causa comum (variável confundidora) ou até mera coincidência. Apenas estudos experimentais bem desenhados permitem inferir causalidade."
+    },
+    {
+      "id": "regressao-b008",
+      "type": "code",
+      "lang": "r",
+      "code": "# Calcular a correlação entre horas_estudo e nota_final\nr <- cor(dados$horas_estudo, dados$nota_final)\ncat(\"Correlação de Pearson (horas_estudo, nota_final):\", round(r, 4), \"\\n\")"
+    },
+    {
+      "id": "regressao-b009",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 4.1** ⭐\n\nClassifique cada afirmação como verdadeira ou falsa:\n\na) Se $r = 0{,}95$, então a relação entre as variáveis é necessariamente causal.\nb) O coeficiente de correlação de Pearson só detecta relações lineares.\nc) Se $r = 0$, não existe nenhuma relação entre as variáveis.\nd) A correlação é sensível a outliers."
+    },
+    {
+      "id": "regressao-b010",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 4.2** ⭐⭐\n\nUsando o conjunto de dados `pesquisa_exemplo.csv`, calcule a correlação de Pearson entre:\n\na) `idade` e `renda`\nb) `idade` e `nota_final`\nc) `renda` e `nota_final`\n\nInterprete cada resultado. Qual par de variáveis apresenta a correlação mais forte?"
+    },
+    {
+      "id": "regressao-b011",
+      "type": "prose",
+      "markdown": "## O Modelo Linear Simples\n\nO modelo de **Regressão Linear Simples** busca descrever a relação entre uma variável **resposta** (ou dependente) $Y$ e uma variável **explicativa** (ou independente) $X$ por meio de uma reta."
+    },
+    {
+      "id": "regressao-b012",
+      "type": "callout",
+      "calloutType": "note",
+      "title": "Definição",
+      "markdown": "O **modelo de Regressão Linear Simples** é dado por:\n\n$$\nY_i = \\beta_0 + \\beta_1 X_i + \\varepsilon_i, \\quad i = 1, 2, \\ldots, n\n$$\n\nonde:\n\n- $Y_i$ é o valor observado da variável resposta para a $i$-ésima observação\n- $X_i$ é o valor da variável explicativa\n- $\\beta_0$ é o **intercepto** (valor esperado de $Y$ quando $X = 0$)\n- $\\beta_1$ é o **coeficiente angular** (variação esperada em $Y$ para cada aumento de uma unidade em $X$)\n- $\\varepsilon_i$ é o **erro aleatório** (componente não explicado pelo modelo)"
+    },
+    {
+      "id": "regressao-b013",
+      "type": "prose",
+      "markdown": "### Pressupostos do modelo\n\nPara que a inferência baseada no modelo seja válida, os seguintes pressupostos devem ser satisfeitos:\n\n1. **Linearidade**: a relação entre $X$ e $Y$ é linear (na média).\n2. **Independência**: os erros $\\varepsilon_i$ são independentes entre si.\n3. **Homocedasticidade**: a variância dos erros é constante: $\\text{Var}(\\varepsilon_i) = \\sigma^2$ para todo $i$.\n4. **Normalidade**: os erros seguem distribuição normal: $\\varepsilon_i \\sim N(0, \\sigma^2)$.\n\nEsses pressupostos podem ser resumidos como:\n\n$$\n\\varepsilon_i \\overset{\\text{iid}}{\\sim} N(0, \\sigma^2)\n$$"
+    },
+    {
+      "id": "regressao-b014",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 4.3** ⭐\n\nNo contexto do nosso conjunto de dados, queremos modelar `nota_final` como função de `horas_estudo`. Identifique:\n\na) A variável resposta ($Y$) e a variável explicativa ($X$).\nb) O significado prático de $\\beta_0$ e $\\beta_1$ neste contexto.\nc) O que o termo $\\varepsilon_i$ representa neste problema."
+    },
+    {
+      "id": "regressao-b015",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 4.4** ⭐⭐\n\nExplique, com exemplos práticos, o que acontece quando cada um dos pressupostos do modelo linear é violado:\n\na) Violação da linearidade.\nb) Violação da homocedasticidade.\nc) Violação da normalidade dos erros."
+    },
+    {
+      "id": "regressao-b016",
+      "type": "prose",
+      "markdown": "## Estimação por Mínimos Quadrados (OLS)\n\nO método dos **Mínimos Quadrados Ordinários** (*Ordinary Least Squares* — OLS) encontra os valores de $\\beta_0$ e $\\beta_1$ que minimizam a soma dos quadrados dos resíduos."
+    },
+    {
+      "id": "regressao-b017",
+      "type": "prose",
+      "markdown": "### Ideia geométrica\n\nA reta de regressão $\\hat{y} = \\hat{\\beta}_0 + \\hat{\\beta}_1 x$ é aquela que minimiza a soma das distâncias verticais ao quadrado entre os pontos observados e a reta:\n\n$$\n\\text{SQE} = \\sum_{i=1}^{n}(y_i - \\hat{y}_i)^2 = \\sum_{i=1}^{n}(y_i - \\hat{\\beta}_0 - \\hat{\\beta}_1 x_i)^2\n$$"
+    },
+    {
+      "id": "regressao-b018",
+      "type": "prose",
+      "markdown": "### Derivação das fórmulas\n\nPara minimizar SQE, calculamos as derivadas parciais em relação a $\\hat{\\beta}_0$ e $\\hat{\\beta}_1$ e igualamos a zero:\n\n$$\n\\frac{\\partial \\text{SQE}}{\\partial \\hat{\\beta}_0} = -2\\sum_{i=1}^{n}(y_i - \\hat{\\beta}_0 - \\hat{\\beta}_1 x_i) = 0\n$$\n\n$$\n\\frac{\\partial \\text{SQE}}{\\partial \\hat{\\beta}_1} = -2\\sum_{i=1}^{n}x_i(y_i - \\hat{\\beta}_0 - \\hat{\\beta}_1 x_i) = 0\n$$\n\nResolvendo esse sistema de **equações normais**, obtemos:"
+    },
+    {
+      "id": "regressao-b019",
+      "type": "callout",
+      "calloutType": "note",
+      "title": "Definição",
+      "markdown": "**Estimadores de Mínimos Quadrados:**\n\n$$\n\\hat{\\beta}_1 = \\frac{\\sum_{i=1}^{n}(x_i - \\bar{x})(y_i - \\bar{y})}{\\sum_{i=1}^{n}(x_i - \\bar{x})^2} = \\frac{S_{xy}}{S_{xx}}\n$$\n\n$$\n\\hat{\\beta}_0 = \\bar{y} - \\hat{\\beta}_1 \\bar{x}\n$$\n\nonde:\n\n- $S_{xy} = \\sum_{i=1}^{n}(x_i - \\bar{x})(y_i - \\bar{y})$ é a soma dos produtos cruzados\n- $S_{xx} = \\sum_{i=1}^{n}(x_i - \\bar{x})^2$ é a soma dos quadrados de $X$"
+    },
+    {
+      "id": "regressao-b020",
+      "type": "prose",
+      "markdown": "Observe que $\\hat{\\beta}_1$ tem uma relação direta com a correlação de Pearson:\n\n$$\n\\hat{\\beta}_1 = r \\cdot \\frac{s_y}{s_x}\n$$\n\ne a reta de regressão sempre passa pelo ponto $(\\bar{x}, \\bar{y})$."
+    },
+    {
+      "id": "regressao-b021",
+      "type": "prose",
+      "markdown": "### Cálculo manual (exemplo)\n\nConsidere cinco observações:\n\n| $x$ | $y$ |\n|---|---|\n| 2 | 4 |\n| 4 | 7 |\n| 6 | 8 |\n| 8 | 11 |\n| 10 | 13 |\n\n- $\\bar{x} = 6$, $\\bar{y} = 8{,}6$\n- $S_{xy} = (2-6)(4-8{,}6) + (4-6)(7-8{,}6) + \\ldots + (10-6)(13-8{,}6) = 18{,}4 + 3{,}2 + 0 + 4{,}8 + 17{,}6 = 44$\n- $S_{xx} = 16 + 4 + 0 + 4 + 16 = 40$\n- $\\hat{\\beta}_1 = 44/40 = 1{,}1$\n- $\\hat{\\beta}_0 = 8{,}6 - 1{,}1 \\times 6 = 2{,}0$\n- Reta: $\\hat{y} = 2{,}0 + 1{,}1x$\n\n**Interpretação**: para cada hora adicional de estudo, a nota aumenta, em média, 1,1 ponto."
+    },
+    {
+      "id": "regressao-b022",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 4.5** ⭐⭐\n\nDados os seguintes pares $(x, y)$: $(1, 3)$, $(2, 5)$, $(3, 4)$, $(4, 8)$, $(5, 9)$.\n\na) Calcule $\\bar{x}$, $\\bar{y}$, $S_{xy}$ e $S_{xx}$.\nb) Obtenha $\\hat{\\beta}_0$ e $\\hat{\\beta}_1$.\nc) Escreva a equação da reta de regressão.\nd) Usando a reta, preveja o valor de $Y$ quando $X = 3{,}5$."
+    },
+    {
+      "id": "regressao-b023",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 4.6** ⭐⭐\n\nDemonstre que a reta de regressão estimada sempre passa pelo ponto $(\\bar{x}, \\bar{y})$. *Dica*: substitua $x = \\bar{x}$ na equação $\\hat{y} = \\hat{\\beta}_0 + \\hat{\\beta}_1 x$ e use a relação $\\hat{\\beta}_0 = \\bar{y} - \\hat{\\beta}_1\\bar{x}$."
+    },
+    {
+      "id": "regressao-b024",
+      "type": "prose",
+      "markdown": "## Coeficiente de Determinação ($R^2$)\n\nUma vez ajustado o modelo, precisamos medir o quanto ele explica da variação observada em $Y$."
+    },
+    {
+      "id": "regressao-b025",
+      "type": "prose",
+      "markdown": "### Decomposição da variabilidade\n\nA variação total de $Y$ pode ser decomposta em duas partes:\n\n$$\n\\underbrace{\\sum_{i=1}^{n}(y_i - \\bar{y})^2}_{\\text{SQT}} = \\underbrace{\\sum_{i=1}^{n}(\\hat{y}_i - \\bar{y})^2}_{\\text{SQR}} + \\underbrace{\\sum_{i=1}^{n}(y_i - \\hat{y}_i)^2}_{\\text{SQE}}\n$$\n\nonde:\n\n- **SQT** (Soma de Quadrados Total): variação total de $Y$.\n- **SQR** (Soma de Quadrados da Regressão): variação de $Y$ explicada pelo modelo.\n- **SQE** (Soma de Quadrados dos Erros/Resíduos): variação não explicada."
+    },
+    {
+      "id": "regressao-b026",
+      "type": "callout",
+      "calloutType": "note",
+      "title": "Definição",
+      "markdown": "O **Coeficiente de Determinação** $R^2$ é a proporção da variação total de $Y$ que é explicada pelo modelo de regressão:\n\n$$\nR^2 = \\frac{\\text{SQR}}{\\text{SQT}} = 1 - \\frac{\\text{SQE}}{\\text{SQT}}\n$$\n\nonde $0 \\leq R^2 \\leq 1$."
+    },
+    {
+      "id": "regressao-b027",
+      "type": "prose",
+      "markdown": "**Interpretação:**\n\n- $R^2 = 0$: o modelo não explica nada da variação de $Y$.\n- $R^2 = 1$: o modelo explica toda a variação de $Y$ (ajuste perfeito).\n- $R^2 = 0{,}85$: 85% da variação de $Y$ é explicada pela variável $X$.\n\nNa regressão linear simples, $R^2 = r^2$ (quadrado da correlação de Pearson)."
+    },
+    {
+      "id": "regressao-b028",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 4.7** ⭐\n\nSe a correlação de Pearson entre $X$ e $Y$ é $r = -0{,}80$, qual é o valor de $R^2$? Interprete o resultado."
+    },
+    {
+      "id": "regressao-b029",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 4.8** ⭐⭐\n\nUm modelo de regressão foi ajustado e obteve-se SQT = 500 e SQE = 120.\n\na) Calcule SQR e $R^2$.\nb) Interprete o valor de $R^2$ obtido.\nc) É possível ter $R^2$ alto mas o modelo ser inadequado? Dê um exemplo."
+    },
+    {
+      "id": "regressao-b030",
+      "type": "prose",
+      "markdown": "## Análise de Resíduos\n\nO ajuste de um modelo de regressão não está completo sem a verificação dos pressupostos. A **análise de resíduos** é a principal ferramenta para essa verificação."
+    },
+    {
+      "id": "regressao-b031",
+      "type": "callout",
+      "calloutType": "note",
+      "title": "Definição",
+      "markdown": "O **resíduo** da $i$-ésima observação é a diferença entre o valor observado e o valor predito pelo modelo:\n\n$$\ne_i = y_i - \\hat{y}_i\n$$"
+    },
+    {
+      "id": "regressao-b032",
+      "type": "prose",
+      "markdown": "Se o modelo estiver bem ajustado e os pressupostos forem satisfeitos, os resíduos devem se comportar como realizações de variáveis aleatórias normais com média zero e variância constante."
+    },
+    {
+      "id": "regressao-b033",
+      "type": "prose",
+      "markdown": "### Gráficos diagnósticos\n\nOs principais gráficos para análise de resíduos são:\n\n1. **Resíduos vs. Valores ajustados** ($e_i$ vs. $\\hat{y}_i$): verifica linearidade e homocedasticidade. Deve apresentar pontos distribuídos aleatoriamente em torno de zero, sem padrão.\n\n2. **QQ-plot dos resíduos**: verifica normalidade. Os pontos devem seguir aproximadamente a diagonal.\n\n3. **Resíduos vs. Ordem** (se os dados forem sequenciais): verifica independência.\n\n**Padrões problemáticos:**\n\n- **Funil** (variância crescente): violação da homocedasticidade.\n- **Curvatura**: violação da linearidade — pode ser necessário transformar variáveis ou usar modelo não linear.\n- **Pontos isolados**: possíveis outliers ou observações influentes."
+    },
+    {
+      "id": "regressao-b034",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 4.9** ⭐⭐\n\nDescreva o que cada um dos padrões abaixo no gráfico de resíduos vs. valores ajustados indica sobre o modelo:\n\na) Pontos espalhados aleatoriamente em torno de zero.\nb) Padrão em formato de \"U\" (parábola).\nc) Formato de funil (variância aumentando da esquerda para a direita).\nd) Um ponto muito distante dos demais."
+    },
+    {
+      "id": "regressao-b035",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 4.10** ⭐⭐\n\nExplique por que dividimos a SQE por $n - 2$ (e não por $n$) para estimar $\\sigma^2$ no modelo de regressão linear simples:\n\n$$\n\\hat{\\sigma}^2 = \\frac{\\text{SQE}}{n - 2} = \\frac{\\sum_{i=1}^{n} e_i^2}{n - 2}\n$$\n\n*Dica*: quantos parâmetros foram estimados?"
+    },
+    {
+      "id": "regressao-b036",
+      "type": "prose",
+      "markdown": "## Aplicação em R\n\nVamos realizar uma análise completa de regressão linear simples utilizando o conjunto de dados `pesquisa_exemplo.csv`, investigando a relação entre **horas de estudo** ($X$) e **nota final** ($Y$)."
+    },
+    {
+      "id": "regressao-b037",
+      "type": "prose",
+      "markdown": "### Passo 1: Exploração visual"
+    },
+    {
+      "id": "regressao-b038",
+      "type": "code",
+      "lang": "r",
+      "code": "# Carregar dados\ndados <- read.csv(\"dados/pesquisa_exemplo.csv\")\n\n# Estatísticas descritivas das variáveis\nsummary(dados[, c(\"horas_estudo\", \"nota_final\")])"
+    },
+    {
+      "id": "regressao-b039",
+      "type": "code",
+      "lang": "r",
+      "code": "# Diagrama de dispersão com reta de regressão\nplot(dados$horas_estudo, dados$nota_final,\n     xlab = \"Horas de Estudo\",\n     ylab = \"Nota Final\",\n     main = \"Regressão: Nota Final ~ Horas de Estudo\",\n     pch = 19,\n     col = \"#448EE3\",\n     cex = 1.2)\nabline(lm(nota_final ~ horas_estudo, data = dados),\n       col = \"#2D4188\", lwd = 2)\ngrid()"
+    },
+    {
+      "id": "regressao-b040",
+      "type": "prose",
+      "markdown": "### Passo 2: Ajuste do modelo"
+    },
+    {
+      "id": "regressao-b041",
+      "type": "code",
+      "lang": "r",
+      "code": "# Ajustar o modelo de regressão\nmodelo <- lm(nota_final ~ horas_estudo, data = dados)\n\n# Resumo completo do modelo\nsummary(modelo)"
+    },
+    {
+      "id": "regressao-b042",
+      "type": "prose",
+      "markdown": "**Interpretação da saída:**\n\n- `(Intercept)`: estimativa de $\\hat{\\beta}_0$ — valor esperado da nota quando horas de estudo = 0.\n- `horas_estudo`: estimativa de $\\hat{\\beta}_1$ — acréscimo esperado na nota para cada hora adicional de estudo.\n- `Pr(>|t|)`: valor-p do teste $H_0: \\beta = 0$. Valores pequenos indicam significância.\n- `Multiple R-squared`: $R^2$ — proporção da variação da nota explicada pelas horas de estudo.\n- `F-statistic`: teste global do modelo ($H_0: \\beta_1 = 0$)."
+    },
+    {
+      "id": "regressao-b043",
+      "type": "code",
+      "lang": "r",
+      "code": "# Extraindo os coeficientes\ncoefs <- coef(modelo)\ncat(\"Intercepto (beta_0):\", round(coefs[1], 4), \"\\n\")\ncat(\"Coeficiente angular (beta_1):\", round(coefs[2], 4), \"\\n\")\ncat(\"\\nEquação da reta: nota_final =\", round(coefs[1], 2), \"+\",\n    round(coefs[2], 2), \"* horas_estudo\\n\")"
+    },
+    {
+      "id": "regressao-b044",
+      "type": "code",
+      "lang": "r",
+      "code": "# R² e correlação\nr_quadrado <- summary(modelo)$r.squared\ncat(\"R²:\", round(r_quadrado, 4), \"\\n\")\ncat(\"Correlação de Pearson:\", round(cor(dados$horas_estudo, dados$nota_final), 4), \"\\n\")\ncat(\"Verificação: r² =\", round(cor(dados$horas_estudo, dados$nota_final)^2, 4), \"\\n\")"
+    },
+    {
+      "id": "regressao-b045",
+      "type": "prose",
+      "markdown": "### Passo 3: Predição"
+    },
+    {
+      "id": "regressao-b046",
+      "type": "code",
+      "lang": "r",
+      "code": "# Predição para novos valores de horas_estudo\nnovos_dados <- data.frame(horas_estudo = c(5, 8, 10, 12, 15))\n\n# Predição pontual\npred <- predict(modelo, newdata = novos_dados)\n\n# Predição com intervalo de confiança (para a média)\npred_ic <- predict(modelo, newdata = novos_dados, interval = \"confidence\")\n\n# Predição com intervalo de predição (para uma nova observação)\npred_ip <- predict(modelo, newdata = novos_dados, interval = \"prediction\")\n\ncat(\"Predições pontuais:\\n\")\ndata.frame(horas = novos_dados$horas_estudo, nota_prevista = round(pred, 2))"
+    },
+    {
+      "id": "regressao-b047",
+      "type": "prose",
+      "markdown": "### Passo 4: Análise de resíduos"
+    },
+    {
+      "id": "regressao-b048",
+      "type": "code",
+      "lang": "r",
+      "code": "# Gráficos diagnósticos automáticos do R\npar(mfrow = c(2, 2))\nplot(modelo)"
+    },
+    {
+      "id": "regressao-b049",
+      "type": "code",
+      "lang": "r",
+      "code": "# Análise manual dos resíduos\nresiduos <- residuals(modelo)\najustados <- fitted(modelo)\n\n# Gráfico: Resíduos vs Ajustados\npar(mfrow = c(1, 2))\n\nplot(ajustados, residuos,\n     xlab = \"Valores Ajustados\",\n     ylab = \"Resíduos\",\n     main = \"Resíduos vs Ajustados\",\n     pch = 19, col = \"#448EE3\")\nabline(h = 0, lty = 2, col = \"red\")\n\n# QQ-plot dos resíduos\nqqnorm(residuos, main = \"QQ-Plot dos Resíduos\",\n       pch = 19, col = \"#448EE3\")\nqqline(residuos, col = \"#2D4188\", lwd = 2)"
+    },
+    {
+      "id": "regressao-b050",
+      "type": "code",
+      "lang": "r",
+      "code": "# Teste de normalidade dos resíduos (Shapiro-Wilk)\nshapiro.test(residuos)"
+    },
+    {
+      "id": "regressao-b051",
+      "type": "prose",
+      "markdown": "### Passo 5: Visualização completa"
+    },
+    {
+      "id": "regressao-b052",
+      "type": "code",
+      "lang": "r",
+      "code": "# Gráfico com reta de regressão e intervalos\nnovos <- data.frame(horas_estudo = seq(min(dados$horas_estudo),\n                                        max(dados$horas_estudo),\n                                        length.out = 100))\nic <- predict(modelo, newdata = novos, interval = \"confidence\")\nip <- predict(modelo, newdata = novos, interval = \"prediction\")\n\nplot(dados$horas_estudo, dados$nota_final,\n     xlab = \"Horas de Estudo\",\n     ylab = \"Nota Final\",\n     main = \"Regressão Linear com Intervalos\",\n     pch = 19, col = \"#448EE3\", cex = 1.2,\n     ylim = c(min(ip[, \"lwr\"]), max(ip[, \"upr\"])))\n\n# Reta ajustada\nlines(novos$horas_estudo, ic[, \"fit\"], col = \"#2D4188\", lwd = 2)\n\n# Intervalo de confiança (mais estreito)\nlines(novos$horas_estudo, ic[, \"lwr\"], col = \"#2D4188\", lty = 2)\nlines(novos$horas_estudo, ic[, \"upr\"], col = \"#2D4188\", lty = 2)\n\n# Intervalo de predição (mais largo)\nlines(novos$horas_estudo, ip[, \"lwr\"], col = \"gray50\", lty = 3)\nlines(novos$horas_estudo, ip[, \"upr\"], col = \"gray50\", lty = 3)\n\nlegend(\"topleft\",\n       legend = c(\"Dados\", \"Reta ajustada\", \"IC (média)\", \"IP (nova obs.)\"),\n       col = c(\"#448EE3\", \"#2D4188\", \"#2D4188\", \"gray50\"),\n       pch = c(19, NA, NA, NA),\n       lty = c(NA, 1, 2, 3),\n       lwd = c(NA, 2, 1, 1),\n       cex = 0.8)"
+    },
+    {
+      "id": "regressao-b053",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 4.11** ⭐⭐\n\nUsando o R e o conjunto de dados `pesquisa_exemplo.csv`:\n\na) Ajuste um modelo de regressão linear de `renda` em função de `idade`.\nb) Apresente a equação da reta e o $R^2$.\nc) Interprete o coeficiente angular no contexto do problema.\nd) Produza os gráficos diagnósticos e comente se os pressupostos parecem satisfeitos."
+    },
+    {
+      "id": "regressao-b054",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 4.12** ⭐⭐⭐\n\nConsidere a regressão de `nota_final` em função de `horas_estudo`.\n\na) Se um aluno estuda 20 horas por semana, qual a nota prevista pelo modelo? Você confia nessa previsão? Justifique.\nb) Calcule manualmente $\\hat{\\beta}_1$ usando a fórmula $\\hat{\\beta}_1 = r \\cdot s_y / s_x$ e compare com a saída do `lm()`.\nc) Identifique a observação com o maior resíduo (positivo ou negativo). Essa observação pode ser considerada um outlier?"
+    },
+    {
+      "id": "regressao-b055",
+      "type": "prose",
+      "markdown": "## Resumo\n\nNeste capítulo, estudamos a **Regressão Linear Simples**, técnica que modela a relação entre uma variável resposta e uma variável explicativa.\n\n**Conceitos-chave:**\n\n- O **diagrama de dispersão** é o ponto de partida para investigar relações entre variáveis.\n- **Correlação** ($r$) mede a força da relação linear, mas **não implica causalidade**.\n- O modelo $Y = \\beta_0 + \\beta_1 X + \\varepsilon$ descreve a relação linear, onde $\\beta_1$ indica a variação em $Y$ para cada unidade de $X$.\n- Os estimadores de **Mínimos Quadrados** minimizam a soma dos quadrados dos resíduos:\n  - $\\hat{\\beta}_1 = S_{xy} / S_{xx}$\n  - $\\hat{\\beta}_0 = \\bar{y} - \\hat{\\beta}_1 \\bar{x}$\n- O **coeficiente de determinação** $R^2$ indica a proporção da variação de $Y$ explicada por $X$. Na regressão simples, $R^2 = r^2$.\n- A **análise de resíduos** é essencial para verificar os pressupostos: linearidade, independência, homocedasticidade e normalidade.\n- **Pressupostos violados** podem invalidar as inferências do modelo.\n\n**Funções R essenciais:**\n\n| Função | Finalidade |\n|---|---|\n| `lm()` | Ajustar modelo de regressão linear |\n| `summary()` | Resumo do modelo (coeficientes, $R^2$, testes) |\n| `coef()` | Extrair coeficientes estimados |\n| `predict()` | Predição para novos dados |\n| `residuals()` | Obter resíduos do modelo |\n| `plot(modelo)` | Gráficos diagnósticos |\n| `cor()` | Coeficiente de correlação de Pearson |\n| `shapiro.test()` | Teste de normalidade |"
+    },
+    {
+      "id": "regressao-b056",
+      "type": "callout",
+      "calloutType": "note",
+      "title": "Leitura complementar",
+      "markdown": "Para aprofundamento, consulte:\n\n- BUSSAB, W. O.; MORETTIN, P. A. **Estatística Básica**, Cap. 14–15.\n- MOORE, D. S.; McCABE, G. P. **Introduction to the Practice of Statistics**, Cap. 10."
+    }
+  ]
+}

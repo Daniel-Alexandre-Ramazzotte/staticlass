@@ -4,7 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { YStack, XStack, Text } from 'tamagui';
 import { ActivityIndicator } from 'react-native';
 import { Lightbulb, Menu } from '@tamagui/lucide-icons';
-import { palette as paletaEstatica, primaryFontA } from 'app/constants/style';
+import { primaryFontA } from 'app/constants/style';
 import { useAuth } from 'app/context/AuthContext';
 import { AppButton } from 'app/components/AppButton';
 import api from 'app/services/api';

@@ -15,10 +15,15 @@ from ..repositories.questions_repository import (
     buscar_questoes_aleatorias,
     buscar_questoes_filtradas,
     buscar_questoes_professor,
+    buscar_secoes_unicas,
     buscar_todas_questoes,
     buscar_topicos,
     buscar_alternativas_por_questao,
     _buscar_alternativas_em_lote,
+    criar_proposta,
+    listar_propostas,
+    buscar_proposta_por_id,
+    atualizar_status_proposta,
 )
 
 NUM_QUESTOES_PADRAO = 5
@@ -42,8 +47,34 @@ def _normalizar_fonte(valor, default=None):
     return v
 
 
-def _normalizar_alternativas(alternativas, resposta_correta):
-    if not isinstance(alternativas, list) or len(alternativas) < 2:
+def _normalizar_alternativas(alternativas, resposta_correta, question_type="multiple_choice"):
+    if question_type == "open_answer":
+        return []
+
+    if not isinstance(alternativas, list):
+        raise ValueError("alternativas inválidas")
+
+    if question_type == "true_false":
+        if len(alternativas) < 1:
+            raise ValueError("questão V/F precisa de pelo menos uma afirmação")
+        normalizadas = []
+        letras_vistas = set()
+        for alt in alternativas:
+            if not isinstance(alt, dict):
+                raise ValueError("alternativas inválidas")
+            letra = (alt.get("letter") or "").strip().upper()
+            texto = normalize_numbering((alt.get("text") or "").strip())
+            if not letra or not texto:
+                raise ValueError("cada afirmação precisa de letra e texto")
+            if letra in letras_vistas:
+                raise ValueError("letras duplicadas nas afirmações")
+            letras_vistas.add(letra)
+            is_correct = bool(alt.get("is_correct", False))
+            normalizadas.append({"letter": letra, "text": texto, "is_correct": is_correct})
+        return normalizadas
+
+    # multiple_choice
+    if len(alternativas) < 2:
         raise ValueError("informe pelo menos duas alternativas")
     if len(alternativas) > 5:
         raise ValueError("máximo de 5 alternativas")
@@ -83,25 +114,53 @@ def _para_bool_opcional(valor):
     return bool(valor)
 
 
+_TIPOS_VALIDOS = {"multiple_choice", "true_false", "open_answer"}
+
+_POSICOES_IMAGEM_VALIDAS = {"antes", "depois", "meio"}
+
+
+def _normalizar_posicao_imagem(valor):
+    """Onde a imagem da questão (image_q) aparece em relação ao enunciado.
+    'meio' significa que a imagem é referenciada inline no texto via [img:...]
+    (MathText) e não deve ser renderizada como bloco separado."""
+    if valor in (None, "", "null"):
+        return "depois"
+    valor = str(valor).strip().lower()
+    if valor not in _POSICOES_IMAGEM_VALIDAS:
+        raise ValueError(f"image_q_position inválido — valores aceitos: {sorted(_POSICOES_IMAGEM_VALIDAS)}")
+    return valor
+
+
 def _normalizar_payload(dados, professor_id=None):
     if not dados:
         raise ValueError("dados inválidos")
 
-    enunciado       = (dados.get("issue") or "").strip()
-    resposta_correta = (dados.get("correct_answer") or "").strip().upper()
-    if not enunciado or not resposta_correta:
-        raise ValueError("enunciado e resposta correta são obrigatórios")
+    enunciado = (dados.get("issue") or "").strip()
+    if not enunciado:
+        raise ValueError("enunciado é obrigatório")
+
+    question_type = (dados.get("question_type") or "multiple_choice").strip()
+    if question_type not in _TIPOS_VALIDOS:
+        raise ValueError(f"question_type inválido — valores aceitos: {sorted(_TIPOS_VALIDOS)}")
+
+    resposta_correta_raw = (dados.get("correct_answer") or "").strip().upper() or None
+    if question_type == "multiple_choice" and not resposta_correta_raw:
+        raise ValueError("resposta correta é obrigatória para questões de múltipla escolha")
 
     alternativas_raw = dados.get("alternatives")
     if isinstance(alternativas_raw, str):
         alternativas_raw = json.loads(alternativas_raw)
+    if alternativas_raw is None:
+        alternativas_raw = []
 
     return {
         "issue":          normalize_numbering(enunciado),
-        "correct_answer": resposta_correta,
+        "question_type":  question_type,
+        "correct_answer": resposta_correta_raw,
         "solution":       normalize_numbering((dados.get("solution") or "").strip()) or None,
         "image_q":        dados.get("image_q"),
         "image_s":        dados.get("image_s"),
+        "image_q_position": _normalizar_posicao_imagem(dados.get("image_q_position")),
         "section":        (dados.get("section") or "").strip() or None,
         "source":         _normalizar_fonte(
             dados.get("source"),
@@ -112,7 +171,7 @@ def _normalizar_payload(dados, professor_id=None):
         "chapter_id":     _para_int_opcional(dados.get("chapter_id")),
         "topic_id":       _para_int_opcional(dados.get("topic_id")),
         "professor_id":   professor_id,
-        "alternatives":   _normalizar_alternativas(alternativas_raw, resposta_correta),
+        "alternatives":   _normalizar_alternativas(alternativas_raw, resposta_correta_raw, question_type),
     }
 
 
@@ -169,13 +228,15 @@ def update_question_service(dados):
         if not atual:
             return jsonify({"error": "questão não encontrada"}), 404
 
-        # Mescla valores enviados com os atuais (sem sobrescrever com None)
+        atual_qt = getattr(atual, "question_type", None) or "multiple_choice"
         merged = {
             "issue":          dados.get("issue",          atual.issue),
+            "question_type":  dados.get("question_type",  atual_qt),
             "correct_answer": dados.get("correct_answer", atual.correct_answer),
             "solution":       dados.get("solution",       atual.solution),
             "image_q":        dados.get("image_q",        atual.image_q),
             "image_s":        dados.get("image_s",        atual.image_s),
+            "image_q_position": dados.get("image_q_position", getattr(atual, "image_q_position", None)),
             "section":        dados.get("section",        atual.section),
             "source":         dados.get("source",         atual.source),
             "difficulty":     dados.get("difficulty",     atual.difficulty),
@@ -224,6 +285,7 @@ def get_question_detail_service(questao_id: int):
     if not questao:
         return None
     payload = dict(questao)
+    payload["question_type"] = payload.get("question_type") or "multiple_choice"
     payload["alternatives"] = buscar_alternativas_por_questao(questao_id)
     return payload
 
@@ -250,3 +312,65 @@ def get_chapters_service():
 
 def get_topics_service(chapter_id=None):
     return [dict(t) for t in buscar_topicos(chapter_id)]
+
+
+def upload_image_service(arquivo):
+    if not arquivo or arquivo.filename == "":
+        return jsonify({"error": "nenhum arquivo enviado"}), 400
+    nome = process_upload(arquivo)
+    if not nome:
+        return jsonify({"error": "falha ao salvar imagem"}), 500
+    return jsonify({"filename": nome}), 201
+
+
+def get_sections_service(professor_id=None, role: str = "professor"):
+    return buscar_secoes_unicas(professor_id=professor_id, role=role)
+
+
+def criar_proposta_service(question_id: int, proposer_id: int, dados: dict):
+    questao = buscar_questao_por_id(question_id)
+    if not questao:
+        return jsonify({"error": "questão não encontrada"}), 404
+    changes = dados.get("changes")
+    if not changes or not isinstance(changes, dict):
+        return jsonify({"error": "changes é obrigatório"}), 400
+    reason = dados.get("reason")
+    try:
+        proposal_id = criar_proposta(question_id, proposer_id, changes, reason)
+        return jsonify({"message": "proposta criada", "id": proposal_id}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+def listar_propostas_service(status: str = None) -> list[dict]:
+    return listar_propostas(status)
+
+
+def buscar_proposta_service(proposal_id: int) -> dict | None:
+    return buscar_proposta_por_id(proposal_id)
+
+
+def revisar_proposta_service(proposal_id: int, reviewer_id: int, action: str, admin_note: str = None):
+    proposta = buscar_proposta_por_id(proposal_id)
+    if not proposta:
+        return jsonify({"error": "proposta não encontrada"}), 404
+    if proposta["status"] != "pending":
+        return jsonify({"error": "proposta já foi avaliada"}), 409
+    status_map = {
+        "approve": "approved",
+        "approve_modified": "approved_modified",
+        "reject": "rejected",
+    }
+    if action not in status_map:
+        return jsonify({"error": "ação inválida — use approve, approve_modified ou reject"}), 400
+    if action == "approve":
+        changes = dict(proposta["changes"])
+        changes["id"] = proposta["question_id"]
+        update_result = update_question_service(changes)
+        if isinstance(update_result, tuple) and len(update_result) == 2 and update_result[1] >= 400:
+            return update_result
+    try:
+        atualizar_status_proposta(proposal_id, status_map[action], reviewer_id, admin_note)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    return jsonify({"message": "proposta avaliada"}), 200

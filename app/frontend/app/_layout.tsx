@@ -6,7 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { TamaguiProvider } from 'tamagui';
 import { tamaguiConfig } from '../tamagui.config';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
-import { ThemeProvider, useTema } from '../src/context/ThemeContext';
+import { ThemeProvider, useTema, paletaClara, paletaEscura } from '../src/context/ThemeContext';
 
 const WEB_BUTTON_HOVER_STYLE_ID = 'staticlass-button-hover-styles';
 
@@ -85,9 +85,10 @@ function InitialLayout() {
 
   // Enquanto carrega fontes ou verifica autenticação, mostra spinner
   if (!fontsLoaded || isLoading) {
+    const paleta = temaEfetivo === 'escuro' ? paletaEscura : paletaClara;
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#6200ee" />
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: paleta.fundo }}>
+        <ActivityIndicator size="large" color={paleta.primaryBlue} />
       </View>
     );
   }

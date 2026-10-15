@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from flask_jwt_extended import create_access_token
 from sqlalchemy import text
@@ -145,7 +145,7 @@ def test_professor_can_create_and_publish_list(app, client):
         "/lists",
         json={
             "title": "Lista 1",
-            "deadline": (datetime.utcnow() + timedelta(days=7)).isoformat(),
+            "deadline": (datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=7)).isoformat(),
             "question_ids": [101, 102],
         },
         headers=_auth_headers(professor_token),
@@ -201,7 +201,7 @@ def test_assigned_list_with_past_deadline_is_encerrada_and_can_submit(app, clien
         "/lists",
         json={
             "title": "Lista encerrada",
-            "deadline": (datetime.utcnow() - timedelta(days=1)).isoformat(),
+            "deadline": (datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=1)).isoformat(),
             "question_ids": [201],
         },
         headers=_auth_headers(professor_token),
@@ -241,7 +241,7 @@ def test_student_can_submit_late_and_professor_results_include_analytics(app, cl
         "/lists",
         json={
             "title": "Lista atrasada",
-            "deadline": (datetime.utcnow() - timedelta(hours=2)).isoformat(),
+            "deadline": (datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=2)).isoformat(),
             "question_ids": [301, 302],
         },
         headers=_auth_headers(professor_token),
@@ -255,7 +255,7 @@ def test_student_can_submit_late_and_professor_results_include_analytics(app, cl
         "/lists/1",
         json={
             "title": "Lista atrasada revisada",
-            "deadline": (datetime.utcnow() - timedelta(hours=2)).isoformat(),
+            "deadline": (datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(hours=2)).isoformat(),
             "question_ids": [301, 302],
         },
         headers=_auth_headers(professor_token),

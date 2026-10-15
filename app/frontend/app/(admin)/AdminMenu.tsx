@@ -27,6 +27,18 @@ export default function AdminMenu() {
       >
         Gerenciar alunos
       </AppButton>
+      <AppButton
+        backgroundColor={palette.lightBlue}
+        onPress={() => router.push('/(admin)/AdminTurmaManager')}
+      >
+        Turmas
+      </AppButton>
+      <AppButton
+        backgroundColor={palette.primaryBlue}
+        onPress={() => router.push('/(admin)/AdminCreateList')}
+      >
+        Criar Lista
+      </AppButton>
     </YStack>
   );
 }

@@ -1,0 +1,714 @@
+{
+  "slug": "quarto-git-tutorial",
+  "title": "Tutorial: Quarto, Git e Claude Code",
+  "lang": null,
+  "sourceFile": "D-quarto-git-tutorial.qmd",
+  "generatedAt": "2026-07-26T15:16:36.646Z",
+  "toc": [
+    {
+      "level": 1,
+      "text": "Tutorial: Quarto, Git e Claude Code",
+      "blockId": "quarto-git-tutorial-b000"
+    },
+    {
+      "level": 2,
+      "text": "O que é Quarto?",
+      "blockId": "quarto-git-tutorial-b001"
+    },
+    {
+      "level": 3,
+      "text": "Por que usar Quarto?",
+      "blockId": "quarto-git-tutorial-b002"
+    },
+    {
+      "level": 3,
+      "text": "Arquivos `.qmd`",
+      "blockId": "quarto-git-tutorial-b003"
+    },
+    {
+      "level": 2,
+      "text": "Introdução",
+      "blockId": "quarto-git-tutorial-b004"
+    },
+    {
+      "level": 1,
+      "text": "Código em R",
+      "blockId": "quarto-git-tutorial-b005"
+    },
+    {
+      "level": 1,
+      "text": "Código em Python",
+      "blockId": "quarto-git-tutorial-b006"
+    },
+    {
+      "level": 3,
+      "text": "YAML front matter",
+      "blockId": "quarto-git-tutorial-b007"
+    },
+    {
+      "level": 3,
+      "text": "Code chunks (blocos de código)",
+      "blockId": "quarto-git-tutorial-b008"
+    },
+    {
+      "level": 1,
+      "text": "Este bloco será executado em R",
+      "blockId": "quarto-git-tutorial-b009"
+    },
+    {
+      "level": 1,
+      "text": "Este bloco será executado em Python",
+      "blockId": "quarto-git-tutorial-b010"
+    },
+    {
+      "level": 3,
+      "text": "Comandos essenciais",
+      "blockId": "quarto-git-tutorial-b012"
+    },
+    {
+      "level": 3,
+      "text": "Instalação",
+      "blockId": "quarto-git-tutorial-b013"
+    },
+    {
+      "level": 2,
+      "text": "O que é Git?",
+      "blockId": "quarto-git-tutorial-b015"
+    },
+    {
+      "level": 3,
+      "text": "Por que usar Git?",
+      "blockId": "quarto-git-tutorial-b016"
+    },
+    {
+      "level": 3,
+      "text": "Conceitos fundamentais",
+      "blockId": "quarto-git-tutorial-b017"
+    },
+    {
+      "level": 2,
+      "text": "Workflow Básico do Git",
+      "blockId": "quarto-git-tutorial-b019"
+    },
+    {
+      "level": 3,
+      "text": "Instalação",
+      "blockId": "quarto-git-tutorial-b020"
+    },
+    {
+      "level": 3,
+      "text": "Iniciando um repositório",
+      "blockId": "quarto-git-tutorial-b021"
+    },
+    {
+      "level": 3,
+      "text": "O ciclo básico: add, commit",
+      "blockId": "quarto-git-tutorial-b022"
+    },
+    {
+      "level": 1,
+      "text": "1. Verificar o estado atual",
+      "blockId": "quarto-git-tutorial-b023"
+    },
+    {
+      "level": 1,
+      "text": "2. Adicionar arquivos específicos",
+      "blockId": "quarto-git-tutorial-b024"
+    },
+    {
+      "level": 1,
+      "text": "Ou adicionar todos os arquivos modificados",
+      "blockId": "quarto-git-tutorial-b025"
+    },
+    {
+      "level": 1,
+      "text": "3. Criar um commit com mensagem descritiva",
+      "blockId": "quarto-git-tutorial-b026"
+    },
+    {
+      "level": 3,
+      "text": "Verificando o histórico",
+      "blockId": "quarto-git-tutorial-b028"
+    },
+    {
+      "level": 1,
+      "text": "Versão compacta (uma linha por commit)",
+      "blockId": "quarto-git-tutorial-b029"
+    },
+    {
+      "level": 1,
+      "text": "Com gráfico de branches",
+      "blockId": "quarto-git-tutorial-b030"
+    },
+    {
+      "level": 3,
+      "text": "Enviando e recebendo do remoto",
+      "blockId": "quarto-git-tutorial-b031"
+    },
+    {
+      "level": 3,
+      "text": "O arquivo `.gitignore`",
+      "blockId": "quarto-git-tutorial-b032"
+    },
+    {
+      "level": 1,
+      "text": "Arquivos gerados pelo Quarto",
+      "blockId": "quarto-git-tutorial-b033"
+    },
+    {
+      "level": 1,
+      "text": "Arquivos temporarios do R",
+      "blockId": "quarto-git-tutorial-b034"
+    },
+    {
+      "level": 1,
+      "text": "Arquivos do sistema",
+      "blockId": "quarto-git-tutorial-b035"
+    },
+    {
+      "level": 1,
+      "text": "Dados sensiveis",
+      "blockId": "quarto-git-tutorial-b036"
+    },
+    {
+      "level": 2,
+      "text": "Branches",
+      "blockId": "quarto-git-tutorial-b038"
+    },
+    {
+      "level": 3,
+      "text": "O que são branches?",
+      "blockId": "quarto-git-tutorial-b039"
+    },
+    {
+      "level": 3,
+      "text": "Comandos essenciais",
+      "blockId": "quarto-git-tutorial-b040"
+    },
+    {
+      "level": 1,
+      "text": "Ver todas as branches",
+      "blockId": "quarto-git-tutorial-b041"
+    },
+    {
+      "level": 1,
+      "text": "Criar uma nova branch",
+      "blockId": "quarto-git-tutorial-b042"
+    },
+    {
+      "level": 1,
+      "text": "Mudar para a nova branch",
+      "blockId": "quarto-git-tutorial-b043"
+    },
+    {
+      "level": 1,
+      "text": "Atalho: criar e mudar ao mesmo tempo",
+      "blockId": "quarto-git-tutorial-b044"
+    },
+    {
+      "level": 1,
+      "text": "Voltar para a main",
+      "blockId": "quarto-git-tutorial-b045"
+    },
+    {
+      "level": 1,
+      "text": "Juntar a branch",
+      "blockId": "quarto-git-tutorial-b046"
+    },
+    {
+      "level": 3,
+      "text": "Quando usar branches?",
+      "blockId": "quarto-git-tutorial-b047"
+    },
+    {
+      "level": 2,
+      "text": "GitHub",
+      "blockId": "quarto-git-tutorial-b049"
+    },
+    {
+      "level": 3,
+      "text": "Criando um repositório no GitHub",
+      "blockId": "quarto-git-tutorial-b050"
+    },
+    {
+      "level": 3,
+      "text": "Conectando o repositório local ao remoto",
+      "blockId": "quarto-git-tutorial-b051"
+    },
+    {
+      "level": 1,
+      "text": "Adicionar o GitHub como remoto",
+      "blockId": "quarto-git-tutorial-b052"
+    },
+    {
+      "level": 1,
+      "text": "Enviar os commits pela primeira vez",
+      "blockId": "quarto-git-tutorial-b053"
+    },
+    {
+      "level": 3,
+      "text": "Pull Requests",
+      "blockId": "quarto-git-tutorial-b054"
+    },
+    {
+      "level": 2,
+      "text": "O que é Claude Code?",
+      "blockId": "quarto-git-tutorial-b056"
+    },
+    {
+      "level": 3,
+      "text": "Por que usar Claude Code?",
+      "blockId": "quarto-git-tutorial-b057"
+    },
+    {
+      "level": 3,
+      "text": "Instalação",
+      "blockId": "quarto-git-tutorial-b058"
+    },
+    {
+      "level": 1,
+      "text": "Instalar o Claude Code globalmente",
+      "blockId": "quarto-git-tutorial-b059"
+    },
+    {
+      "level": 1,
+      "text": "Verificar a instalação",
+      "blockId": "quarto-git-tutorial-b060"
+    },
+    {
+      "level": 3,
+      "text": "Uso básico",
+      "blockId": "quarto-git-tutorial-b061"
+    },
+    {
+      "level": 3,
+      "text": "Exemplos de prompts para tarefas estatísticas",
+      "blockId": "quarto-git-tutorial-b062"
+    },
+    {
+      "level": 3,
+      "text": "Boas práticas com Claude Code",
+      "blockId": "quarto-git-tutorial-b064"
+    },
+    {
+      "level": 2,
+      "text": "Como este livro foi feito",
+      "blockId": "quarto-git-tutorial-b065"
+    },
+    {
+      "level": 3,
+      "text": "Estrutura do projeto",
+      "blockId": "quarto-git-tutorial-b066"
+    },
+    {
+      "level": 3,
+      "text": "Identidade visual",
+      "blockId": "quarto-git-tutorial-b067"
+    },
+    {
+      "level": 3,
+      "text": "Banco de questões",
+      "blockId": "quarto-git-tutorial-b068"
+    },
+    {
+      "level": 3,
+      "text": "O papel do Claude Code",
+      "blockId": "quarto-git-tutorial-b069"
+    },
+    {
+      "level": 3,
+      "text": "Seu próximo projeto",
+      "blockId": "quarto-git-tutorial-b070"
+    },
+    {
+      "level": 3,
+      "text": "Recursos adicionais",
+      "blockId": "quarto-git-tutorial-b072"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "quarto-git-tutorial-b000",
+      "type": "prose",
+      "markdown": "# Tutorial: Quarto, Git e Claude Code\n\nEste apêndice apresenta as três ferramentas fundamentais usadas na construção deste livro: **Quarto** (publicação científica), **Git** (controle de versão) e **Claude Code** (assistência de IA via terminal). O objetivo é que você, estudante, possa usar essas mesmas ferramentas nos seus próprios projetos acadêmicos e profissionais."
+    },
+    {
+      "id": "quarto-git-tutorial-b001",
+      "type": "prose",
+      "markdown": "## O que é Quarto?\n\nQuarto é um sistema de publicação científica e técnica de código aberto, desenvolvido pela Posit (antiga RStudio). Ele permite que você escreva documentos que combinam **texto**, **fórmulas matemáticas** e **código executável** em um único arquivo."
+    },
+    {
+      "id": "quarto-git-tutorial-b002",
+      "type": "prose",
+      "markdown": "### Por que usar Quarto?\n\n- **Reprodutibilidade**: o documento e o código vivem juntos, garantindo que qualquer pessoa consiga reproduzir suas análises.\n- **Múltiplos formatos**: a partir de um único arquivo fonte, você pode gerar HTML, PDF, Word, slides e até livros inteiros.\n- **Múltiplas linguagens**: suporta R, Python, Julia e Observable JS.\n- **Gratuito e de código aberto**: disponível em [quarto.org](https://quarto.org)."
+    },
+    {
+      "id": "quarto-git-tutorial-b003",
+      "type": "prose",
+      "markdown": "### Arquivos `.qmd`\n\nOs arquivos Quarto têm a extensão `.qmd` (Quarto Markdown). Eles combinam três elementos:\n\n1. **YAML front matter** — metadados no topo do arquivo\n2. **Markdown** — texto formatado\n3. **Code chunks** — blocos de código executável\n\nVeja um exemplo mínimo de arquivo `.qmd`:\n\n````markdown\n---\ntitle: \"Minha Análise\"\nauthor: \"Seu Nome\"\nformat: html\n---"
+    },
+    {
+      "id": "quarto-git-tutorial-b004",
+      "type": "prose",
+      "markdown": "## Introdução\n\nEste é um documento Quarto. Podemos incluir **negrito**, *itálico* e fórmulas como $\\bar{x} = \\frac{1}{n}\\sum_{i=1}^n x_i$.\n\n```{{r}}"
+    },
+    {
+      "id": "quarto-git-tutorial-b005",
+      "type": "prose",
+      "markdown": "# Código em R\ndados <- c(2, 4, 6, 8, 10)\nmean(dados)\n```\n\n```{{python}}"
+    },
+    {
+      "id": "quarto-git-tutorial-b006",
+      "type": "prose",
+      "markdown": "# Código em Python\nimport numpy as np\ndados = np.array([2, 4, 6, 8, 10])\nprint(np.mean(dados))\n```\n````"
+    },
+    {
+      "id": "quarto-git-tutorial-b007",
+      "type": "prose",
+      "markdown": "### YAML front matter\n\nO bloco YAML fica entre `---` no topo do arquivo e define configurações do documento:\n\n```yaml\n---\ntitle: \"Título do Documento\"\nauthor: \"Seu Nome\"\ndate: \"2026-03-18\"\nformat:\n  html:\n    toc: true\n    number-sections: true\n---\n```\n\nAlgumas opções úteis:\n\n| Opção | Descrição |\n|-------|-----------|\n| `title` | Título do documento |\n| `author` | Autor(es) |\n| `format` | Formato de saída (`html`, `pdf`, `docx`) |\n| `toc` | Gera sumário automático |\n| `number-sections` | Numera as seções |\n| `code-fold` | Permite esconder/mostrar código |"
+    },
+    {
+      "id": "quarto-git-tutorial-b008",
+      "type": "prose",
+      "markdown": "### Code chunks (blocos de código)\n\nPara inserir um bloco de código executável, use três crases seguidas do nome da linguagem entre chaves:\n\n````markdown\n```{{r}}"
+    },
+    {
+      "id": "quarto-git-tutorial-b009",
+      "type": "prose",
+      "markdown": "# Este bloco será executado em R\nsummary(iris)\n```\n````\n\n````markdown\n```{{python}}"
+    },
+    {
+      "id": "quarto-git-tutorial-b010",
+      "type": "prose",
+      "markdown": "# Este bloco será executado em Python\nimport pandas as pd\ndf = pd.read_csv(\"dados.csv\")\ndf.describe()\n```\n````\n\nVocê também pode adicionar opções ao bloco:\n\n````markdown\n```{{r}}\n\nhist(dados$idade, main = \"Histograma\", xlab = \"Idade\")\n```\n````"
+    },
+    {
+      "id": "quarto-git-tutorial-b011",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Opções úteis para code chunks",
+      "markdown": "- `#| echo: false` — esconde o código, mostra só o resultado\n- `#| eval: false` — mostra o código, mas não executa\n- `#| warning: false` — suprime avisos\n- `#| fig-width: 8` — largura da figura em polegadas"
+    },
+    {
+      "id": "quarto-git-tutorial-b012",
+      "type": "prose",
+      "markdown": "### Comandos essenciais\n\nPara **renderizar** o documento (gerar a saída HTML, PDF, etc.):\n\n```bash\nquarto render meu_documento.qmd\n```\n\nPara abrir uma **pré-visualização** que atualiza automaticamente enquanto você edita:\n\n```bash\nquarto preview meu_documento.qmd\n```\n\nPara renderizar **executando** todos os blocos de código:\n\n```bash\nquarto render meu_documento.qmd --execute\n```"
+    },
+    {
+      "id": "quarto-git-tutorial-b013",
+      "type": "prose",
+      "markdown": "### Instalação\n\n1. Acesse [quarto.org/docs/get-started](https://quarto.org/docs/get-started/)\n2. Baixe o instalador para o seu sistema operacional\n3. Siga as instruções de instalação\n4. Verifique a instalação no terminal:\n\n```bash\nquarto --version\n```"
+    },
+    {
+      "id": "quarto-git-tutorial-b014",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Editores recomendados",
+      "markdown": "O Quarto funciona bem com **RStudio**, **VS Code** (com a extensão Quarto) e até editores de texto simples. Para quem já usa R, o RStudio oferece a experiência mais integrada."
+    },
+    {
+      "id": "quarto-git-tutorial-b015",
+      "type": "prose",
+      "markdown": "## O que é Git?\n\nGit é um **sistema de controle de versão** — uma ferramenta que registra todas as alterações feitas nos seus arquivos ao longo do tempo. Pense nele como o \"histórico de versões\" do Google Docs, mas muito mais poderoso e projetado para projetos de código e texto."
+    },
+    {
+      "id": "quarto-git-tutorial-b016",
+      "type": "prose",
+      "markdown": "### Por que usar Git?\n\n- **Histórico completo**: cada alteração fica registrada. Você pode voltar a qualquer versão anterior do projeto.\n- **Colaboração**: várias pessoas podem trabalhar no mesmo projeto sem sobrescrever o trabalho umas das outras.\n- **Backup distribuído**: seu projeto pode existir em múltiplos computadores e servidores (como o GitHub).\n- **Experimentação segura**: você pode criar \"branches\" para testar ideias sem afetar o projeto principal."
+    },
+    {
+      "id": "quarto-git-tutorial-b017",
+      "type": "prose",
+      "markdown": "### Conceitos fundamentais\n\nAntes de usar os comandos, é importante entender alguns conceitos:\n\n**Repositório (repo)**\n: Uma pasta do seu computador que está sendo monitorada pelo Git. Contém todos os arquivos do projeto e o histórico de alterações.\n\n**Commit**\n: Um \"ponto de salvamento\" no histórico. Cada commit registra quais arquivos mudaram, o que mudou, quem fez a mudança e quando.\n\n**Branch (ramificação)**\n: Uma linha paralela de desenvolvimento. Permite que você trabalhe em algo novo sem alterar a versão principal.\n\n**Remote (remoto)**\n: Uma cópia do repositório em um servidor externo, como o GitHub. Serve para backup e colaboração.\n\n**Staging area (área de preparação)**\n: Um espaço intermediário onde você seleciona quais alterações farão parte do próximo commit."
+    },
+    {
+      "id": "quarto-git-tutorial-b018",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Analogia: salvamento de jogo",
+      "markdown": "Pense no Git como um sistema de salvamento de um jogo de video game. Cada **commit** é um save. Você pode ter saves em momentos diferentes, voltar a qualquer um deles e até criar caminhos paralelos (branches) para explorar opções diferentes."
+    },
+    {
+      "id": "quarto-git-tutorial-b019",
+      "type": "prose",
+      "markdown": "## Workflow Básico do Git"
+    },
+    {
+      "id": "quarto-git-tutorial-b020",
+      "type": "prose",
+      "markdown": "### Instalação\n\n- **Windows**: baixe em [git-scm.com](https://git-scm.com) e instale\n- **Mac**: execute `xcode-select --install` no terminal ou baixe em [git-scm.com](https://git-scm.com)\n- **Linux**: `sudo apt install git` (Ubuntu/Debian) ou `sudo dnf install git` (Fedora)\n\nApós instalar, configure seu nome e e-mail:\n\n```bash\ngit config --global user.name \"Seu Nome\"\ngit config --global user.email \"seu.email@exemplo.com\"\n```"
+    },
+    {
+      "id": "quarto-git-tutorial-b021",
+      "type": "prose",
+      "markdown": "### Iniciando um repositório\n\nPara transformar uma pasta comum em um repositório Git:\n\n```bash\nmkdir meu-projeto\ncd meu-projeto\ngit init\n```\n\nVocê verá a mensagem: `Initialized empty Git repository in .../meu-projeto/.git/`"
+    },
+    {
+      "id": "quarto-git-tutorial-b022",
+      "type": "prose",
+      "markdown": "### O ciclo básico: add, commit\n\nO fluxo de trabalho mais comum no Git segue três passos:\n\n1. **Modificar** arquivos normalmente\n2. **Adicionar** as mudanças à área de preparação (`git add`)\n3. **Confirmar** as mudanças com uma mensagem (`git commit`)\n\n```bash"
+    },
+    {
+      "id": "quarto-git-tutorial-b023",
+      "type": "prose",
+      "markdown": "# 1. Verificar o estado atual\ngit status"
+    },
+    {
+      "id": "quarto-git-tutorial-b024",
+      "type": "prose",
+      "markdown": "# 2. Adicionar arquivos específicos\ngit add analise.qmd dados.csv"
+    },
+    {
+      "id": "quarto-git-tutorial-b025",
+      "type": "prose",
+      "markdown": "# Ou adicionar todos os arquivos modificados\ngit add ."
+    },
+    {
+      "id": "quarto-git-tutorial-b026",
+      "type": "prose",
+      "markdown": "# 3. Criar um commit com mensagem descritiva\ngit commit -m \"Adiciona analise descritiva dos dados de vendas\"\n```"
+    },
+    {
+      "id": "quarto-git-tutorial-b027",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Boas mensagens de commit",
+      "markdown": "Escreva mensagens que expliquem **o que** e **por que** você fez a alteração. Compare:\n\n- **Ruim**: `\"alteracoes\"`, `\"update\"`, `\"fix\"`\n- **Bom**: `\"Adiciona gráfico de dispersão no capítulo 4\"`, `\"Corrige fórmula da variância na seção 1.3\"`"
+    },
+    {
+      "id": "quarto-git-tutorial-b028",
+      "type": "prose",
+      "markdown": "### Verificando o histórico\n\nPara ver o estado atual dos arquivos:\n\n```bash\ngit status\n```\n\nPara ver o histórico de commits:\n\n```bash\ngit log"
+    },
+    {
+      "id": "quarto-git-tutorial-b029",
+      "type": "prose",
+      "markdown": "# Versão compacta (uma linha por commit)\ngit log --oneline"
+    },
+    {
+      "id": "quarto-git-tutorial-b030",
+      "type": "prose",
+      "markdown": "# Com gráfico de branches\ngit log --oneline --graph\n```"
+    },
+    {
+      "id": "quarto-git-tutorial-b031",
+      "type": "prose",
+      "markdown": "### Enviando e recebendo do remoto\n\nPara enviar seus commits para o GitHub (ou outro servidor remoto):\n\n```bash\ngit push origin main\n```\n\nPara baixar as alterações mais recentes do remoto:\n\n```bash\ngit pull origin main\n```"
+    },
+    {
+      "id": "quarto-git-tutorial-b032",
+      "type": "prose",
+      "markdown": "### O arquivo `.gitignore`\n\nO arquivo `.gitignore` diz ao Git quais arquivos e pastas ele deve **ignorar** — ou seja, não rastrear. Isso é útil para arquivos temporários, dados sensíveis ou arquivos gerados automaticamente.\n\nCrie um arquivo chamado `.gitignore` na raiz do projeto:\n\n```text"
+    },
+    {
+      "id": "quarto-git-tutorial-b033",
+      "type": "prose",
+      "markdown": "# Arquivos gerados pelo Quarto\n_book/\n_freeze/\n*.html"
+    },
+    {
+      "id": "quarto-git-tutorial-b034",
+      "type": "prose",
+      "markdown": "# Arquivos temporarios do R\n.Rhistory\n.RData\n.Rproj.user/"
+    },
+    {
+      "id": "quarto-git-tutorial-b035",
+      "type": "prose",
+      "markdown": "# Arquivos do sistema\n.DS_Store\nThumbs.db"
+    },
+    {
+      "id": "quarto-git-tutorial-b036",
+      "type": "prose",
+      "markdown": "# Dados sensiveis\n.env\nsenhas.txt\n```"
+    },
+    {
+      "id": "quarto-git-tutorial-b037",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Regra de ouro do `.gitignore`",
+      "markdown": "Nunca versione arquivos que podem ser **gerados automaticamente** (como `_book/`) ou que contêm **informações sensíveis** (como senhas e tokens de API)."
+    },
+    {
+      "id": "quarto-git-tutorial-b038",
+      "type": "prose",
+      "markdown": "## Branches"
+    },
+    {
+      "id": "quarto-git-tutorial-b039",
+      "type": "prose",
+      "markdown": "### O que são branches?\n\nBranches (ramificações) permitem que você desenvolva funcionalidades novas em paralelo, sem afetar o código principal. Imagine que a branch `main` é a versão \"oficial\" do projeto. Você cria uma branch separada para trabalhar em algo novo e, quando terminar, junta tudo de volta."
+    },
+    {
+      "id": "quarto-git-tutorial-b040",
+      "type": "prose",
+      "markdown": "### Comandos essenciais\n\n```bash"
+    },
+    {
+      "id": "quarto-git-tutorial-b041",
+      "type": "prose",
+      "markdown": "# Ver todas as branches\ngit branch"
+    },
+    {
+      "id": "quarto-git-tutorial-b042",
+      "type": "prose",
+      "markdown": "# Criar uma nova branch\ngit branch minha-feature"
+    },
+    {
+      "id": "quarto-git-tutorial-b043",
+      "type": "prose",
+      "markdown": "# Mudar para a nova branch\ngit checkout minha-feature"
+    },
+    {
+      "id": "quarto-git-tutorial-b044",
+      "type": "prose",
+      "markdown": "# Atalho: criar e mudar ao mesmo tempo\ngit checkout -b minha-feature\n```\n\nApós fazer seus commits na branch, você pode juntar (merge) com a branch principal:\n\n```bash"
+    },
+    {
+      "id": "quarto-git-tutorial-b045",
+      "type": "prose",
+      "markdown": "# Voltar para a main\ngit checkout main"
+    },
+    {
+      "id": "quarto-git-tutorial-b046",
+      "type": "prose",
+      "markdown": "# Juntar a branch\ngit merge minha-feature\n```"
+    },
+    {
+      "id": "quarto-git-tutorial-b047",
+      "type": "prose",
+      "markdown": "### Quando usar branches?\n\n- Ao desenvolver uma **nova funcionalidade** (ex: um novo capítulo do livro)\n- Ao fazer uma **correção de bug** que pode demorar\n- Ao **experimentar** algo que talvez não vá pro projeto final\n- Ao **colaborar**: cada pessoa trabalha em sua branch"
+    },
+    {
+      "id": "quarto-git-tutorial-b048",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Nomes de branches",
+      "markdown": "Use nomes descritivos e curtos, separados por hífen:\n\n- `capitulo-05-anova`\n- `corrige-formulas-cap3`\n- `melhora-graficos`"
+    },
+    {
+      "id": "quarto-git-tutorial-b049",
+      "type": "prose",
+      "markdown": "## GitHub\n\nO [GitHub](https://github.com) é uma plataforma online que hospeda repositórios Git. Ele funciona como um \"Google Drive para código\", mas com todas as vantagens do Git integradas."
+    },
+    {
+      "id": "quarto-git-tutorial-b050",
+      "type": "prose",
+      "markdown": "### Criando um repositório no GitHub\n\n1. Faça login em [github.com](https://github.com)\n2. Clique em **\"New repository\"** (ou o botão **+** no canto superior direito)\n3. Escolha um nome (ex: `minha-analise-estatistica`)\n4. Escolha entre público ou privado\n5. Clique em **\"Create repository\"**"
+    },
+    {
+      "id": "quarto-git-tutorial-b051",
+      "type": "prose",
+      "markdown": "### Conectando o repositório local ao remoto\n\nSe você já tem um repositório local e criou um repositório vazio no GitHub:\n\n```bash"
+    },
+    {
+      "id": "quarto-git-tutorial-b052",
+      "type": "prose",
+      "markdown": "# Adicionar o GitHub como remoto\ngit remote add origin https://github.com/seu-usuario/seu-repo.git"
+    },
+    {
+      "id": "quarto-git-tutorial-b053",
+      "type": "prose",
+      "markdown": "# Enviar os commits pela primeira vez\ngit push -u origin main\n```\n\nSe você quer **baixar** um repositório que já existe no GitHub:\n\n```bash\ngit clone https://github.com/usuario/repositorio.git\n```"
+    },
+    {
+      "id": "quarto-git-tutorial-b054",
+      "type": "prose",
+      "markdown": "### Pull Requests\n\nQuando você trabalha em uma branch e quer incorporar suas mudanças na branch principal, você pode criar um **Pull Request** (PR) no GitHub. O PR permite que outras pessoas revisem seu código antes de aceitá-lo.\n\nO fluxo é:\n\n1. Crie uma branch e faça seus commits\n2. Envie a branch para o GitHub: `git push origin minha-branch`\n3. No GitHub, clique em **\"Compare & pull request\"**\n4. Descreva suas alterações e solicite revisão\n5. Após aprovação, faça o **merge** pelo GitHub"
+    },
+    {
+      "id": "quarto-git-tutorial-b055",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "GitHub para estudantes",
+      "markdown": "O GitHub oferece o [GitHub Student Developer Pack](https://education.github.com/pack), que inclui repositórios privados ilimitados e diversas ferramentas gratuitas para estudantes. Basta se cadastrar com seu e-mail acadêmico."
+    },
+    {
+      "id": "quarto-git-tutorial-b056",
+      "type": "prose",
+      "markdown": "## O que é Claude Code?\n\nClaude Code é uma ferramenta de **assistência de IA via linha de comando** desenvolvida pela Anthropic. Diferente de interfaces web de chat, o Claude Code opera diretamente no seu terminal, com acesso ao sistema de arquivos e ao contexto do seu projeto."
+    },
+    {
+      "id": "quarto-git-tutorial-b057",
+      "type": "prose",
+      "markdown": "### Por que usar Claude Code?\n\n- **Contexto do projeto**: ele pode ler seus arquivos e entender a estrutura do projeto como um todo.\n- **Execução de comandos**: pode rodar comandos no terminal (com sua permissão) para testar, compilar ou verificar o código.\n- **Edição de arquivos**: pode criar e modificar arquivos diretamente, agilizando tarefas repetitivas.\n- **Assistência contextual**: como ele enxerga todo o projeto, as sugestões são mais precisas do que em um chat genérico."
+    },
+    {
+      "id": "quarto-git-tutorial-b058",
+      "type": "prose",
+      "markdown": "### Instalação\n\nPara instalar o Claude Code, você precisa do Node.js (versão 18 ou superior):\n\n```bash"
+    },
+    {
+      "id": "quarto-git-tutorial-b059",
+      "type": "prose",
+      "markdown": "# Instalar o Claude Code globalmente\nnpm install -g @anthropic-ai/claude-code"
+    },
+    {
+      "id": "quarto-git-tutorial-b060",
+      "type": "prose",
+      "markdown": "# Verificar a instalação\nclaude --version\n```"
+    },
+    {
+      "id": "quarto-git-tutorial-b061",
+      "type": "prose",
+      "markdown": "### Uso básico\n\nNavegue até a pasta do seu projeto e inicie o Claude Code:\n\n```bash\ncd meu-projeto\nclaude\n```\n\nAo iniciar, o Claude Code lê o contexto do projeto (incluindo um arquivo `CLAUDE.md`, se existir) e está pronto para receber instruções."
+    },
+    {
+      "id": "quarto-git-tutorial-b062",
+      "type": "prose",
+      "markdown": "### Exemplos de prompts para tarefas estatísticas\n\nAqui estão exemplos de como pedir ajuda ao Claude Code em tarefas de programação estatística:\n\n**Criar um gráfico:**\n```\n> Crie um grafico de dispersao com os dados do arquivo dados/vendas.csv,\n  usando ggplot2, com titulo em portugues e a identidade visual PROPET.\n```\n\n**Escrever uma função:**\n```\n> Escreva uma funcao em R que calcule o intervalo de confianca para a\n  media de uma amostra, recebendo o vetor de dados e o nivel de confianca.\n```\n\n**Depurar um erro:**\n```\n> O chunk de R no arquivo 03-inferencia.qmd esta dando erro na linha 145.\n  Pode verificar o que esta errado?\n```\n\n**Converter código:**\n```\n> Converta o codigo R do chunk \"analise-descritiva\" no capitulo 1\n  para Python usando pandas e matplotlib.\n```"
+    },
+    {
+      "id": "quarto-git-tutorial-b063",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "O arquivo `CLAUDE.md`",
+      "markdown": "Crie um arquivo `CLAUDE.md` na raiz do seu projeto com instruções sobre a estrutura do projeto, comandos de build e convenções. O Claude Code lê esse arquivo automaticamente e usa as informações para dar respostas mais precisas."
+    },
+    {
+      "id": "quarto-git-tutorial-b064",
+      "type": "prose",
+      "markdown": "### Boas práticas com Claude Code\n\n1. **Seja específico**: quanto mais contexto você fornecer, melhor a resposta.\n2. **Revise o código gerado**: sempre confira se o resultado faz sentido estatisticamente.\n3. **Use iterativamente**: comece com algo simples e vá refinando com novas instruções.\n4. **Aproveite o contexto do projeto**: referencie arquivos e funções pelo nome — o Claude Code consegue encontrá-los."
+    },
+    {
+      "id": "quarto-git-tutorial-b065",
+      "type": "prose",
+      "markdown": "## Como este livro foi feito\n\nEste livro — *Introdução Interativa a Estatística* — foi construído combinando as três ferramentas apresentadas neste apêndice. Entender como ele foi feito pode inspirar você a criar seus próprios materiais."
+    },
+    {
+      "id": "quarto-git-tutorial-b066",
+      "type": "prose",
+      "markdown": "### Estrutura do projeto\n\nO livro é um **Quarto Book**, um formato especial do Quarto para documentos longos com múltiplos capítulos. A configuração fica no arquivo `_quarto.yml`:\n\n```yaml\nproject:\n  type: book\n\nbook:\n  title: \"Introdução Interativa a Estatística\"\n  author: \"Daniel Alexandre Ramazzotte\"\n  chapters:\n    - index.qmd\n    - 01-descritiva.qmd\n    - 02-probabilidade.qmd\n    - 03-inferencia.qmd\n    - 04-regressao.qmd\n    - 05-problemas-pesquisa-aplicados.qmd\n  appendices:\n    - A-intro-r.qmd\n    - B-intro-python.qmd\n    - C-dicas-ia.qmd\n    - D-quarto-git-tutorial.qmd\n    - E-creditos.qmd\n```\n\nCada capítulo é um arquivo `.qmd` independente, o que facilita a organização e a colaboração."
+    },
+    {
+      "id": "quarto-git-tutorial-b067",
+      "type": "prose",
+      "markdown": "### Identidade visual\n\nA identidade visual do PROPET DataSci foi aplicada via um arquivo `custom.scss` que personaliza cores, fontes e espaçamentos:\n\n- **Azul primário**: `#448EE3`\n- **Azul escuro**: `#2D4188`\n- **Texto claro**: `#FCFCFC`\n- **Texto escuro**: `#000000`\n\nEsse arquivo SCSS é referenciado no `_quarto.yml` e aplicado automaticamente em toda a renderização HTML."
+    },
+    {
+      "id": "quarto-git-tutorial-b068",
+      "type": "prose",
+      "markdown": "### Banco de questões\n\nAs 358 questões de fixação do livro foram organizadas em um **banco de questões estruturado**. O fluxo foi:\n\n1. As questões foram escritas em um documento Markdown\n2. Um script Python (`parse_questoes.py`) fez o parsing do Markdown e gerou comandos SQL\n3. O banco de dados (MySQL/SQLite) armazena as questões com metadados: capítulo, tema, dificuldade, tipo e alternativas\n\nIsso permite filtrar, sortear e reutilizar questões de forma sistemática."
+    },
+    {
+      "id": "quarto-git-tutorial-b069",
+      "type": "prose",
+      "markdown": "### O papel do Claude Code\n\nO Claude Code foi uma ferramenta central na construção deste livro. Ele auxiliou em diversas tarefas:\n\n- **Escrita e organização** dos capítulos, mantendo consistência de estilo e terminologia\n- **Geração de código** R e Python para os exemplos e exercícios\n- **Criação do parser** de questões (Markdown para SQL)\n- **Depuração** de erros no Quarto e nos scripts\n- **Revisão** de fórmulas e explicações estatísticas\n\nIsso não significa que a IA fez o trabalho sozinha — todas as decisões pedagógicas, a seleção de conteúdo e a verificação de corretude foram feitas pelo autor. O Claude Code funcionou como um **assistente qualificado** que acelerou o processo."
+    },
+    {
+      "id": "quarto-git-tutorial-b070",
+      "type": "prose",
+      "markdown": "### Seu próximo projeto\n\nAgora que você conhece essas ferramentas, aqui vai uma sugestão de como começar seu próprio projeto:\n\n1. **Instale** o Quarto, o Git e o Claude Code\n2. **Crie** um repositório Git para o seu projeto\n3. **Inicie** um documento `.qmd` com sua análise\n4. **Faça commits** frequentes, com mensagens descritivas\n5. **Suba** o repositório para o GitHub\n6. **Use** o Claude Code para ajudar com código e depuração"
+    },
+    {
+      "id": "quarto-git-tutorial-b071",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Comece simples",
+      "markdown": "Você não precisa dominar tudo de uma vez. Comece com um único arquivo `.qmd`, aprenda a renderizar, depois vá adicionando Git e Claude Code conforme a necessidade. A prática leva à fluência."
+    },
+    {
+      "id": "quarto-git-tutorial-b072",
+      "type": "prose",
+      "markdown": "### Recursos adicionais\n\n- **Quarto**: [quarto.org/docs/guide](https://quarto.org/docs/guide/) — documentação oficial\n- **Git**: [git-scm.com/book/pt-br](https://git-scm.com/book/pt-br/) — livro Pro Git em português\n- **GitHub**: [docs.github.com](https://docs.github.com) — documentação oficial\n- **Claude Code**: [docs.anthropic.com](https://docs.anthropic.com) — documentação da Anthropic"
+    }
+  ]
+}

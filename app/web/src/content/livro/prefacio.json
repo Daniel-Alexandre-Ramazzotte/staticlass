@@ -1,0 +1,68 @@
+{
+  "slug": "prefacio",
+  "title": "Prefácio",
+  "lang": null,
+  "sourceFile": "index.qmd",
+  "generatedAt": "2026-07-26T15:16:36.248Z",
+  "toc": [
+    {
+      "level": 1,
+      "text": "Prefácio",
+      "blockId": "prefacio-b000"
+    },
+    {
+      "level": 2,
+      "text": "Sobre este livro",
+      "blockId": "prefacio-b002"
+    },
+    {
+      "level": 2,
+      "text": "Como usar este livro",
+      "blockId": "prefacio-b003"
+    },
+    {
+      "level": 2,
+      "text": "Referências Bibliográficas",
+      "blockId": "prefacio-b004"
+    },
+    {
+      "level": 2,
+      "text": "Currículo base",
+      "blockId": "prefacio-b005"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "prefacio-b000",
+      "type": "prose",
+      "markdown": "# Prefácio\n\n![](/livro/banner-acao-11.png)"
+    },
+    {
+      "id": "prefacio-b001",
+      "type": "callout",
+      "calloutType": "note",
+      "title": null,
+      "markdown": "**PROPET DataSci — Ação 11: Ensino de Estatística**\n\nEste material foi desenvolvido no âmbito do Programa de Educação Tutorial (PROPET) DataSci da Universidade Estadual de Maringá."
+    },
+    {
+      "id": "prefacio-b002",
+      "type": "prose",
+      "markdown": "## Sobre este livro\n\nEste livro é uma introdução interativa à Estatística, destinado a estudantes de graduação que estão tendo o primeiro contato com a disciplina. O material cobre:\n\n- **Estatística Descritiva**: organização, resumo e visualização de dados\n- **Teoria da Probabilidade**: base teórica para a inferência estatística\n- **Inferência Estatística**: estimação e testes de hipóteses\n- **Regressão Linear Simples**: modelagem da relação entre variáveis\n\nCada capítulo contém definições, exemplos, exercícios de fixação e aplicações computacionais em **R**, **Python** e **planilhas eletrônicas**."
+    },
+    {
+      "id": "prefacio-b003",
+      "type": "prose",
+      "markdown": "## Como usar este livro\n\nOs blocos de código R são executáveis e interativos. O leitor é **fortemente encorajado** a reproduzir os exemplos em sua própria máquina. Os apêndices contêm tutoriais de instalação e uso das ferramentas.\n\nAs questões de fixação estão classificadas por nível de dificuldade:\n\n| Símbolo | Nível | Descrição |\n|---------|-------|-----------|\n| ⭐ | 1 | Aplicação direta de fórmulas |\n| ⭐⭐ | 2 | Requer interpretação e raciocínio |\n| ⭐⭐⭐ | 3 | Questões desafiadoras e integradoras |"
+    },
+    {
+      "id": "prefacio-b004",
+      "type": "prose",
+      "markdown": "## Referências Bibliográficas\n\n- BUSSAB, W. O.; MORETTIN, P. A. **Estatística Básica**. 9ª ed. São Paulo: Saraiva, 2017.\n- ROSS, S. **Probabilidade: Um Curso Moderno com Aplicações**. 8ª ed. Porto Alegre: Bookman, 2010.\n- DANTAS, C. A. B. **Probabilidade: Um Curso Introdutório**. 3ª ed. São Paulo: Edusp, 2004.\n- MOORE, D. S.; McCABE, G. P.; CRAIG, B. A. **Introduction to the Practice of Statistics**. 9ª ed. W.H. Freeman, 2017."
+    },
+    {
+      "id": "prefacio-b005",
+      "type": "prose",
+      "markdown": "## Currículo base\n\nEste material segue a ementa de Estatística Básica do Departamento de Estatística da UEM: <https://des.uem.br/grad/pastademaiscursos/9755.pdf>\n\n![](/livro/logo-acao-11.png)"
+    }
+  ]
+}

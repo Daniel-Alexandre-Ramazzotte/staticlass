@@ -1,9 +1,11 @@
 import React from 'react';
-import { ScrollView } from 'react-native';
+import { Image, ScrollView } from 'react-native';
 import { useLocalSearchParams, Stack, useRouter } from 'expo-router';
 import { YStack, XStack, Text, Button } from 'tamagui';
 import { ChevronLeft } from '@tamagui/lucide-icons';
 import { palette, primaryFontA } from 'app/constants/style';
+import { MathText } from 'app/components/MathText';
+import { API_BASE_URL } from 'app/constants/apiBase';
 
 const SolutionScreen = () => {
   const router = useRouter();
@@ -11,6 +13,14 @@ const SolutionScreen = () => {
   const q = JSON.parse(questionData as string);
 
   const isCorrect = q.message === 'correct';
+  const hasQuestionImage = Boolean(q.image_q && q.image_q !== 'null');
+  const questionImage = (
+    <Image
+      source={{ uri: `${API_BASE_URL}/questions/uploads/${q.image_q}` }}
+      style={{ width: '100%', height: 200, borderRadius: 12 }}
+      resizeMode="contain"
+    />
+  );
 
   return (
     <ScrollView
@@ -56,9 +66,13 @@ const SolutionScreen = () => {
 
       {/* Enunciado */}
       <YStack backgroundColor={palette.darkBlue} p="$6" gap="$3">
-        <Text color={palette.white} fontSize={15} lineHeight={22}>
+        {hasQuestionImage && q.image_q_position === 'antes' ? questionImage : null}
+        <MathText color={palette.white} fontSize={15} apiBase={API_BASE_URL}>
           {q.issue}
-        </Text>
+        </MathText>
+        {hasQuestionImage && q.image_q_position !== 'antes' && q.image_q_position !== 'meio'
+          ? questionImage
+          : null}
       </YStack>
 
       {/* Resposta e Solução */}
@@ -81,9 +95,22 @@ const SolutionScreen = () => {
           <Text color={palette.white} fontSize={16} fontWeight="bold">
             Solução:
           </Text>
-          <Text color="rgba(255,255,255,0.85)" fontSize={14} lineHeight={22}>
-            {q.solution || 'Sem explicação disponível.'}
-          </Text>
+          {q.solution ? (
+            <MathText color="rgba(255,255,255,0.85)" fontSize={14} apiBase={API_BASE_URL}>
+              {q.solution}
+            </MathText>
+          ) : (
+            <Text color="rgba(255,255,255,0.85)" fontSize={14} lineHeight={22}>
+              Sem explicação disponível.
+            </Text>
+          )}
+          {q.image_s && q.image_s !== 'null' ? (
+            <Image
+              source={{ uri: `${API_BASE_URL}/questions/uploads/${q.image_s}` }}
+              style={{ width: '100%', height: 200, borderRadius: 12 }}
+              resizeMode="contain"
+            />
+          ) : null}
         </YStack>
 
         {q.section && (
@@ -94,7 +121,7 @@ const SolutionScreen = () => {
             py="$3"
           >
             <Text color={palette.white} fontSize={13} textAlign="center">
-              Conteúdo pode ser encontrado na seção {q.section}
+              Assunto: {q.section}
             </Text>
           </YStack>
         )}

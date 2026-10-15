@@ -4,11 +4,12 @@ import { jwtDecode } from 'jwt-decode';
 type UserRole = 'aluno' | 'professor' | 'admin';
 
 interface JwtPayload {
-  sub: string; // ID do usuário
-  role: UserRole; // Cargo/Role do usuário
-  email: string; // email do usuario
-  exp: number; // Data de expiracao
-  name: string; // Nome do usuário
+  sub: string;
+  role: UserRole;
+  email: string;
+  exp: number;
+  name: string;
+  email_verified?: boolean;
 }
 
 interface AuthContextProps {
@@ -18,8 +19,10 @@ interface AuthContextProps {
   name: string | null;
   userId: string | null;
   isLoading: boolean;
+  emailVerified: boolean;
   signIn: (token: string) => Promise<void>;
   signOut: () => void;
+  markEmailVerified: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextProps>({} as AuthContextProps);
@@ -31,16 +34,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [email, setEmail] = useState<string | null>(null);
   const [name, setName] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [emailVerified, setEmailVerified] = useState<boolean>(true);
 
   useEffect(() => {
     const loadStorageData = async () => {
-      // Carregar dados do AsyncStorage
       try {
         const storedSession = await AsyncStorage.getItem('@auth_session');
 
         if (storedSession) {
           const decoded = jwtDecode<JwtPayload>(storedSession);
-
           const isExpired = decoded.exp * 1000 < Date.now();
 
           if (!isExpired) {
@@ -49,6 +51,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setEmail(decoded.email);
             setName(decoded.name);
             setUserId(decoded.sub);
+
+            const override = await AsyncStorage.getItem('@email_verified_override');
+            setEmailVerified(override === 'true' ? true : (decoded.email_verified ?? true));
           } else {
             await signOut();
           }
@@ -67,13 +72,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function signIn(token: string) {
     try {
       const decoded = jwtDecode<JwtPayload>(token);
-
       setSession(token);
       setRole(decoded.role);
       setEmail(decoded.email);
       setName(decoded.name);
       setUserId(decoded.sub);
-      console.log('Token decodificado no signIn:', decoded);
+
+      const override = await AsyncStorage.getItem('@email_verified_override');
+      setEmailVerified(override === 'true' ? true : (decoded.email_verified ?? true));
+
       await AsyncStorage.setItem('@auth_session', token);
     } catch (error) {
       console.log('Erro ao fazer login', error);
@@ -86,12 +93,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setEmail(null);
     setName(null);
     setUserId(null);
+    setEmailVerified(true);
     await AsyncStorage.removeItem('@auth_session');
+    await AsyncStorage.removeItem('@email_verified_override');
+  }
+
+  async function markEmailVerified() {
+    setEmailVerified(true);
+    await AsyncStorage.setItem('@email_verified_override', 'true');
   }
 
   return (
     <AuthContext.Provider
-      value={{ session, role, email, isLoading, name, userId, signIn, signOut }}
+      value={{ session, role, email, isLoading, name, userId, emailVerified, signIn, signOut, markEmailVerified }}
     >
       {children}
     </AuthContext.Provider>

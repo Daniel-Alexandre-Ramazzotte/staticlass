@@ -8,17 +8,20 @@ import { useAuth } from 'app/context/AuthContext';
 function TabIcon({ Icon, focused }: { Icon: any; focused: boolean }) {
   return (
     <Circle
-      size={42}
-      backgroundColor={palette.white}
-      opacity={focused ? 1 : 0.7}
+      size={40}
+      backgroundColor={focused ? palette.white : 'rgba(255,255,255,0.16)'}
+      shadowColor="#000"
+      shadowOpacity={focused ? 0.18 : 0}
+      shadowRadius={6}
+      shadowOffset={{ width: 0, height: 2 }}
     >
-      <Icon color={palette.primaryBlue} size={26} />
+      <Icon color={focused ? palette.primaryBlue : palette.white} size={22} />
     </Circle>
   );
 }
 
 export default function TabLayout() {
-  const { role } = useAuth();
+  const { role, emailVerified } = useAuth();
 
   const isAluno = role === 'aluno';
   const isAdmin = role === 'admin';
@@ -29,20 +32,26 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: 'rgb(255, 255, 255)',
-        tabBarInactiveTintColor: 'rgba(255, 255, 255, 0.7)',
+        tabBarInactiveTintColor: 'rgba(255, 255, 255, 0.75)',
         tabBarStyle: {
           backgroundColor: palette.primaryBlue,
-          height: 75,
-          paddingBottom: 10,
+          height: 78,
+          paddingBottom: 12,
           paddingTop: 10,
           borderTopWidth: 0,
-          elevation: 0,
+          borderTopLeftRadius: 24,
+          borderTopRightRadius: 24,
+          elevation: 12,
+          shadowColor: '#000',
+          shadowOpacity: 0.15,
+          shadowRadius: 12,
+          shadowOffset: { width: 0, height: -4 },
         },
         tabBarLabelStyle: {
           fontSize: 11,
-          fontWeight: 'bold',
-          marginLeft: 4,
+          fontWeight: '700',
           marginTop: 4,
+          marginLeft: 10,
         },
         tabBarItemStyle: {
           borderRadius: 18,
@@ -79,7 +88,6 @@ export default function TabLayout() {
         name="ranking"
         options={{
           title: 'Ranking',
-          href: isAluno ? undefined : null,
           tabBarIcon: ({ focused }) => <TabIcon Icon={Trophy} focused={focused} />,
         }}
       />
@@ -109,6 +117,7 @@ export default function TabLayout() {
         options={{
           title: 'Perfil',
           tabBarIcon: ({ focused }) => <TabIcon Icon={User} focused={focused} />,
+          tabBarBadge: !emailVerified ? 1 : undefined,
         }}
       />
     </Tabs>

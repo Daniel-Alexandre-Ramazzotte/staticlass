@@ -1,0 +1,58 @@
+[
+  {
+    "afterBlockId": "python-intro-b006",
+    "block": {
+      "type": "story",
+      "title": "As mesmas ideias, sintaxe diferente",
+      "markdown": "Se você acabou de ler o apêndice de R, boa parte disto vai soar familiar: variáveis, tipos, os mesmos blocos de construção — só que com `=` no lugar de `<-`. Isso não é coincidência nem perda de tempo: é comum um time usar R para explorar um problema e Python para colocar o resultado em produção, ou vice-versa. Saber transitar entre os dois — e reconhecer que \"é a mesma ideia, escrita diferente\" — é o que a tabela de equivalência no fim deste apêndice deixa explícito."
+    }
+  },
+  {
+    "afterBlockId": "python-intro-b013",
+    "block": {
+      "type": "story",
+      "title": "if, for e while: as mesmas decisões, agora em Python",
+      "markdown": "As mesmas perguntas de negócio do apêndice de R — \"se o cliente atrasou, marque como inadimplente\", \"repita isso para cada mês\" — se resolvem em Python com `if/elif/else` e `for`/`while`. A diferença de sintaxe mais visível é a indentação: em Python ela **define** o bloco de código, não é só estética.\n\nVale destacar a *list comprehension* (`[x**2 for x in range(1, 11)]`): é um atalho bem \"pythônico\" para transformar uma lista inteira em uma linha, algo que um analista acaba usando o tempo todo para pequenas transformações rápidas."
+    }
+  },
+  {
+    "afterBlockId": "python-intro-b017",
+    "block": {
+      "type": "story",
+      "title": "Cálculo em lote, sem laços",
+      "markdown": "NumPy é o motivo pelo qual você raramente precisa de um `for` para processar dados numéricos em Python: uma operação como `a + b` roda sobre o array inteiro de uma vez, em código compilado, em vez de item por item em Python puro. Para um analista, isso é a diferença entre calcular uma métrica sobre 1 milhão de linhas em milissegundos ou esperar um loop lento terminar."
+    }
+  },
+  {
+    "afterBlockId": "python-intro-b019",
+    "block": {
+      "type": "story",
+      "title": "O DataFrame: sua planilha, mas programável",
+      "markdown": "Todo analista já entende a intuição de linhas e colunas de uma planilha. O `DataFrame` do pandas é essa mesma intuição, só que roteirizada: em vez de clicar e arrastar no Excel, você escreve o passo a passo — o que significa que ele pode ser reexecutado, revisado e reutilizado sem refazer tudo manualmente. Na prática, é a primeira coisa que se abre em quase todo projeto de análise em Python."
+    }
+  },
+  {
+    "afterBlockId": "python-intro-b034",
+    "block": {
+      "type": "story",
+      "title": "Contando a história dos dados",
+      "markdown": "Assim como o `ggplot2` em R, um gráfico aqui costuma ser a parte da análise que realmente convence alguém a agir. Matplotlib é o \"motor\" — controla cada detalhe do gráfico — e seaborn é o \"estilista\" construído em cima dele, com padrões bonitos prontos para uso. Na prática, é comum começar um gráfico rápido em seaborn e só recorrer ao matplotlib puro quando é preciso ajustar algo pixel a pixel para uma apresentação."
+    }
+  },
+  {
+    "afterBlockId": "python-intro-b046",
+    "block": {
+      "type": "story",
+      "title": "Da amostra para a certeza (com margem de erro)",
+      "markdown": "\"Essa campanha realmente aumentou a conversão, ou foi coincidência?\" — decisões de negócio como essa não podem se basear só em achismo. `scipy.stats` é onde uma intuição vira um p-valor defensável: a diferença entre dizer \"parece que funcionou\" e dizer \"com 95% de confiança, funcionou\"."
+    }
+  },
+  {
+    "afterBlockId": "python-intro-b056",
+    "block": {
+      "type": "story",
+      "title": "Explicando o resultado, não só prevendo",
+      "markdown": "Diferente de um modelo de machine learning tipo caixa-preta, a saída de uma regressão do `statsmodels` mostra exatamente **por que** o modelo chegou naquele resultado — coeficientes, p-valores, R². Isso importa quando você precisa explicar para alguém não técnico que \"cada hora de estudo aumenta a nota em 0,8 ponto\", em vez de simplesmente entregar uma previsão sem justificativa."
+    }
+  }
+]

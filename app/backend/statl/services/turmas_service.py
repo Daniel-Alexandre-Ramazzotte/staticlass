@@ -30,8 +30,8 @@ def create_turma_service(identity: str, data: dict) -> tuple:
     return {k: _serialize_value(v) for k, v in turma.items()}, 201
 
 
-def list_turmas_service(identity: str) -> tuple:
-    rows = list_turmas_by_professor(_prof_id(identity))
+def list_turmas_service(identity: str, is_admin: bool = False) -> tuple:
+    rows = list_turmas_by_professor(None if is_admin else _prof_id(identity))
     result = []
     for r in rows:
         row = dict(r)
@@ -39,11 +39,15 @@ def list_turmas_service(identity: str) -> tuple:
     return result, 200
 
 
-def get_turma_service(identity: str, turma_id: int) -> tuple:
+def _owns(turma: dict, identity: str, is_admin: bool) -> bool:
+    return is_admin or turma["professor_id"] == _prof_id(identity)
+
+
+def get_turma_service(identity: str, turma_id: int, is_admin: bool = False) -> tuple:
     turma = get_turma_by_id(turma_id)
     if not turma:
         return {"error": "Turma não encontrada"}, 404
-    if turma["professor_id"] != _prof_id(identity):
+    if not _owns(turma, identity, is_admin):
         return {"error": "Sem permissão"}, 403
     students = [dict(s) for s in get_turma_students(turma_id)]
     serialized = {k: _serialize_value(v) for k, v in turma.items()}
@@ -51,11 +55,11 @@ def get_turma_service(identity: str, turma_id: int) -> tuple:
     return serialized, 200
 
 
-def update_turma_service(identity: str, turma_id: int, data: dict) -> tuple:
+def update_turma_service(identity: str, turma_id: int, data: dict, is_admin: bool = False) -> tuple:
     turma = get_turma_by_id(turma_id)
     if not turma:
         return {"error": "Turma não encontrada"}, 404
-    if turma["professor_id"] != _prof_id(identity):
+    if not _owns(turma, identity, is_admin):
         return {"error": "Sem permissão"}, 403
     name = (data.get("name") or "").strip()
     if not name:
@@ -64,21 +68,21 @@ def update_turma_service(identity: str, turma_id: int, data: dict) -> tuple:
     return {"id": turma_id, "name": name}, 200
 
 
-def delete_turma_service(identity: str, turma_id: int) -> tuple:
+def delete_turma_service(identity: str, turma_id: int, is_admin: bool = False) -> tuple:
     turma = get_turma_by_id(turma_id)
     if not turma:
         return {"error": "Turma não encontrada"}, 404
-    if turma["professor_id"] != _prof_id(identity):
+    if not _owns(turma, identity, is_admin):
         return {"error": "Sem permissão"}, 403
     delete_turma(turma_id)
     return {}, 204
 
 
-def set_turma_students_service(identity: str, turma_id: int, data: dict) -> tuple:
+def set_turma_students_service(identity: str, turma_id: int, data: dict, is_admin: bool = False) -> tuple:
     turma = get_turma_by_id(turma_id)
     if not turma:
         return {"error": "Turma não encontrada"}, 404
-    if turma["professor_id"] != _prof_id(identity):
+    if not _owns(turma, identity, is_admin):
         return {"error": "Sem permissão"}, 403
     student_ids = data.get("student_ids", [])
     if not isinstance(student_ids, list):
@@ -93,10 +97,10 @@ def set_turma_students_service(identity: str, turma_id: int, data: dict) -> tupl
     return {"enrolled": len(ids)}, 200
 
 
-def get_turma_students_service(identity: str, turma_id: int) -> tuple:
+def get_turma_students_service(identity: str, turma_id: int, is_admin: bool = False) -> tuple:
     turma = get_turma_by_id(turma_id)
     if not turma:
         return [{"error": "Turma não encontrada"}], 404
-    if turma["professor_id"] != _prof_id(identity):
+    if not _owns(turma, identity, is_admin):
         return [{"error": "Sem permissão"}], 403
     return [dict(s) for s in get_turma_students(turma_id)], 200

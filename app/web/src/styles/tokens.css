@@ -1,0 +1,99 @@
+/* Design tokens anchored to app/frontend/src/constants/style.tsx palette */
+:root {
+  /* Brand — anchored: primary=#1E63C3, primaryBlue=#0074c3, darkBlue=#093d60, background=#002272 */
+  --brand-50:  #eaf2fb;
+  --brand-100: #cfe1f5;
+  --brand-200: #9bc1ea;
+  --brand-300: #5ea1dc;
+  --brand-400: #0074c3;
+  --brand-500: #1E63C3;
+  --brand-600: #1750a0;
+  --brand-700: #103e7e;
+  --brand-800: #093d60;
+  --brand-900: #002272;
+
+  /* Semantic — anchored: primaryGreen=#55bf44, red=#f65151 */
+  --success-50:  #e7f4e3;
+  --success-500: #55bf44;
+  --success-600: #449a36;
+  --danger-50:   #fde8e8;
+  --danger-500:  #f65151;
+  --danger-600:  #d83f3f;
+  --warn-500:    #e2a13a;
+
+  /* Surface (light) */
+  --bg:            #f6f8fb;
+  --surface:       #ffffff;
+  --surface-2:     #eef2f7;
+  --border:        #dde3ec;
+  --border-strong: #c3cdda;
+
+  /* Text (light) */
+  --text:          #0f1b2b;
+  --text-muted:    #5b6878;
+  --text-subtle:   #8b96a6;
+  --text-on-brand: #ffffff;
+
+  /* Typography */
+  --font-display: 'Chau Philomene One', 'Nunito', system-ui, sans-serif;
+  --font-sans:    'Carlito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Radii */
+  --radius-sm:   6px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-pill: 999px;
+
+  /* Shadows */
+  --shadow-sm:    0 1px 2px rgba(15, 27, 43, 0.06);
+  --shadow-md:    0 4px 12px rgba(15, 27, 43, 0.08);
+  --shadow-lg:    0 12px 32px rgba(15, 27, 43, 0.12);
+  --shadow-focus: 0 0 0 3px rgba(30, 99, 195, 0.28);
+
+  /* Spacing */
+  --space-1:  4px;  --space-2:  8px;  --space-3:  12px;
+  --space-4:  16px; --space-5:  20px; --space-6:  24px;
+  --space-8:  32px; --space-10: 40px; --space-12: 48px;
+  --space-16: 64px; --space-20: 80px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+  --dur-slow: 280ms;
+}
+
+[data-theme="dark"] {
+  --brand-50:  #0f2542;
+  --brand-100: #143058;
+  --brand-200: #1a4380;
+  --brand-300: #2660a8;
+  --brand-400: #3a8ad6;
+  --brand-500: #5097de;
+  --brand-600: #1E63C3;
+  --brand-700: #1750a0;
+
+  --success-50:  #15301a;
+  --success-500: #6cc956;
+  --success-600: #55bf44;
+  --danger-50:   #3a1916;
+  --danger-500:  #ff6e6e;
+  --danger-600:  #f65151;
+
+  --bg:            #071a3a;
+  --surface:       #0e2447;
+  --surface-2:     #163058;
+  --border:        #1f3a6a;
+  --border-strong: #2c4d85;
+
+  --text:          #e8edf5;
+  --text-muted:    #a3b0c2;
+  --text-subtle:   #6b788c;
+  --text-on-brand: #ffffff;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
+  --shadow-focus: 0 0 0 3px rgba(80, 151, 222, 0.35);
+}

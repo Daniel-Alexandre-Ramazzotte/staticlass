@@ -46,6 +46,7 @@ def create_app(testing: bool = False):
     with app.app_context():
         from .models import user, chapters, quiz_resultado, questao_diaria  # noqa: F401
         from .models import questions as _modelos_questao                   # noqa: F401
+        from .models.questions import QuestionProposal                      # noqa: F401
         from .models import turmas as _modelos_turmas                       # noqa: F401
         from .models import listas as _modelos_listas                       # noqa: F401
         from .models import answer_history as _modelos_answer_history       # noqa: F401
@@ -98,7 +99,7 @@ def _configurar_cors(app):
             res = jsonify({})
             res.headers.update({
                 'Access-Control-Allow-Origin':  '*',
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+                'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Cache-Control',
                 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, PATCH',
             })
             return res, 200
@@ -107,7 +108,7 @@ def _configurar_cors(app):
     def adicionar_cabecalhos_cors(response):
         response.headers.update({
             'Access-Control-Allow-Origin':  '*',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Cache-Control',
             'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, PATCH',
         })
         return response
@@ -119,11 +120,89 @@ def _registrar_blueprints(app):
         app.register_blueprint(blueprint)
 
 
+def _deduplicar_alternativas_legadas():
+    db.session.execute(text("""
+        DELETE FROM alternatives a
+        USING (
+            SELECT id
+            FROM (
+                SELECT
+                    id,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY question_id, letter
+                        ORDER BY id
+                    ) AS row_num
+                FROM alternatives
+            ) ranked
+            WHERE ranked.row_num > 1
+        ) duplicates
+        WHERE a.id = duplicates.id
+    """))
+
+
+def _desambiguar_original_ids_duplicados():
+    db.session.execute(text("""
+        UPDATE questions q
+        SET original_id = CONCAT(q.original_id, '__legacy_', q.id)
+        FROM (
+            SELECT id
+            FROM (
+                SELECT
+                    id,
+                    ROW_NUMBER() OVER (
+                        PARTITION BY original_id
+                        ORDER BY id
+                    ) AS row_num
+                FROM questions
+                WHERE original_id IS NOT NULL
+            ) ranked
+            WHERE ranked.row_num > 1
+        ) duplicates
+        WHERE q.id = duplicates.id
+    """))
+
+
+def _garantir_constraints_questions():
+    # The import scripts historically relied on application-layer checks only.
+    # Harden the live schema before adding DB-level constraints.
+    _deduplicar_alternativas_legadas()
+    _desambiguar_original_ids_duplicados()
+    db.session.execute(text("""
+        DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1
+                FROM pg_constraint
+                WHERE conname = 'uq_alternative_question_letter'
+            ) THEN
+                ALTER TABLE alternatives
+                ADD CONSTRAINT uq_alternative_question_letter
+                UNIQUE (question_id, letter);
+            END IF;
+        END $$;
+    """))
+    db.session.execute(text("""
+        DO $$
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1
+                FROM pg_constraint
+                WHERE conname = 'uq_questions_original_id'
+            ) THEN
+                ALTER TABLE questions
+                ADD CONSTRAINT uq_questions_original_id
+                UNIQUE (original_id);
+            END IF;
+        END $$;
+    """))
+
+
 def _garantir_schema_incremental(app):
     if db.engine.dialect.name != "postgresql":
         return
 
     try:
+        _garantir_constraints_questions()
         db.session.execute(
             text("ALTER TABLE questions ADD COLUMN IF NOT EXISTS source VARCHAR(20)")
         )
@@ -182,6 +261,24 @@ def _garantir_schema_incremental(app):
         # email_verified — DEFAULT TRUE so existing users are not locked out
         db.session.execute(
             text("ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT TRUE")
+        )
+        db.session.execute(
+            text("ALTER TABLE users ADD COLUMN IF NOT EXISTS ra VARCHAR(30)")
+        )
+        db.session.execute(
+            text("ALTER TABLE users ADD COLUMN IF NOT EXISTS otp_code VARCHAR(6)")
+        )
+        db.session.execute(
+            text("ALTER TABLE users ADD COLUMN IF NOT EXISTS otp_expires_at TIMESTAMP")
+        )
+        db.session.execute(
+            text("ALTER TABLE users ADD COLUMN IF NOT EXISTS ano_ingresso INTEGER")
+        )
+        db.session.execute(
+            text("""
+                CREATE UNIQUE INDEX IF NOT EXISTS uq_users_ra
+                ON users (ra) WHERE ra IS NOT NULL
+            """)
         )
         db.session.execute(
             text("""
@@ -314,6 +411,35 @@ def _garantir_schema_incremental(app):
         ))
         db.session.execute(text(
             "CREATE INDEX IF NOT EXISTS idx_lists_turma_id ON lists (turma_id)"
+        ))
+        db.session.execute(text(
+            "ALTER TABLE questions ADD COLUMN IF NOT EXISTS question_type VARCHAR(30) NOT NULL DEFAULT 'multiple_choice'"
+        ))
+        db.session.execute(text(
+            "ALTER TABLE questions ALTER COLUMN correct_answer DROP NOT NULL"
+        ))
+        db.session.execute(text(
+            "ALTER TABLE questions ADD COLUMN IF NOT EXISTS image_q_position VARCHAR(10) NOT NULL DEFAULT 'depois'"
+        ))
+        db.session.execute(text("""
+            CREATE TABLE IF NOT EXISTS question_proposals (
+                id SERIAL PRIMARY KEY,
+                question_id INTEGER NOT NULL REFERENCES questions(id) ON DELETE CASCADE,
+                proposer_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                status VARCHAR(20) NOT NULL DEFAULT 'pending',
+                changes JSONB NOT NULL,
+                reason TEXT,
+                admin_note TEXT,
+                created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                reviewed_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                reviewed_at TIMESTAMP
+            )
+        """))
+        db.session.execute(text(
+            "CREATE INDEX IF NOT EXISTS idx_question_proposals_question_id ON question_proposals (question_id)"
+        ))
+        db.session.execute(text(
+            "CREATE INDEX IF NOT EXISTS idx_question_proposals_status ON question_proposals (status)"
         ))
         db.session.commit()
     except Exception:

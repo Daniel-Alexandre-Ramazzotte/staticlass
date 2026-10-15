@@ -5,6 +5,9 @@ from ..services.questions_service import (
     process_upload, get_images, get_professor_questions_service, get_all_questions_service,
     random_question_filtered, get_chapters_service, get_topics_service,
     delete_question_service, get_question_detail_service,
+    upload_image_service, get_sections_service,
+    criar_proposta_service, listar_propostas_service,
+    buscar_proposta_service, revisar_proposta_service,
 )
 from ..services.resultado_service import status_diaria_service, marcar_diaria_service
 from ..repositories.questions_repository import _buscar_alternativas_em_lote
@@ -126,8 +129,8 @@ def browse_questions():
 
     questoes_raw = db.session.execute(text(f"""
         SELECT
-            q.id, q.issue, q.correct_answer, q.solution,
-            q.difficulty, q.section, q.source, q.image_q, q.image_s,
+            q.id, q.issue, q.question_type, q.correct_answer, q.solution,
+            q.difficulty, q.section, q.source, q.image_q, q.image_s, q.image_q_position,
             {professor_id_select}
             c.name   AS capitulo,
             c.number AS capitulo_numero,
@@ -152,6 +155,7 @@ def browse_questions():
         {
             "id": q["id"],
             "enunciado": q["issue"],
+            "question_type": q["question_type"] or "multiple_choice",
             "resposta_correta": q["correct_answer"],
             "solucao": q["solution"],
             "dificuldade": q["difficulty"],
@@ -159,6 +163,7 @@ def browse_questions():
             "source": q["source"],
             "imagem_q": q["image_q"],
             "imagem_s": q["image_s"],
+            "imagem_q_position": q["image_q_position"] or "depois",
             "capitulo": q["capitulo"],
             "capitulo_numero": q["capitulo_numero"],
             "topico": q["topico"],
@@ -178,6 +183,21 @@ def browse_questions():
         "per_page": por_pagina,
         "pages": max(1, (total + por_pagina - 1) // por_pagina),
     }), 200
+
+
+@bp.route('/upload_image', methods=['POST'])
+@require_role(['admin', 'professor'])
+def upload_image():
+    return upload_image_service(request.files.get("image"))
+
+
+@bp.route('/sections', methods=['GET'])
+@require_role(['admin', 'professor'])
+def get_sections():
+    claims = get_jwt()
+    role = claims.get("role")
+    usuario_id = int(get_jwt_identity())
+    return jsonify(get_sections_service(professor_id=usuario_id, role=role)), 200
 
 
 @bp.route('/check', methods=['POST'])
@@ -223,23 +243,59 @@ def serve_image(filename):
 @bp.route('/professor/<string:professor_id>', methods=['GET'])
 @require_role(['admin', 'professor'])
 def get_professor_questions(professor_id):
-    result = get_professor_questions_service(professor_id)
-    return jsonify([dict(row) for row in result.mappings().all()]), 200
+    result = get_all_questions_service()
+    return jsonify([dict(row) for row in result]), 200
 
 
 @bp.route('/admin/<string:admin_id>', methods=['GET'])
 @require_role(['admin'])
 def get_admin_questions(admin_id):
     result = get_all_questions_service()
-    return jsonify([dict(row) for row in result.mappings().all()]), 200
+    return jsonify([dict(row) for row in result]), 200
+
+
+@bp.route('/propostas', methods=['GET'])
+@require_role(['admin'])
+def listar_propostas_route():
+    status = request.args.get('status', 'pending')
+    propostas = listar_propostas_service(None if status == 'all' else status)
+    return jsonify(propostas), 200
+
+
+@bp.route('/propostas/<int:proposal_id>', methods=['GET'])
+@require_role(['admin'])
+def get_proposta(proposal_id):
+    proposta = buscar_proposta_service(proposal_id)
+    if not proposta:
+        return jsonify({"error": "proposta não encontrada"}), 404
+    return jsonify(proposta), 200
+
+
+@bp.route('/propostas/<int:proposal_id>', methods=['PUT'])
+@require_role(['admin'])
+def revisar_proposta_route(proposal_id):
+    reviewer_id = int(get_jwt_identity())
+    dados = request.get_json() or {}
+    action = dados.get('action')
+    admin_note = dados.get('admin_note')
+    if not action:
+        return jsonify({"error": "action é obrigatório"}), 400
+    return revisar_proposta_service(proposal_id, reviewer_id, action, admin_note)
 
 
 @bp.route('/<int:question_id>', methods=['GET'])
 @require_role(['admin', 'professor'])
 def get_question(question_id):
-    question, error = _ensure_question_access(question_id)
-    if error:
-        return error
+    question = get_question_detail_service(question_id)
+    if not question:
+        return jsonify({"error": "questão não encontrada"}), 404
+    claims = get_jwt()
+    role = claims.get("role")
+    user_id = int(get_jwt_identity())
+    has_prof_id = _questions_have_professor_id()
+    question['can_manage'] = role == 'admin' or (
+        has_prof_id and question.get('professor_id') == user_id
+    )
     return jsonify(question), 200
 
 
@@ -250,6 +306,14 @@ def delete_question_route(question_id):
     if error:
         return error
     return delete_question_service(question_id)
+
+
+@bp.route('/<int:question_id>/propor', methods=['POST'])
+@require_role(['professor'])
+def propor_alteracao(question_id):
+    professor_id = int(get_jwt_identity())
+    dados = request.get_json() or {}
+    return criar_proposta_service(question_id, professor_id, dados)
 
 
 # ─── Questão Diária ─────────────────────────────────────────────────────────

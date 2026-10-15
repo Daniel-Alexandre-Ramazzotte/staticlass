@@ -34,6 +34,7 @@ export default function LoginScreen() {
   const [password, setPassword] = useState<string>('');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [needsVerification, setNeedsVerification] = useState<boolean>(false);
 
   const { signIn } = useAuth();
 
@@ -73,6 +74,7 @@ export default function LoginScreen() {
     } else {
       setErrorMessage('');
     }
+    setNeedsVerification(false);
 
     try {
       const response = await CheckLogin({ email, password });
@@ -82,6 +84,7 @@ export default function LoginScreen() {
       }
       if (response.status !== 200) {
         setErrorMessage(response.data?.error || 'Email ou senha incorretos.');
+        setNeedsVerification(response.data?.email_verified === false);
         return;
       }
       const token = extractToken(response.data);
@@ -96,112 +99,185 @@ export default function LoginScreen() {
   };
 
   return (
-    <YStack
-      f={1}
-      jc="center"
-      ai="center"
-      gap="$4"
-      backgroundColor={palette.offWhite}
-    >
-      <Image
-        source={require('../../assets/images/logo.png')}
-        width={220}
-        height={220}
-        objectFit="contain"
-      />
+    <YStack f={1} position="relative" backgroundColor={palette.offWhite}>
 
-      {/* Campo de email*/}
-
+      {/* Fundo: logo Staticlass centralizada, baixa opacidade */}
       <YStack
+        position="absolute"
+        top={0}
+        left={0}
+        right={0}
+        bottom={0}
+        ai="center"
         jc="center"
-        padding="$4"
-        gap="$4"
-        width={'80%'}
-        backgroundColor={palette.offWhite}
+        pointerEvents="none"
       >
-        <Text fontSize={16} color={palette.offBlack}>
-          Email:
-        </Text>
-        <Input
-          gap="$4"
-          width={'100%'}
-          onChangeText={setEmail}
-          placeholder="Email"
-          backgroundColor={palette.darkBlue}
-          color={palette.offWhite}
-          placeholderTextColor={palette.grey}
+        <Image
+          source={require('../../assets/images/logo.png')}
+          width={340}
+          height={340}
+          objectFit="contain"
+          opacity={0.07}
         />
+      </YStack>
 
-        {/* Campo de senha */}
-        <Text fontSize={16} color={palette.offBlack}>
-          Senha:
-        </Text>
-        <XStack width={'100%'} ai="center">
+      {/* Logo Staticlass — canto superior direito */}
+      <XStack position="absolute" top={48} right={16} zIndex={10}>
+        <Image
+          source={require('../../assets/images/logo.png')}
+          width={52}
+          height={52}
+          objectFit="contain"
+        />
+      </XStack>
+
+      {/* Conteúdo principal centralizado */}
+      <YStack f={1} jc="center" ai="center" gap="$4" zIndex={1}>
+        <YStack
+          jc="center"
+          padding="$5"
+          gap="$4"
+          width={'85%'}
+          maxWidth={380}
+          backgroundColor={palette.white}
+          borderRadius={20}
+          shadowColor="#000"
+          shadowOpacity={0.08}
+          shadowRadius={16}
+          shadowOffset={{ width: 0, height: 6 }}
+          elevation={4}
+        >
+          <Text fontSize={16} color={palette.offBlack} fontWeight="600">
+            Email:
+          </Text>
           <Input
-            f={1}
-            onChangeText={setPassword}
-            placeholder="Senha"
-            secureTextEntry={!showPassword}
+            gap="$4"
+            width={'100%'}
+            borderRadius={12}
+            onChangeText={setEmail}
+            placeholder="Email"
             backgroundColor={palette.darkBlue}
             color={palette.offWhite}
             placeholderTextColor={palette.grey}
-            borderTopRightRadius={0}
-            borderBottomRightRadius={0}
           />
+
+          <Text fontSize={16} color={palette.offBlack} fontWeight="600">
+            Senha:
+          </Text>
+          <XStack width={'100%'} ai="center">
+            <Input
+              f={1}
+              onChangeText={setPassword}
+              placeholder="Senha"
+              secureTextEntry={!showPassword}
+              backgroundColor={palette.darkBlue}
+              color={palette.offWhite}
+              placeholderTextColor={palette.grey}
+              borderTopLeftRadius={12}
+              borderBottomLeftRadius={12}
+              borderTopRightRadius={0}
+              borderBottomRightRadius={0}
+            />
+            <Button
+              onPress={() => setShowPassword(v => !v)}
+              backgroundColor={palette.darkBlue}
+              borderTopLeftRadius={0}
+              borderBottomLeftRadius={0}
+              borderTopRightRadius={12}
+              borderBottomRightRadius={12}
+              px="$3"
+              height={44}
+            >
+              <Text color={palette.grey} fontSize={13}>
+                {showPassword ? 'Ocultar' : 'Mostrar'}
+              </Text>
+            </Button>
+          </XStack>
+
           <Button
-            onPress={() => setShowPassword(v => !v)}
-            backgroundColor={palette.darkBlue}
-            borderTopLeftRadius={0}
-            borderBottomLeftRadius={0}
-            px="$3"
-            height={44}
+            onPress={handleLogin}
+            backgroundColor={palette.primaryBlue}
+            color={palette.offWhite}
+            borderRadius={14}
+            w={'60%'}
+            mt="$2"
+            alignSelf="center"
+            pressStyle={{ opacity: 0.85, backgroundColor: palette.darkBlue }}
           >
-            <Text color={palette.grey} fontSize={13}>
-              {showPassword ? 'Ocultar' : 'Mostrar'}
+            <Text color={palette.offWhite} fontWeight={'bold'} fontSize={18}>
+              Entrar
             </Text>
           </Button>
-        </XStack>
 
-        {/* Botão de login */}
-        <Button
-          onPress={handleLogin}
-          backgroundColor={palette.primaryBlue}
-          color={palette.offWhite}
-          w={'50%'}
-          alignSelf="center"
-        >
-          <Text color={palette.offWhite} fontWeight={'bold'} fontSize={20}>
-            Entrar
-          </Text>
-        </Button>
+          <Button
+            onPress={() => router.push('/(public)/RecoverPassword')}
+            backgroundColor="transparent"
+            color={palette.primaryBlue}
+            w={'100%'}
+            alignSelf="center"
+          >
+            <Text color={palette.primaryBlue} fontWeight={'bold'} fontSize={16}>
+              Esqueci minha senha
+            </Text>
+          </Button>
 
-        {/* Botao de recuperacao de senha */}
-        <Button
-          onPress={() => router.push('/(public)/RecoverPassword')}
-          backgroundColor={palette.offWhite}
-          color={palette.primaryBlue}
-          w={'100%'}
-          alignSelf="center"
-        >
-          <Text color={palette.primaryBlue} fontWeight={'bold'} fontSize={16}>
-            Esqueci minha senha
-          </Text>
-        </Button>
-        {/* Botao de registro */}
-        <Button
-          onPress={() => router.push('/(public)/register')}
-          backgroundColor={palette.offWhite}
-          color={palette.primaryBlue}
-          w={'100%'}
-          alignSelf="center"
-        >
-          <Text color={palette.primaryBlue} fontWeight={'bold'} fontSize={16}>
-            CADASTRE-SE
-          </Text>
-        </Button>
+          <Button
+            onPress={() => router.push('/(public)/register')}
+            backgroundColor="transparent"
+            color={palette.primaryBlue}
+            w={'100%'}
+            alignSelf="center"
+          >
+            <Text color={palette.primaryBlue} fontWeight={'bold'} fontSize={16}>
+              CADASTRE-SE
+            </Text>
+          </Button>
 
-        <Text style={styles.errorLoginText}>{errorMessage}</Text>
+          <Text style={styles.errorLoginText}>{errorMessage}</Text>
+
+          {needsVerification ? (
+            <Button
+              onPress={() => router.push('/(public)/verify-email')}
+              backgroundColor="transparent"
+              color={palette.primaryGreen}
+              w={'100%'}
+              alignSelf="center"
+            >
+              <Text color={palette.primaryGreen} fontWeight={'bold'} fontSize={15}>
+                Reenviar email de verificação
+              </Text>
+            </Button>
+          ) : null}
+        </YStack>
       </YStack>
+
+      {/* Rodapé institucional: UEM + Ação 11 */}
+      <XStack
+        jc="center"
+        ai="center"
+        gap="$6"
+        pb="$5"
+        pt="$2"
+        zIndex={1}
+        borderTopWidth={1}
+        borderTopColor={palette.grey + '33'}
+      >
+        <Image
+          source={require('../../assets/images/uem-logo.png')}
+          width={90}
+          height={45}
+          objectFit="contain"
+          opacity={0.75}
+        />
+        <Image
+          source={require('../../assets/images/Logo_-_DataSci_PRPET_(Preto).webp')}
+          width={80}
+          height={45}
+          objectFit="contain"
+          opacity={0.75}
+        />
+      </XStack>
+
     </YStack>
   );
 }

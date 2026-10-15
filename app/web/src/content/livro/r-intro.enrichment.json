@@ -1,0 +1,93 @@
+[
+  {
+    "afterBlockId": "r-intro-b006",
+    "block": {
+      "type": "story",
+      "title": "Por que bibliotecas existem",
+      "markdown": "Imagine recomeçar do zero a cada projeto: reescrever sua própria função de regressão, seu próprio código de gráfico, suas próprias funções de string. Nenhum analista de dados faz isso — e é exatamente para isso que servem as bibliotecas.\n\nNeste apêndice você vai usar principalmente duas: `dplyr` para manipular dados e `ggplot2` para visualizá-los. Na prática, `library(dplyr)` costuma ser literalmente a primeira linha de quase todo script que um analista escreve — é o equivalente a abrir a caixa de ferramentas antes de começar o trabalho."
+    }
+  },
+  {
+    "afterBlockId": "r-intro-b011",
+    "block": {
+      "type": "story",
+      "title": "Guardando o que importa",
+      "markdown": "Uma variável existe para você não precisar recalcular (ou reescrever) a mesma coisa várias vezes. Se você calcula uma taxa de churn uma vez e guarda em `taxa_churn`, pode reutilizá-la em três gráficos e dois `print()` diferentes sem repetir a fórmula — e sem risco de errar a conta na segunda vez.\n\nComo analista, vale prestar atenção especial ao **tipo** da variável: boa parte dos erros silenciosos em relatórios (uma coluna numérica virando texto, uma data virando string) nasce exatamente de misturar tipos sem perceber. Entender os tipos desta seção é o que evita esse tipo de bug chegar até um stakeholder."
+    }
+  },
+  {
+    "afterBlockId": "r-intro-b030",
+    "block": {
+      "type": "story",
+      "title": "A aritmética por trás de todo KPI",
+      "markdown": "Toda métrica que uma empresa acompanha — taxa de conversão, ticket médio, crescimento percentual mês a mês — é, no fundo, construída com os operadores desta tabela. `%%` e `%/%`, por exemplo, aparecem sempre que você precisa agrupar algo em faixas: descobrir em qual \"cohort\" um cliente cai a partir do número da semana, ou dividir uma lista em lotes de tamanho fixo para processar."
+    }
+  },
+  {
+    "afterBlockId": "r-intro-b034",
+    "block": {
+      "type": "story",
+      "title": "Decisões automáticas com if",
+      "image": { "src": "/livro/if.png", "alt": "Fluxograma do if: início, condição, se verdadeira executa a instrução, se falsa pula direto para o restante do programa" },
+      "markdown": "Toda regra de negócio é, disfarçada, um `if`. \"Se o cliente atrasou mais de 90 dias, marque como inadimplente\" — é exatamente o exemplo de `ifelse()` que você viu antes neste apêndice, só que resolvido passo a passo em vez de vetorizado.\n\nO fluxograma acima mostra a lógica pura: o programa chega até a condição, testa se ela é verdadeira e, **somente nesse caso**, executa a instrução extra antes de seguir em frente. Se for falsa, o `if` simplesmente não faz nada — o programa segue direto."
+    }
+  },
+  {
+    "afterBlockId": "r-intro-b036",
+    "block": {
+      "type": "story",
+      "title": "Quando existem dois caminhos",
+      "image": { "src": "/livro/ifelse.png", "alt": "Fluxograma do if/else: início, condição, verdadeira executa Instrução 1, falsa executa Instrução 2, ambas convergem para o restante do programa" },
+      "markdown": "Use `if/else` quando **toda** linha precisa de um destino — não é \"faça algo se for verdade\", é \"faça uma coisa OU outra, sem exceção\". Classificar cada cliente como \"Aprovado\" ou \"Reprovado\" é assim: não existe uma terceira opção, então o `else` garante que ninguém fica sem rótulo.\n\nRepare no fluxograma: os dois caminhos (Instrução 1 e Instrução 2) sempre se encontram de novo antes de \"Executa o restante do programa\" — diferente do `if` sozinho, aqui uma das duas instruções **sempre** roda."
+    }
+  },
+  {
+    "afterBlockId": "r-intro-b038",
+    "block": {
+      "type": "story",
+      "title": "Mais de duas categorias? Encadeie condições",
+      "image": { "src": "/livro/ifelseif.png", "alt": "Fluxograma do if/else if/else: condição 1, se falsa testa condição 2, cada uma com sua própria instrução, convergindo no final" },
+      "markdown": "Segmentações reais raramente têm só duas categorias. Classificar clientes em Bronze/Prata/Ouro por valor gasto, ou risco de crédito em Baixo/Médio/Alto, exige mais de uma pergunta em sequência — e é exatamente isso que `else if` encadeado representa.\n\nNo fluxograma, o segundo losango (\"Condição 2\") só é avaliado quando a primeira condição já deu falso — cada verificação é uma pergunta a mais que você só faz depois de descartar a anterior, igual você faria ao decidir manualmente em que faixa um cliente se encaixa."
+    }
+  },
+  {
+    "afterBlockId": "r-intro-b044",
+    "block": {
+      "type": "story",
+      "title": "Repetição sem copiar e colar",
+      "markdown": "Um loop existe para você não copiar e colar as mesmas 5 linhas 50 vezes — uma para cada cliente, cada mês, cada arquivo. Use `for` quando a lista é conhecida e finita (12 meses, 5 regiões); use `while` quando o critério de parada é incerto, como continuar sorteando amostras até atingir um tamanho-alvo.\n\nComo o apêndice já avisa, `for` pode ficar lento em grandes volumes — no dia a dia como analista, a primeira pergunta antes de escrever um loop costuma ser \"isso não daria pra fazer com uma operação vetorizada (ou com `dplyr`) em vez de iterar linha a linha?\"."
+    }
+  },
+  {
+    "afterBlockId": "r-intro-b052",
+    "block": {
+      "type": "story",
+      "title": "Empacotando sua própria lógica",
+      "markdown": "Na terceira vez que você copia as mesmas 8 linhas de \"calcular taxa de churn\" para um novo script, é hora de virar função. Uma função transforma um cálculo avulso em uma ferramenta reutilizável — por você e por qualquer colega que herdar seu código — e isola onde um bug pode estar: se o resultado sai errado, o problema está dentro da função, não espalhado pelo script inteiro."
+    }
+  },
+  {
+    "afterBlockId": "r-intro-b063",
+    "block": {
+      "type": "story",
+      "title": "O primeiro (e mais chato) passo de qualquer análise",
+      "markdown": "Nenhum dado real chega pronto para análise. É um CSV com separador trocado, uma planilha Excel com três linhas de cabeçalho antes da tabela de verdade, ou um encoding errado transformando \"ç\" em caractere estranho. As funções desta seção são, literalmente, os primeiros 10 minutos de quase todo trabalho que você vai fazer como analista — antes de qualquer gráfico ou modelo, alguém precisa garantir que os dados entraram certos."
+    }
+  },
+  {
+    "afterBlockId": "r-intro-b074",
+    "block": {
+      "type": "story",
+      "title": "O canivete suíço da manipulação de dados",
+      "markdown": "Os cinco verbos do `dplyr` — `filter`, `select`, `mutate`, `arrange` e `summarise` (combinado com `group_by`) — cobrem boa parte do que um analista faz no dia a dia antes mesmo de abrir um gráfico ou treinar um modelo. Os exemplos de inadimplência e do `mtcars` que você já viu neste apêndice são, sem estar rotulados assim, a \"gramática\" do dplyr em ação: filtrar quem interessa, escolher as colunas relevantes, criar uma métrica nova e resumir por grupo."
+    }
+  },
+  {
+    "afterBlockId": "r-intro-b091",
+    "block": {
+      "type": "story",
+      "title": "Transformando números em decisões",
+      "markdown": "Um modelo ou uma tabela não significam nada para alguém que tem 5 minutos numa reunião — um gráfico bem feito costuma ser a **única** parte da sua análise que alguém vai lembrar depois. A gramática em camadas do `ggplot2` (dados + `aes` + `geom`) é o que separa \"eu sei o resultado\" de \"eu convenci alguém a agir com base nele\"."
+    }
+  }
+]

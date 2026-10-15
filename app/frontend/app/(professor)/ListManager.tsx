@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
   },
   warningChip: {
-    backgroundColor: '#f57c00',
+    backgroundColor: palette.warn,
   },
   ctaButton: {
     borderRadius: 999,

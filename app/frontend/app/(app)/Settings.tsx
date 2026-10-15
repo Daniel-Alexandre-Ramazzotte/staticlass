@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, ScrollView, Switch } from 'react-native';
 import { useAuth } from 'app/context/AuthContext';
 import { useRouter } from 'expo-router';
-import { YStack, XStack, Text, Input, Button } from 'tamagui';
+import { XStack, Text, Input, Button } from 'tamagui';
 import { ChevronLeft } from '@tamagui/lucide-icons';
 import { palette, primaryFontA } from 'app/constants/style';
 import api from 'app/services/api';
@@ -100,7 +100,7 @@ export default function SettingsScreen() {
       </XStack>
 
       <ScrollView
-        style={{ flex: 1, backgroundColor: '#5b9ecc' }}
+        style={{ flex: 1, backgroundColor: palette.primaryBlue }}
         contentContainerStyle={{ padding: 24, gap: 8 }}
       >
         <Text color={palette.white} fontSize={16} fontWeight="bold" textDecorationLine="underline" mb="$2">
@@ -117,13 +117,17 @@ export default function SettingsScreen() {
           backgroundColor="rgba(255,255,255,0.2)"
           color={palette.white}
           borderWidth={0}
+          borderRadius={12}
           mb="$3"
         />
         <Button
-          backgroundColor="rgba(255,255,255,0.25)"
-          color={palette.white}
+          backgroundColor={palette.white}
+          color={palette.primaryBlue}
+          fontWeight="700"
+          borderRadius={14}
           onPress={handleSaveEmail}
           disabled={saving}
+          opacity={saving ? 0.6 : 1}
           mb="$4"
         >
           Salvar E-mail
@@ -139,6 +143,7 @@ export default function SettingsScreen() {
           backgroundColor="rgba(255,255,255,0.2)"
           color={palette.white}
           borderWidth={0}
+          borderRadius={12}
           secureTextEntry
           mb="$2"
         />
@@ -150,14 +155,18 @@ export default function SettingsScreen() {
           backgroundColor="rgba(255,255,255,0.2)"
           color={palette.white}
           borderWidth={0}
+          borderRadius={12}
           secureTextEntry
           mb="$3"
         />
         <Button
-          backgroundColor="rgba(255,255,255,0.25)"
-          color={palette.white}
+          backgroundColor={palette.white}
+          color={palette.primaryBlue}
+          fontWeight="700"
+          borderRadius={14}
           onPress={handleSavePassword}
           disabled={saving}
+          opacity={saving ? 0.6 : 1}
           mb="$8"
         >
           Salvar Senha

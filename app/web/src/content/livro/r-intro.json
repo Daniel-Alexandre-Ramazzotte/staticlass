@@ -1,0 +1,883 @@
+{
+  "slug": "r-intro",
+  "title": "Introdução ao R",
+  "lang": "r",
+  "sourceFile": "A-intro-r.qmd",
+  "generatedAt": "2026-07-26T15:16:36.640Z",
+  "toc": [
+    {
+      "level": 1,
+      "text": "Introducao ao R",
+      "blockId": "r-intro-b000"
+    },
+    {
+      "level": 2,
+      "text": "Instalacao do ambiente RStudio",
+      "blockId": "r-intro-b002"
+    },
+    {
+      "level": 3,
+      "text": "Comentarios em R",
+      "blockId": "r-intro-b004"
+    },
+    {
+      "level": 2,
+      "text": "Bibliotecas (Libraries)",
+      "blockId": "r-intro-b006"
+    },
+    {
+      "level": 3,
+      "text": "Tabela de bibliotecas importantes",
+      "blockId": "r-intro-b010"
+    },
+    {
+      "level": 2,
+      "text": "Variaveis",
+      "blockId": "r-intro-b011"
+    },
+    {
+      "level": 3,
+      "text": "Numerica (numeric)",
+      "blockId": "r-intro-b012"
+    },
+    {
+      "level": 3,
+      "text": "Caracteres (character ou string)",
+      "blockId": "r-intro-b014"
+    },
+    {
+      "level": 3,
+      "text": "Logicas (logical ou boolean)",
+      "blockId": "r-intro-b016"
+    },
+    {
+      "level": 3,
+      "text": "Fatores (factor)",
+      "blockId": "r-intro-b018"
+    },
+    {
+      "level": 3,
+      "text": "Datas (Date ou POSIXct)",
+      "blockId": "r-intro-b020"
+    },
+    {
+      "level": 3,
+      "text": "Vetores (vector)",
+      "blockId": "r-intro-b022"
+    },
+    {
+      "level": 3,
+      "text": "Listas (list)",
+      "blockId": "r-intro-b024"
+    },
+    {
+      "level": 3,
+      "text": "Data Frames (data.frame)",
+      "blockId": "r-intro-b026"
+    },
+    {
+      "level": 3,
+      "text": "Matrizes (matrix)",
+      "blockId": "r-intro-b028"
+    },
+    {
+      "level": 2,
+      "text": "Operacoes",
+      "blockId": "r-intro-b030"
+    },
+    {
+      "level": 3,
+      "text": "Operadores de comparacao",
+      "blockId": "r-intro-b031"
+    },
+    {
+      "level": 3,
+      "text": "Operadores logicos",
+      "blockId": "r-intro-b032"
+    },
+    {
+      "level": 2,
+      "text": "Estruturas Condicionais",
+      "blockId": "r-intro-b033"
+    },
+    {
+      "level": 3,
+      "text": "if",
+      "blockId": "r-intro-b034"
+    },
+    {
+      "level": 3,
+      "text": "if/else",
+      "blockId": "r-intro-b036"
+    },
+    {
+      "level": 3,
+      "text": "if/else if/else (aninhado)",
+      "blockId": "r-intro-b038"
+    },
+    {
+      "level": 3,
+      "text": "ifelse vetorizado",
+      "blockId": "r-intro-b040"
+    },
+    {
+      "level": 3,
+      "text": "switch/case",
+      "blockId": "r-intro-b042"
+    },
+    {
+      "level": 2,
+      "text": "Estruturas de Laco (Loops)",
+      "blockId": "r-intro-b044"
+    },
+    {
+      "level": 3,
+      "text": "for",
+      "blockId": "r-intro-b045"
+    },
+    {
+      "level": 3,
+      "text": "while",
+      "blockId": "r-intro-b048"
+    },
+    {
+      "level": 3,
+      "text": "break e next",
+      "blockId": "r-intro-b050"
+    },
+    {
+      "level": 2,
+      "text": "Funcoes",
+      "blockId": "r-intro-b052"
+    },
+    {
+      "level": 3,
+      "text": "Criando funcoes",
+      "blockId": "r-intro-b053"
+    },
+    {
+      "level": 3,
+      "text": "Argumentos com valores padrao",
+      "blockId": "r-intro-b055"
+    },
+    {
+      "level": 3,
+      "text": "Funcoes que retornam multiplos valores",
+      "blockId": "r-intro-b057"
+    },
+    {
+      "level": 3,
+      "text": "Funcoes anonimas (lambda)",
+      "blockId": "r-intro-b059"
+    },
+    {
+      "level": 3,
+      "text": "Boas praticas para funcoes",
+      "blockId": "r-intro-b061"
+    },
+    {
+      "level": 2,
+      "text": "Importacao de Dados",
+      "blockId": "r-intro-b063"
+    },
+    {
+      "level": 3,
+      "text": "Principais formatos de arquivo",
+      "blockId": "r-intro-b064"
+    },
+    {
+      "level": 3,
+      "text": "Importar CSV",
+      "blockId": "r-intro-b065"
+    },
+    {
+      "level": 3,
+      "text": "Importar Excel",
+      "blockId": "r-intro-b068"
+    },
+    {
+      "level": 3,
+      "text": "Importar outros formatos",
+      "blockId": "r-intro-b070"
+    },
+    {
+      "level": 3,
+      "text": "Verificar os dados importados",
+      "blockId": "r-intro-b072"
+    },
+    {
+      "level": 2,
+      "text": "Manipulacao de Dados com dplyr",
+      "blockId": "r-intro-b074"
+    },
+    {
+      "level": 3,
+      "text": "filter() - Filtrar linhas",
+      "blockId": "r-intro-b077"
+    },
+    {
+      "level": 3,
+      "text": "select() - Selecionar colunas",
+      "blockId": "r-intro-b079"
+    },
+    {
+      "level": 3,
+      "text": "mutate() - Criar ou modificar colunas",
+      "blockId": "r-intro-b081"
+    },
+    {
+      "level": 3,
+      "text": "arrange() - Ordenar linhas",
+      "blockId": "r-intro-b083"
+    },
+    {
+      "level": 3,
+      "text": "group_by() e summarise() - Agrupar e resumir",
+      "blockId": "r-intro-b085"
+    },
+    {
+      "level": 3,
+      "text": "Combinando tudo com pipe",
+      "blockId": "r-intro-b087"
+    },
+    {
+      "level": 3,
+      "text": "Outras funcoes uteis do dplyr",
+      "blockId": "r-intro-b089"
+    },
+    {
+      "level": 2,
+      "text": "Graficos com ggplot2",
+      "blockId": "r-intro-b091"
+    },
+    {
+      "level": 3,
+      "text": "Estrutura basica",
+      "blockId": "r-intro-b092"
+    },
+    {
+      "level": 3,
+      "text": "Grafico de dispersao (geom_point)",
+      "blockId": "r-intro-b094"
+    },
+    {
+      "level": 3,
+      "text": "Grafico de barras (geom_bar / geom_col)",
+      "blockId": "r-intro-b096"
+    },
+    {
+      "level": 3,
+      "text": "Histograma (geom_histogram)",
+      "blockId": "r-intro-b098"
+    },
+    {
+      "level": 3,
+      "text": "Boxplot (geom_boxplot)",
+      "blockId": "r-intro-b100"
+    },
+    {
+      "level": 3,
+      "text": "Personalizacao de graficos",
+      "blockId": "r-intro-b102"
+    },
+    {
+      "level": 3,
+      "text": "Salvar graficos",
+      "blockId": "r-intro-b104"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "r-intro-b000",
+      "type": "prose",
+      "markdown": "# Introducao ao R\n\nEssa sera uma breve introducao ao R para poder entender como funciona a linguagem de programacao e ja brincar com estatistica utilizando funcoes mais elementares, as mais importantes, como calcular medidas simples como media, moda, mediana, criacao de graficos e tabelas e elaboracao de regressoes simples. Para maiores discussoes sobre tipos avancados de visualizacao ver o livro [R para Ciencia de Dados](https://pt.r4ds.hadley.nz/).\n\nSugere-se ao/a professor/a uma leitura rapida desta secao apos uma curta introducao para o/a aluno/a comecar a se familiarizar com os conceitos. Apos isso, esta secao pode servir como consulta para sintaxe e ajuda rapida."
+    },
+    {
+      "id": "r-intro-b001",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Dica",
+      "markdown": "O aluno e encorajado a copiar e executar todos os codigos na propria maquina. A pratica e a melhor forma de aprender programacao!"
+    },
+    {
+      "id": "r-intro-b002",
+      "type": "prose",
+      "markdown": "## Instalacao do ambiente RStudio\n\nA instalacao e trivial, basta seguir os dois passos:\n\n1. **Baixar e instalar o R**: Acesse <https://cran.rstudio.com/> e baixe a versao adequada para o seu sistema operacional (Windows, macOS ou Linux). Execute o instalador com as configuracoes padrao.\n2. **Baixar e instalar o RStudio**: Acesse <https://posit.co/download/rstudio-desktop/> e baixe a versao gratuita (RStudio Desktop). Execute o instalador.\n\nPara usar o RStudio:\n\n- Abra um novo script com `Ctrl + Shift + N`\n- Para executar codigos, selecione a linha com o mouse e tecle `Ctrl + Enter`\n- O console (parte inferior) mostra os resultados\n- O painel Environment (superior direito) mostra as variaveis criadas"
+    },
+    {
+      "id": "r-intro-b003",
+      "type": "callout",
+      "calloutType": "note",
+      "title": "Video de apoio",
+      "markdown": "Para quaisquer dificuldades na instalacao, consulte: <https://www.youtube.com/watch?v=a4_0pKVY6RE&list=PLs7DH7eMtNjcfzzZT6beLu0nmSr2yIhIr&index=2>"
+    },
+    {
+      "id": "r-intro-b004",
+      "type": "prose",
+      "markdown": "### Comentarios em R\n\nEm R, tudo que vem apos o simbolo `#` em uma linha e um **comentario** e nao sera executado. Comentarios sao essenciais para documentar o codigo e explicar o que cada trecho faz."
+    },
+    {
+      "id": "r-intro-b005",
+      "type": "code",
+      "lang": "r",
+      "code": "# Isto e um comentario - o R ignora esta linha\nx <- 10  # Isto tambem e um comentario, apos o codigo\n\n# Boas praticas:\n# - Comente o \"por que\", nao o \"o que\"\n# - Use comentarios para separar secoes do codigo\n# - Mantenha os comentarios atualizados com o codigo"
+    },
+    {
+      "id": "r-intro-b006",
+      "type": "prose",
+      "markdown": "## Bibliotecas (Libraries)\n\nEm programacao, uma **biblioteca** (ou library) e um conjunto de codigos pre-escritos (funcoes, classes, metodos, variaveis) que podem ser reutilizados para facilitar o desenvolvimento de software. Elas sao criadas para resolver problemas especificos, evitando que os programadores tenham que \"reinventar a roda\" a cada projeto."
+    },
+    {
+      "id": "r-intro-b007",
+      "type": "code",
+      "lang": "r",
+      "code": "# Instalar uma biblioteca (fazer apenas a primeira vez)\ninstall.packages(\"nome_da_biblioteca\")  # Ex: install.packages(\"ggplot2\")\n\n# Carregar para uso na sessao atual\nlibrary(nome_da_biblioteca)             # Ex: library(ggplot2)"
+    },
+    {
+      "id": "r-intro-b008",
+      "type": "prose",
+      "markdown": "Exemplo (o aluno e encorajado a copiar e executar o codigo na propria maquina):"
+    },
+    {
+      "id": "r-intro-b009",
+      "type": "code",
+      "lang": "r",
+      "code": "# dplyr e uma biblioteca para lidar com bancos de dados\n# ggplot2 e uma biblioteca para visualizacao\nlibrary(dplyr)\nlibrary(ggplot2)\n\n# Filtrar dados e criar grafico\nmtcars %>%\n  filter(mpg > 20) %>%\n  ggplot(aes(x = wt, y = mpg)) +\n  geom_point() +\n  labs(title = \"Relacao Peso vs. Consumo\")"
+    },
+    {
+      "id": "r-intro-b010",
+      "type": "prose",
+      "markdown": "### Tabela de bibliotecas importantes\n\n| Categoria | Biblioteca | Descricao | Exemplo de Uso |\n|:----------|:-----------|:----------|:---------------|\n| Manipulacao de Dados | `dplyr` | Ferramentas para filtrar, agrupar e sumarizar dados | `dados %>% filter(coluna > 10)` |\n| Manipulacao de Dados | `tidyr` | Organizacao e limpeza de dados (pivotagem, separacao de colunas) | `pivot_longer(dados, cols = c(...))` |\n| Visualizacao | `ggplot2` | Criacao de graficos elegantes e personalizaveis | `ggplot(dados, aes(x, y)) + geom_point()` |\n| Visualizacao | `plotly` | Graficos interativos (3D, hover effects) | `plot_ly(dados, x = ~x, y = ~y)` |\n| Analise Estatistica | `stats` | Funcoes estatisticas basicas (testes t, ANOVA, regressao) | `t.test(x, y)` |\n| Analise Estatistica | `lme4` | Modelos lineares mistos (para dados hierarquicos) | `lmer(resposta ~ preditor + (1\\|grupo))` |\n| Machine Learning | `caret` | Treinamento e validacao de modelos preditivos | `train(classe ~ ., data = dados, method = \"rf\")` |\n| Machine Learning | `randomForest` | Algoritmo de florestas aleatorias | `randomForest(y ~ ., data = dados)` |\n| Text Mining | `tm` | Mineracao e pre-processamento de textos | `Corpus(VectorSource(textos))` |\n| Text Mining | `tidytext` | Analise de texto integrada ao tidyverse | `unnest_tokens(dados, palavra, texto)` |\n| Geoprocessamento | `sf` | Manipulacao de dados espaciais (vetores) | `st_read(\"caminho/shapefile.shp\")` |\n| Reprodutibilidade | `knitr` | Geracao de relatorios dinamicos (HTML, PDF) | `knit(\"documento.Rmd\")` |\n| Reprodutibilidade | `rmarkdown` | Integracao de codigo, texto e visualizacoes | `render(\"relatorio.Rmd\")` |\n\n_Principais Bibliotecas em R por Categoria_"
+    },
+    {
+      "id": "r-intro-b011",
+      "type": "prose",
+      "markdown": "## Variaveis\n\nUma **variavel** e um **nome simbolico** que armazena um **valor** ou **dado** na memoria do computador. Em R, as variaveis sao usadas para guardar informacoes que podem ser manipuladas durante a execucao de um codigo. O operador de atribuicao em R e `<-` (embora `=` tambem funcione, a convencao da comunidade R e usar `<-`)."
+    },
+    {
+      "id": "r-intro-b012",
+      "type": "prose",
+      "markdown": "### Numerica (numeric)\n\nArmazenam numeros (inteiros ou decimais)."
+    },
+    {
+      "id": "r-intro-b013",
+      "type": "code",
+      "lang": "r",
+      "code": "x <- 10.5      # Decimal\ny <- 20L       # Inteiro (com sufixo 'L')\nz <- -3.14     # Negativo\n\nx  # [1] 10.5\ny  # [1] 20\nz  # [1] -3.14\n\nclass(x)  # [1] \"numeric\"\nclass(y)  # [1] \"integer\""
+    },
+    {
+      "id": "r-intro-b014",
+      "type": "prose",
+      "markdown": "### Caracteres (character ou string)\n\nArmazenam caracteres ou conjuntos de caracteres (strings). Para manipulacao avancada de strings, consulte o capitulo 14 do [R para Ciencia de Dados](https://pt.r4ds.hadley.nz/). Algumas operacoes uteis: transformar em maiusculas/minusculas, retirar acentos, separar por delimitadores, calcular tamanho da string."
+    },
+    {
+      "id": "r-intro-b015",
+      "type": "code",
+      "lang": "r",
+      "code": "nome <- \"Maria\"\nfrase <- 'Ola, mundo!'\n\nnome   # [1] \"Maria\"\nfrase  # [1] \"Ola, mundo!\"\n\nclass(nome)    # [1] \"character\"\nnchar(frase)   # [1] 11 (numero de caracteres)\n\n# Funcoes uteis para strings\ntoupper(nome)           # \"MARIA\"\ntolower(nome)           # \"maria\"\npaste(nome, \"Silva\")    # \"Maria Silva\""
+    },
+    {
+      "id": "r-intro-b016",
+      "type": "prose",
+      "markdown": "### Logicas (logical ou boolean)\n\nArmazenam valores logicos: verdadeiro (`TRUE`) ou falso (`FALSE`). Sao muito uteis para verificacoes em estruturas condicionais."
+    },
+    {
+      "id": "r-intro-b017",
+      "type": "code",
+      "lang": "r",
+      "code": "ativo <- TRUE\nfalha <- FALSE\n\nativo  # [1] TRUE\nfalha  # [1] FALSE\n\nclass(ativo)  # [1] \"logical\"\n\n# Resultados de comparacoes sao logicos\n10 > 5    # [1] TRUE\n3 == 7    # [1] FALSE"
+    },
+    {
+      "id": "r-intro-b018",
+      "type": "prose",
+      "markdown": "### Fatores (factor)\n\nSao variaveis categoricas --- equivalem as variaveis qualitativas nominais ou ordinais discutidas no capitulo de Estatistica Descritiva."
+    },
+    {
+      "id": "r-intro-b019",
+      "type": "code",
+      "lang": "r",
+      "code": "# Fator nominal (sem ordem)\ngrupo <- factor(c(\"A\", \"B\", \"A\", \"C\"))\ngrupo  # [1] A B A C -- Levels: A B C\n\n# Fator ordinal (com ordem definida)\nniveis <- factor(\n  c(\"Baixo\", \"Medio\", \"Alto\"),\n  levels = c(\"Baixo\", \"Medio\", \"Alto\"),  # Definir a ordem\n  ordered = TRUE                          # Indicar que e ordinal\n)\nniveis  # [1] Baixo Medio Alto -- Levels: Baixo < Medio < Alto"
+    },
+    {
+      "id": "r-intro-b020",
+      "type": "prose",
+      "markdown": "### Datas (Date ou POSIXct)\n\nArmazenam datas e horarios. Para maiores discussoes sobre datas, ver capitulo 17 do [R para Ciencia de Dados](https://pt.r4ds.hadley.nz/)."
+    },
+    {
+      "id": "r-intro-b021",
+      "type": "code",
+      "lang": "r",
+      "code": "hoje <- as.Date(\"2025-03-26\")\nagora <- as.POSIXct(\"2025-03-26 14:30:00\")\n\nhoje   # [1] \"2025-03-26\"\nagora  # [1] \"2025-03-26 14:30:00\"\n\n# Diferenca entre datas\nas.Date(\"2025-12-31\") - as.Date(\"2025-01-01\")  # Time difference of 364 days\n\n# Data atual\nSys.Date()   # Data de hoje\nSys.time()   # Data e hora atuais"
+    },
+    {
+      "id": "r-intro-b022",
+      "type": "prose",
+      "markdown": "### Vetores (vector)\n\nColecao de elementos do **mesmo tipo**. Se voce colocar uma letra no meio dos numeros, todos os numeros serao convertidos para caracteres."
+    },
+    {
+      "id": "r-intro-b023",
+      "type": "code",
+      "lang": "r",
+      "code": "numeros <- c(1, 2, 3, 4)\nletras <- c(\"a\", \"b\", \"c\")\nnumeros_como_letras <- c(1, \"A\", 3, 4)  # Tudo vira character!\n\nnumeros              # [1] 1 2 3 4\nletras               # [1] \"a\" \"b\" \"c\"\nnumeros_como_letras  # [1] \"1\" \"A\" \"3\" \"4\"\n\n# Acessar elementos\nnumeros[1]     # Primeiro elemento: 1\nnumeros[2:3]   # Segundo e terceiro: 2 3\n\n# Funcoes uteis\nlength(numeros)  # Tamanho: 4\nsum(numeros)     # Soma: 10\nmean(numeros)    # Media: 2.5"
+    },
+    {
+      "id": "r-intro-b024",
+      "type": "prose",
+      "markdown": "### Listas (list)\n\nColecao de elementos que podem ser de **tipos diferentes**. Sao muito flexiveis."
+    },
+    {
+      "id": "r-intro-b025",
+      "type": "code",
+      "lang": "r",
+      "code": "dados <- list(nome = \"Joao\", idade = 30, ativo = TRUE)\ndados\n\n# Acessar elementos de uma lista\ndados$nome       # \"Joao\"\ndados[[\"idade\"]] # 30\ndados[[3]]       # TRUE"
+    },
+    {
+      "id": "r-intro-b026",
+      "type": "prose",
+      "markdown": "### Data Frames (data.frame)\n\nA estrutura mais importante para analise de dados. E uma tabela onde cada coluna e uma variavel e cada linha e uma observacao."
+    },
+    {
+      "id": "r-intro-b027",
+      "type": "code",
+      "lang": "r",
+      "code": "tabela <- data.frame(\n  nome = c(\"Ana\", \"Carlos\", \"Bia\"),\n  idade = c(25, 30, 22),\n  cidade = c(\"Maringa\", \"Curitiba\", \"Londrina\")\n)\ntabela\n\n# Acessar colunas\ntabela$nome          # Vetor com os nomes\ntabela[, \"idade\"]    # Vetor com as idades\ntabela[1, ]          # Primeira linha completa\n\n# Dimensoes\nnrow(tabela)  # Numero de linhas: 3\nncol(tabela)  # Numero de colunas: 3\ndim(tabela)   # Dimensoes: 3 3\nstr(tabela)   # Estrutura do data frame"
+    },
+    {
+      "id": "r-intro-b028",
+      "type": "prose",
+      "markdown": "### Matrizes (matrix)\n\nEstrutura bidimensional onde todos os elementos sao do **mesmo tipo**."
+    },
+    {
+      "id": "r-intro-b029",
+      "type": "code",
+      "lang": "r",
+      "code": "matriz <- matrix(c(1, 2, 3, 4, 5, 6), nrow = 2, ncol = 3)\nmatriz\n#      [,1] [,2] [,3]\n# [1,]    1    3    5\n# [2,]    2    4    6\n\n# Acessar elementos\nmatriz[1, 2]   # Linha 1, coluna 2: 3\nmatriz[1, ]    # Toda a linha 1: 1 3 5\nmatriz[, 2]    # Toda a coluna 2: 3 4"
+    },
+    {
+      "id": "r-intro-b030",
+      "type": "prose",
+      "markdown": "## Operacoes\n\nToda linguagem de programacao tem as operacoes matematicas elementares implementadas. Vamos estudar a sintaxe em R:\n\n| Operacao | Simbolo Matematico | Sintaxe em R |\n|:---------|:------------------:|:-------------|\n| Adicao | $a + b$ | `a + b` |\n| Subtracao | $a - b$ | `a - b` |\n| Multiplicacao | $a \\times b$ | `a * b` |\n| Divisao | $a \\div b$ | `a / b` |\n| Potenciacao | $a^b$ | `a ^ b` ou `a ** b` |\n| Raiz quadrada | $\\sqrt{a}$ | `sqrt(a)` |\n| Logaritmo natural | $\\ln(a)$ | `log(a)` |\n| Logaritmo base 10 | $\\log_{10}(a)$ | `log10(a)` |\n| Modulo (resto) | $a \\mod b$ | `a %% b` |\n| Divisao inteira | $\\lfloor a/b \\rfloor$ | `a %/% b` |\n\n_Operacoes Basicas em R vs Matematica_"
+    },
+    {
+      "id": "r-intro-b031",
+      "type": "prose",
+      "markdown": "### Operadores de comparacao\n\n| Operador | Significado | Exemplo | Resultado |\n|:--------:|:------------|:--------|:---------:|\n| `==` | Igual a | `5 == 5` | `TRUE` |\n| `!=` | Diferente de | `5 != 3` | `TRUE` |\n| `>` | Maior que | `5 > 3` | `TRUE` |\n| `<` | Menor que | `5 < 3` | `FALSE` |\n| `>=` | Maior ou igual | `5 >= 5` | `TRUE` |\n| `<=` | Menor ou igual | `3 <= 5` | `TRUE` |\n\n_Operadores de Comparacao_"
+    },
+    {
+      "id": "r-intro-b032",
+      "type": "prose",
+      "markdown": "### Operadores logicos\n\n| Operador | Significado | Exemplo | Resultado |\n|:--------:|:------------|:--------|:---------:|\n| `&` | E (AND) | `TRUE & FALSE` | `FALSE` |\n| `\\|` | OU (OR) | `TRUE \\| FALSE` | `TRUE` |\n| `!` | NAO (NOT) | `!TRUE` | `FALSE` |\n\n_Operadores Logicos_"
+    },
+    {
+      "id": "r-intro-b033",
+      "type": "prose",
+      "markdown": "## Estruturas Condicionais\n\nAs estruturas condicionais permitem que voce execute diferentes blocos de codigo com base em condicoes especificas."
+    },
+    {
+      "id": "r-intro-b034",
+      "type": "prose",
+      "markdown": "### if\n\n`if` em ingles significa \"se\". A estrutura funciona assim: **se** a condicao for verdadeira, **entao** execute o codigo."
+    },
+    {
+      "id": "r-intro-b035",
+      "type": "code",
+      "lang": "r",
+      "code": "# Modelo:\n# if (condicao) {\n#   codigo a ser executado se a condicao for TRUE\n# }\n\n# Exemplo:\nx <- 10\nif (x > 5) {\n  print(\"x e maior que 5\")\n}\n# [1] \"x e maior que 5\""
+    },
+    {
+      "id": "r-intro-b036",
+      "type": "prose",
+      "markdown": "### if/else\n\nBasicamente um \"se\" ou \"se nao\" --- permite definir o que acontece quando a condicao e falsa."
+    },
+    {
+      "id": "r-intro-b037",
+      "type": "code",
+      "lang": "r",
+      "code": "# Modelo:\n# if (condicao) {\n#   codigo se TRUE\n# } else {\n#   codigo se FALSE\n# }\n\n# Exemplo:\nx <- 3\nif (x > 5) {\n  print(\"x e maior que 5\")\n} else {\n  print(\"x nao e maior que 5\")\n}\n# [1] \"x nao e maior que 5\""
+    },
+    {
+      "id": "r-intro-b038",
+      "type": "prose",
+      "markdown": "### if/else if/else (aninhado)\n\nPode-se \"aninhar\" varias estruturas condicionais. \"Aninhar\" significa colocar uma apos a outra em uma hierarquia de verificacoes."
+    },
+    {
+      "id": "r-intro-b039",
+      "type": "code",
+      "lang": "r",
+      "code": "# Modelo:\n# if (condicao1) {\n#   codigo se condicao1 TRUE\n# } else if (condicao2) {\n#   codigo se condicao2 TRUE\n# } else {\n#   codigo se todas FALSE\n# }\n\n# Exemplo:\nx <- 7\nif (x < 5) {\n  print(\"x e menor que 5\")\n} else if (x >= 5 & x < 10) {\n  print(\"x esta entre 5 e 10\")\n} else {\n  print(\"x e 10 ou maior\")\n}\n# [1] \"x esta entre 5 e 10\""
+    },
+    {
+      "id": "r-intro-b040",
+      "type": "prose",
+      "markdown": "### ifelse vetorizado\n\nEm estatistica, operacoes vetorizadas sao muito importantes. Imagine que voce e um estatistico em uma empresa de credito e tem dados de quantos dias os clientes estao em atraso. Voce quer criar um indicador simples de inadimplencia (sim/nao), considerando inadimplente quem passa de 90 dias:"
+    },
+    {
+      "id": "r-intro-b041",
+      "type": "code",
+      "lang": "r",
+      "code": "# Modelo:\n# ifelse(condicao, valor_se_TRUE, valor_se_FALSE)\n\n# Exemplo simples:\nx <- 1:10\nifelse(x %% 2 == 0, \"par\", \"impar\")\n# [1] \"impar\" \"par\" \"impar\" \"par\" \"impar\" \"par\" \"impar\" \"par\" \"impar\" \"par\"\n\n# Exemplo pratico - inadimplencia:\ndias_atraso <- c(15, 120, 45, 200, 90, 0, 95, 30)\n\n# Classificar como inadimplente se atraso > 90 dias\nstatus <- ifelse(dias_atraso > 90, \"Inadimplente\", \"Adimplente\")\nstatus\n# [1] \"Adimplente\"   \"Inadimplente\" \"Adimplente\"   \"Inadimplente\"\n# [5] \"Adimplente\"   \"Adimplente\"   \"Inadimplente\" \"Adimplente\"\n\n# Criar um data frame com os resultados\nclientes <- data.frame(\n  cliente = paste(\"Cliente\", 1:8),\n  dias_atraso = dias_atraso,\n  status = status\n)\nclientes"
+    },
+    {
+      "id": "r-intro-b042",
+      "type": "prose",
+      "markdown": "### switch/case\n\nQuando e necessario escolher entre varias opcoes (como uma caixa de selecao em um formulario), pode ser ineficaz ficar aninhando varios `if` e `else`. Para isso serve a estrutura `switch`:"
+    },
+    {
+      "id": "r-intro-b043",
+      "type": "code",
+      "lang": "r",
+      "code": "# Modelo:\n# switch(expressao,\n#        caso1 = acao1,\n#        caso2 = acao2,\n#        ...,\n#        acao_padrao)\n\n# Exemplo simples:\noperacao <- \"soma\"\nresultado <- switch(operacao,\n  \"soma\"          = 5 + 3,\n  \"subtracao\"     = 5 - 3,\n  \"multiplicacao\" = 5 * 3,\n  \"divisao\"       = 5 / 3,\n  \"operacao nao reconhecida\"\n)\nprint(resultado)  # [1] 8\n\n# Exemplo pratico - calcular medida estatistica:\ncalcular_medida <- function(dados, medida) {\n  switch(medida,\n    \"media\"   = mean(dados),\n    \"mediana\" = median(dados),\n    \"desvio\"  = sd(dados),\n    \"variancia\" = var(dados),\n    stop(\"Medida nao reconhecida!\")\n  )\n}\n\nnotas <- c(7.5, 8.0, 6.5, 9.0, 7.0)\ncalcular_medida(notas, \"media\")    # [1] 7.6\ncalcular_medida(notas, \"mediana\")  # [1] 7.5"
+    },
+    {
+      "id": "r-intro-b044",
+      "type": "prose",
+      "markdown": "## Estruturas de Laco (Loops)\n\nEm programacao, muitas vezes e necessario repetir uma operacao varias vezes com base em uma condicao ou iterando por uma estrutura de dados (iterar significa percorrer sequencialmente). As duas estruturas principais sao o `for` e o `while`."
+    },
+    {
+      "id": "r-intro-b045",
+      "type": "prose",
+      "markdown": "### for\n\nO `for` percorre cada elemento de uma sequencia (vetor, lista, etc.) e executa um bloco de codigo para cada um."
+    },
+    {
+      "id": "r-intro-b046",
+      "type": "code",
+      "lang": "r",
+      "code": "# Modelo:\n# for (variavel in sequencia) {\n#   codigo a ser repetido\n# }\n\n# Exemplo 1: Imprimir numeros de 1 a 5\nfor (i in 1:5) {\n  print(i)\n}\n\n# Exemplo 2: Iterar sobre um vetor de nomes\nnomes <- c(\"Ana\", \"Bruno\", \"Carla\")\nfor (nome in nomes) {\n  print(paste(\"Ola,\", nome))\n}\n\n# Exemplo 3: Calcular o quadrado de cada numero\nnumeros <- c(2, 4, 6, 8, 10)\nquadrados <- c()  # Vetor vazio para armazenar resultados\n\nfor (n in numeros) {\n  quadrados <- c(quadrados, n^2)\n}\nquadrados  # [1]  4 16 36 64 100\n\n# Exemplo 4: Iterar sobre linhas de um data frame\ndados <- data.frame(\n  aluno = c(\"Maria\", \"Pedro\", \"Julia\"),\n  nota = c(8.5, 6.0, 9.2)\n)\n\nfor (i in 1:nrow(dados)) {\n  if (dados$nota[i] >= 7) {\n    cat(dados$aluno[i], \"- Aprovado(a)\\n\")\n  } else {\n    cat(dados$aluno[i], \"- Reprovado(a)\\n\")\n  }\n}"
+    },
+    {
+      "id": "r-intro-b047",
+      "type": "callout",
+      "calloutType": "warning",
+      "title": "Atencao",
+      "markdown": "Em R, loops `for` podem ser lentos para grandes volumes de dados. Sempre que possivel, prefira operacoes vetorizadas ou funcoes da familia `apply` (como `sapply`, `lapply`). O loop `for` e mais util para operacoes que dependem do resultado da iteracao anterior."
+    },
+    {
+      "id": "r-intro-b048",
+      "type": "prose",
+      "markdown": "### while\n\nO `while` (enquanto) repete um bloco de codigo **enquanto** uma condicao for verdadeira. Cuidado: se a condicao nunca se tornar falsa, o loop sera infinito!"
+    },
+    {
+      "id": "r-intro-b049",
+      "type": "code",
+      "lang": "r",
+      "code": "# Modelo:\n# while (condicao) {\n#   codigo a ser repetido\n#   # IMPORTANTE: algo deve mudar para a condicao eventualmente ser FALSE\n# }\n\n# Exemplo 1: Contagem regressiva\ncontador <- 5\nwhile (contador > 0) {\n  print(paste(\"Contagem:\", contador))\n  contador <- contador - 1  # Diminuir o contador\n}\nprint(\"Lancamento!\")\n\n# Exemplo 2: Dobrar um valor ate ultrapassar 1000\nvalor <- 1\niteracoes <- 0\n\nwhile (valor <= 1000) {\n  valor <- valor * 2\n  iteracoes <- iteracoes + 1\n}\ncat(\"Valor final:\", valor, \"\\n\")        # 1024\ncat(\"Iteracoes necessarias:\", iteracoes) # 10\n\n# Exemplo 3: Simulacao - quantos lancamentos ate sair 6?\nset.seed(42)  # Para reprodutibilidade\ndado <- 0\nlancamentos <- 0\n\nwhile (dado != 6) {\n  dado <- sample(1:6, 1)  # Lancar um dado\n  lancamentos <- lancamentos + 1\n  cat(\"Lancamento\", lancamentos, \":\", dado, \"\\n\")\n}\ncat(\"Foram necessarios\", lancamentos, \"lancamentos para sair 6.\\n\")"
+    },
+    {
+      "id": "r-intro-b050",
+      "type": "prose",
+      "markdown": "### break e next\n\nDuas palavras-chave uteis para controlar loops:"
+    },
+    {
+      "id": "r-intro-b051",
+      "type": "code",
+      "lang": "r",
+      "code": "# break: interrompe o loop imediatamente\nfor (i in 1:100) {\n  if (i > 5) break  # Para quando i passa de 5\n  print(i)\n}\n# Imprime apenas 1, 2, 3, 4, 5\n\n# next: pula para a proxima iteracao\nfor (i in 1:10) {\n  if (i %% 2 != 0) next  # Pula numeros impares\n  print(i)\n}\n# Imprime apenas 2, 4, 6, 8, 10"
+    },
+    {
+      "id": "r-intro-b052",
+      "type": "prose",
+      "markdown": "## Funcoes\n\nFuncoes sao blocos de codigo reutilizaveis que realizam uma tarefa especifica. Voce ja usou diversas funcoes do R (`print`, `mean`, `sum`, etc.). Agora vamos aprender a **criar nossas proprias funcoes**."
+    },
+    {
+      "id": "r-intro-b053",
+      "type": "prose",
+      "markdown": "### Criando funcoes"
+    },
+    {
+      "id": "r-intro-b054",
+      "type": "code",
+      "lang": "r",
+      "code": "# Modelo:\n# nome_da_funcao <- function(argumento1, argumento2, ...) {\n#   codigo da funcao\n#   return(resultado)  # Retornar o resultado\n# }\n\n# Exemplo 1: Funcao simples - saudacao\nsaudacao <- function(nome) {\n  mensagem <- paste(\"Ola,\", nome, \"! Bem-vindo(a) ao R.\")\n  return(mensagem)\n}\n\nsaudacao(\"Maria\")  # [1] \"Ola, Maria ! Bem-vindo(a) ao R.\"\nsaudacao(\"Pedro\")  # [1] \"Ola, Pedro ! Bem-vindo(a) ao R.\""
+    },
+    {
+      "id": "r-intro-b055",
+      "type": "prose",
+      "markdown": "### Argumentos com valores padrao"
+    },
+    {
+      "id": "r-intro-b056",
+      "type": "code",
+      "lang": "r",
+      "code": "# Exemplo 2: Funcao com argumento padrao\ncalcular_imc <- function(peso, altura, arredondar = 2) {\n  imc <- peso / (altura^2)\n  return(round(imc, arredondar))\n}\n\ncalcular_imc(70, 1.75)           # [1] 22.86 (usa padrao arredondar = 2)\ncalcular_imc(70, 1.75, 4)        # [1] 22.8571 (arredonda com 4 casas)"
+    },
+    {
+      "id": "r-intro-b057",
+      "type": "prose",
+      "markdown": "### Funcoes que retornam multiplos valores"
+    },
+    {
+      "id": "r-intro-b058",
+      "type": "code",
+      "lang": "r",
+      "code": "# Exemplo 3: Retornar uma lista com varias estatisticas\nestatisticas_descritivas <- function(dados) {\n  resultado <- list(\n    media   = mean(dados),\n    mediana = median(dados),\n    desvio  = sd(dados),\n    minimo  = min(dados),\n    maximo  = max(dados),\n    n       = length(dados)\n  )\n  return(resultado)\n}\n\nnotas <- c(7.5, 8.0, 6.5, 9.0, 7.0, 8.5, 5.5, 7.8)\nresumo <- estatisticas_descritivas(notas)\n\nresumo$media    # [1] 7.475\nresumo$desvio   # [1] 1.064\nresumo$n        # [1] 8"
+    },
+    {
+      "id": "r-intro-b059",
+      "type": "prose",
+      "markdown": "### Funcoes anonimas (lambda)"
+    },
+    {
+      "id": "r-intro-b060",
+      "type": "code",
+      "lang": "r",
+      "code": "# Funcoes curtas podem ser definidas \"inline\"\n# Util com sapply, lapply, etc.\n\nnumeros <- list(c(1,2,3), c(10,20), c(5,5,5,5))\n\n# Calcular a media de cada vetor na lista\nsapply(numeros, function(x) mean(x))\n# [1] 2.0 15.0  5.0\n\n# No R 4.1+, existe a sintaxe abreviada com \\(x)\nsapply(numeros, \\(x) mean(x))"
+    },
+    {
+      "id": "r-intro-b061",
+      "type": "prose",
+      "markdown": "### Boas praticas para funcoes"
+    },
+    {
+      "id": "r-intro-b062",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Boas praticas",
+      "markdown": "- De nomes descritivos as funcoes (ex: `calcular_media_ponderada` em vez de `f1`)\n- Documente o que a funcao faz, quais argumentos recebe e o que retorna\n- Cada funcao deve fazer **uma coisa** bem feita\n- Use valores padrao para argumentos opcionais\n- Sempre use `return()` explicitamente para clareza"
+    },
+    {
+      "id": "r-intro-b063",
+      "type": "prose",
+      "markdown": "## Importacao de Dados\n\nTrabalhar com dados e a essencia da estatistica, entao importar dados corretamente e fundamental. Felizmente, o R tem funcoes prontas para os formatos mais comuns."
+    },
+    {
+      "id": "r-intro-b064",
+      "type": "prose",
+      "markdown": "### Principais formatos de arquivo\n\n| Formato | Extensao | Funcao em R | Biblioteca |\n|:--------|:--------:|:------------|:-----------|\n| CSV | `.csv` | `read.csv()` ou `read_csv()` | base / `readr` |\n| Excel | `.xlsx` | `read_excel()` | `readxl` |\n| Texto delimitado | `.txt`, `.tsv` | `read.delim()` ou `read_tsv()` | base / `readr` |\n| SPSS | `.sav` | `read_sav()` | `haven` |\n| Stata | `.dta` | `read_dta()` | `haven` |\n| JSON | `.json` | `fromJSON()` | `jsonlite` |\n| RDS (formato R) | `.rds` | `readRDS()` | base |\n\n_Principais Formatos de Dados_"
+    },
+    {
+      "id": "r-intro-b065",
+      "type": "prose",
+      "markdown": "### Importar CSV\n\nO formato CSV (Comma-Separated Values) e o mais comum. Atencao aos **delimitadores**: no padrao internacional o separador de colunas e a virgula e o decimal e o ponto. No padrao brasileiro, o separador de colunas e o ponto e virgula e o decimal e a virgula."
+    },
+    {
+      "id": "r-intro-b066",
+      "type": "code",
+      "lang": "r",
+      "code": "# Padrao internacional (separador: virgula, decimal: ponto)\ndados <- read.csv(\"caminho/para/arquivo.csv\")\n\n# Padrao brasileiro (separador: ponto e virgula, decimal: virgula)\ndados <- read.csv2(\"caminho/para/arquivo.csv\")\n\n# Usando readr (tidyverse) - mais rapido e robusto\nlibrary(readr)\ndados <- read_csv(\"caminho/para/arquivo.csv\")            # Padrao internacional\ndados <- read_csv2(\"caminho/para/arquivo.csv\")           # Padrao brasileiro\n\n# Especificando encoding (para acentos)\ndados <- read.csv(\"arquivo.csv\", fileEncoding = \"UTF-8\")\ndados <- read.csv(\"arquivo.csv\", fileEncoding = \"latin1\")  # Windows BR"
+    },
+    {
+      "id": "r-intro-b067",
+      "type": "callout",
+      "calloutType": "important",
+      "title": "Delimitadores e encoding",
+      "markdown": "Os dois problemas mais comuns ao importar dados sao:\n\n1. **Delimitador errado**: se o arquivo usa `;` e voce usa `read.csv()` (que espera `,`), tudo vira uma coluna so. Use `read.csv2()` para dados brasileiros.\n2. **Encoding errado**: se os acentos aparecem como caracteres estranhos, tente `fileEncoding = \"UTF-8\"` ou `fileEncoding = \"latin1\"`."
+    },
+    {
+      "id": "r-intro-b068",
+      "type": "prose",
+      "markdown": "### Importar Excel"
+    },
+    {
+      "id": "r-intro-b069",
+      "type": "code",
+      "lang": "r",
+      "code": "library(readxl)\n\n# Importar a primeira planilha\ndados <- read_excel(\"caminho/para/arquivo.xlsx\")\n\n# Importar uma planilha especifica\ndados <- read_excel(\"arquivo.xlsx\", sheet = \"Planilha2\")\ndados <- read_excel(\"arquivo.xlsx\", sheet = 2)  # Pelo numero\n\n# Pular linhas no inicio (cabecalhos extras)\ndados <- read_excel(\"arquivo.xlsx\", skip = 3)\n\n# Definir tipos de colunas\ndados <- read_excel(\"arquivo.xlsx\", col_types = c(\"text\", \"numeric\", \"date\"))\n\n# Ver nomes das planilhas\nexcel_sheets(\"arquivo.xlsx\")"
+    },
+    {
+      "id": "r-intro-b070",
+      "type": "prose",
+      "markdown": "### Importar outros formatos"
+    },
+    {
+      "id": "r-intro-b071",
+      "type": "code",
+      "lang": "r",
+      "code": "# Arquivo de texto com tabulacao como separador\ndados <- read.delim(\"arquivo.txt\")\n\n# Arquivo com separador customizado\ndados <- read.table(\"arquivo.txt\", sep = \"|\", header = TRUE)\n\n# Dados SPSS\nlibrary(haven)\ndados <- read_sav(\"arquivo.sav\")\n\n# Dados Stata\ndados <- read_dta(\"arquivo.dta\")\n\n# Dados JSON\nlibrary(jsonlite)\ndados <- fromJSON(\"arquivo.json\")"
+    },
+    {
+      "id": "r-intro-b072",
+      "type": "prose",
+      "markdown": "### Verificar os dados importados\n\nApos importar os dados, sempre verifique se a importacao foi correta:"
+    },
+    {
+      "id": "r-intro-b073",
+      "type": "code",
+      "lang": "r",
+      "code": "# Primeiras linhas\nhead(dados)        # 6 primeiras linhas\nhead(dados, 10)    # 10 primeiras linhas\n\n# Ultimas linhas\ntail(dados)\n\n# Estrutura dos dados\nstr(dados)\n\n# Resumo estatistico\nsummary(dados)\n\n# Dimensoes\ndim(dados)   # linhas x colunas\nnrow(dados)  # numero de linhas\nncol(dados)  # numero de colunas\n\n# Nomes das colunas\nnames(dados)"
+    },
+    {
+      "id": "r-intro-b074",
+      "type": "prose",
+      "markdown": "## Manipulacao de Dados com dplyr\n\nO pacote `dplyr` e a principal ferramenta do R para manipulacao de dados. Ele faz parte do `tidyverse` e usa uma sintaxe intuitiva baseada em \"verbos\"."
+    },
+    {
+      "id": "r-intro-b075",
+      "type": "callout",
+      "calloutType": "note",
+      "title": "O operador pipe (%>% ou |>)",
+      "markdown": "O **pipe** permite encadear operacoes de forma legivel, passando o resultado da esquerda como primeiro argumento da funcao da direita. Leia `%>%` como \"e entao\".\n\n```{r}\n# Sem pipe (dificil de ler):\nsummarise(group_by(filter(dados, idade > 20), cidade), media = mean(nota))\n\n# Com pipe (legivel):\ndados %>%\n  filter(idade > 20) %>%\n  group_by(cidade) %>%\n  summarise(media = mean(nota))\n```"
+    },
+    {
+      "id": "r-intro-b076",
+      "type": "code",
+      "lang": "r",
+      "code": "library(dplyr)\n\n# Vamos usar o dataset mtcars como exemplo\ndados <- mtcars\ndados$carro <- rownames(mtcars)  # Adicionar nome dos carros como coluna"
+    },
+    {
+      "id": "r-intro-b077",
+      "type": "prose",
+      "markdown": "### filter() - Filtrar linhas\n\nSeleciona linhas que atendem a uma condicao."
+    },
+    {
+      "id": "r-intro-b078",
+      "type": "code",
+      "lang": "r",
+      "code": "# Carros com mais de 20 milhas por galao\ndados %>% filter(mpg > 20)\n\n# Carros com 6 cilindros E mais de 100 cavalos\ndados %>% filter(cyl == 6 & hp > 100)\n\n# Carros com 4 OU 6 cilindros\ndados %>% filter(cyl %in% c(4, 6))"
+    },
+    {
+      "id": "r-intro-b079",
+      "type": "prose",
+      "markdown": "### select() - Selecionar colunas\n\nEscolhe quais colunas manter."
+    },
+    {
+      "id": "r-intro-b080",
+      "type": "code",
+      "lang": "r",
+      "code": "# Selecionar colunas especificas\ndados %>% select(carro, mpg, cyl, hp)\n\n# Remover colunas (com sinal de menos)\ndados %>% select(-vs, -am, -gear)\n\n# Selecionar por padrao\ndados %>% select(starts_with(\"d\"))   # Colunas que comecam com \"d\"\ndados %>% select(ends_with(\"p\"))     # Colunas que terminam com \"p\""
+    },
+    {
+      "id": "r-intro-b081",
+      "type": "prose",
+      "markdown": "### mutate() - Criar ou modificar colunas\n\nCria novas colunas ou modifica existentes."
+    },
+    {
+      "id": "r-intro-b082",
+      "type": "code",
+      "lang": "r",
+      "code": "# Criar nova coluna: consumo em km/L\ndados %>% mutate(km_por_litro = mpg * 0.425)\n\n# Criar varias colunas de uma vez\ndados %>% mutate(\n  km_por_litro = mpg * 0.425,\n  potencia_kw  = hp * 0.7457,\n  categoria    = ifelse(mpg > 20, \"Economico\", \"Gastao\")\n)"
+    },
+    {
+      "id": "r-intro-b083",
+      "type": "prose",
+      "markdown": "### arrange() - Ordenar linhas"
+    },
+    {
+      "id": "r-intro-b084",
+      "type": "code",
+      "lang": "r",
+      "code": "# Ordenar por consumo (crescente)\ndados %>% arrange(mpg)\n\n# Ordenar por consumo (decrescente)\ndados %>% arrange(desc(mpg))\n\n# Ordenar por multiplas colunas\ndados %>% arrange(cyl, desc(mpg))"
+    },
+    {
+      "id": "r-intro-b085",
+      "type": "prose",
+      "markdown": "### group_by() e summarise() - Agrupar e resumir\n\nCombinacao poderosa para calcular estatisticas por grupo."
+    },
+    {
+      "id": "r-intro-b086",
+      "type": "code",
+      "lang": "r",
+      "code": "# Media de consumo por numero de cilindros\ndados %>%\n  group_by(cyl) %>%\n  summarise(\n    media_mpg = mean(mpg),\n    desvio_mpg = sd(mpg),\n    n = n()\n  )\n\n# Resultado:\n#   cyl media_mpg desvio_mpg     n\n# 1   4      26.7       4.51    11\n# 2   6      19.7       1.45     7\n# 3   8      15.1       2.56    14\n\n# Multiplos resumos\ndados %>%\n  group_by(cyl) %>%\n  summarise(\n    media_hp   = mean(hp),\n    max_hp     = max(hp),\n    min_hp     = min(hp),\n    total      = n()\n  )"
+    },
+    {
+      "id": "r-intro-b087",
+      "type": "prose",
+      "markdown": "### Combinando tudo com pipe"
+    },
+    {
+      "id": "r-intro-b088",
+      "type": "code",
+      "lang": "r",
+      "code": "# Analise completa em um pipeline\nresultado <- dados %>%\n  filter(mpg > 15) %>%                          # Filtrar\n  select(carro, mpg, cyl, hp, wt) %>%           # Selecionar colunas\n  mutate(km_por_litro = mpg * 0.425) %>%         # Criar coluna\n  group_by(cyl) %>%                              # Agrupar\n  summarise(                                     # Resumir\n    media_consumo = mean(km_por_litro),\n    media_potencia = mean(hp),\n    n_carros = n()\n  ) %>%\n  arrange(desc(media_consumo))                   # Ordenar\n\nresultado"
+    },
+    {
+      "id": "r-intro-b089",
+      "type": "prose",
+      "markdown": "### Outras funcoes uteis do dplyr"
+    },
+    {
+      "id": "r-intro-b090",
+      "type": "code",
+      "lang": "r",
+      "code": "# rename() - renomear colunas\ndados %>% rename(consumo = mpg, cilindros = cyl)\n\n# distinct() - valores unicos\ndados %>% distinct(cyl)\n\n# count() - contar ocorrencias\ndados %>% count(cyl)\ndados %>% count(cyl, sort = TRUE)  # Ordenado\n\n# slice() - selecionar linhas por posicao\ndados %>% slice(1:5)         # Primeiras 5 linhas\ndados %>% slice_max(mpg, n = 3)  # 3 maiores consumos\ndados %>% slice_min(hp, n = 3)   # 3 menores potencias"
+    },
+    {
+      "id": "r-intro-b091",
+      "type": "prose",
+      "markdown": "## Graficos com ggplot2\n\nO `ggplot2` e o pacote mais popular do R para criacao de graficos. Ele se baseia na **Gramatica de Graficos** (Grammar of Graphics), onde cada grafico e construido em camadas."
+    },
+    {
+      "id": "r-intro-b092",
+      "type": "prose",
+      "markdown": "### Estrutura basica\n\nA ideia central: todo grafico tem **dados**, **mapeamento estetico** (`aes`) e **geometrias** (`geom_`)."
+    },
+    {
+      "id": "r-intro-b093",
+      "type": "code",
+      "lang": "r",
+      "code": "library(ggplot2)\n\n# Estrutura basica:\n# ggplot(dados, aes(x = variavel_x, y = variavel_y)) +\n#   geom_tipo()\n\n# O \"+\" adiciona camadas ao grafico"
+    },
+    {
+      "id": "r-intro-b094",
+      "type": "prose",
+      "markdown": "### Grafico de dispersao (geom_point)\n\nIdeal para visualizar a relacao entre duas variaveis quantitativas."
+    },
+    {
+      "id": "r-intro-b095",
+      "type": "code",
+      "lang": "r",
+      "code": "# Grafico de dispersao basico\nggplot(mtcars, aes(x = wt, y = mpg)) +\n  geom_point()\n\n# Com cores por grupo\nggplot(mtcars, aes(x = wt, y = mpg, color = factor(cyl))) +\n  geom_point(size = 3) +\n  labs(\n    title = \"Peso vs. Consumo por Cilindros\",\n    x = \"Peso (1000 lbs)\",\n    y = \"Milhas por Galao\",\n    color = \"Cilindros\"\n  )\n\n# Com linha de tendencia\nggplot(mtcars, aes(x = wt, y = mpg)) +\n  geom_point() +\n  geom_smooth(method = \"lm\", se = TRUE, color = \"blue\") +\n  labs(title = \"Relacao Peso vs. Consumo com Regressao Linear\")"
+    },
+    {
+      "id": "r-intro-b096",
+      "type": "prose",
+      "markdown": "### Grafico de barras (geom_bar / geom_col)\n\nIdeal para variaveis categoricas."
+    },
+    {
+      "id": "r-intro-b097",
+      "type": "code",
+      "lang": "r",
+      "code": "# geom_bar: conta ocorrencias automaticamente\nggplot(mtcars, aes(x = factor(cyl))) +\n  geom_bar(fill = \"#448EE3\") +\n  labs(title = \"Quantidade de Carros por Cilindros\",\n       x = \"Numero de Cilindros\", y = \"Contagem\")\n\n# geom_col: quando voce ja tem os valores\nresumo <- mtcars %>%\n  group_by(cyl) %>%\n  summarise(media_mpg = mean(mpg))\n\nggplot(resumo, aes(x = factor(cyl), y = media_mpg)) +\n  geom_col(fill = \"#2D4188\") +\n  labs(title = \"Media de Consumo por Cilindros\",\n       x = \"Cilindros\", y = \"MPG Medio\")\n\n# Barras agrupadas\nggplot(mtcars, aes(x = factor(cyl), fill = factor(am))) +\n  geom_bar(position = \"dodge\") +\n  labs(title = \"Cilindros por Tipo de Transmissao\",\n       x = \"Cilindros\", fill = \"Transmissao\\n(0=Auto, 1=Manual)\")"
+    },
+    {
+      "id": "r-intro-b098",
+      "type": "prose",
+      "markdown": "### Histograma (geom_histogram)\n\nIdeal para visualizar a distribuicao de uma variavel quantitativa."
+    },
+    {
+      "id": "r-intro-b099",
+      "type": "code",
+      "lang": "r",
+      "code": "# Histograma basico\nggplot(mtcars, aes(x = mpg)) +\n  geom_histogram(bins = 10, fill = \"#448EE3\", color = \"white\") +\n  labs(title = \"Distribuicao do Consumo (MPG)\",\n       x = \"Milhas por Galao\", y = \"Frequencia\")\n\n# Histograma com curva de densidade\nggplot(mtcars, aes(x = mpg)) +\n  geom_histogram(aes(y = after_stat(density)),\n                 bins = 10, fill = \"#448EE3\", color = \"white\", alpha = 0.7) +\n  geom_density(color = \"red\", linewidth = 1) +\n  labs(title = \"Distribuicao do Consumo com Curva de Densidade\")\n\n# Histogramas sobrepostos por grupo\nggplot(mtcars, aes(x = mpg, fill = factor(cyl))) +\n  geom_histogram(bins = 10, alpha = 0.6, position = \"identity\") +\n  labs(title = \"Distribuicao do Consumo por Cilindros\",\n       fill = \"Cilindros\")"
+    },
+    {
+      "id": "r-intro-b100",
+      "type": "prose",
+      "markdown": "### Boxplot (geom_boxplot)\n\nIdeal para comparar distribuicoes entre grupos e identificar outliers."
+    },
+    {
+      "id": "r-intro-b101",
+      "type": "code",
+      "lang": "r",
+      "code": "# Boxplot basico\nggplot(mtcars, aes(x = factor(cyl), y = mpg)) +\n  geom_boxplot(fill = \"#448EE3\", alpha = 0.7) +\n  labs(title = \"Distribuicao do Consumo por Cilindros\",\n       x = \"Numero de Cilindros\", y = \"Milhas por Galao\")\n\n# Boxplot com pontos individuais\nggplot(mtcars, aes(x = factor(cyl), y = mpg)) +\n  geom_boxplot(fill = \"#448EE3\", alpha = 0.5, outlier.shape = NA) +\n  geom_jitter(width = 0.2, alpha = 0.5, color = \"#2D4188\") +\n  labs(title = \"Consumo por Cilindros (com pontos)\")\n\n# Boxplot horizontal\nggplot(mtcars, aes(x = mpg, y = factor(cyl))) +\n  geom_boxplot(fill = \"#448EE3\", alpha = 0.7) +\n  labs(title = \"Consumo por Cilindros (horizontal)\")"
+    },
+    {
+      "id": "r-intro-b102",
+      "type": "prose",
+      "markdown": "### Personalizacao de graficos"
+    },
+    {
+      "id": "r-intro-b103",
+      "type": "code",
+      "lang": "r",
+      "code": "# Grafico completo com personalizacao\nggplot(mtcars, aes(x = wt, y = mpg, color = factor(cyl))) +\n  geom_point(size = 3, alpha = 0.8) +\n  geom_smooth(method = \"lm\", se = FALSE, linetype = \"dashed\") +\n  labs(\n    title = \"Relacao entre Peso e Consumo\",\n    subtitle = \"Dados do dataset mtcars\",\n    x = \"Peso do Carro (1000 lbs)\",\n    y = \"Consumo (milhas por galao)\",\n    color = \"Cilindros\",\n    caption = \"Fonte: Motor Trend US Magazine, 1974\"\n  ) +\n  theme_minimal() +                    # Tema limpo\n  scale_color_manual(values = c(\"4\" = \"#448EE3\",\n                                \"6\" = \"#2D4188\",\n                                \"8\" = \"#FF6B6B\"))  # Cores personalizadas\n\n# Temas disponiveis:\n# theme_minimal()   - limpo e moderno\n# theme_classic()   - fundo branco com eixos\n# theme_bw()        - preto e branco\n# theme_dark()      - fundo escuro\n# theme_void()      - sem eixos nem fundo"
+    },
+    {
+      "id": "r-intro-b104",
+      "type": "prose",
+      "markdown": "### Salvar graficos"
+    },
+    {
+      "id": "r-intro-b105",
+      "type": "code",
+      "lang": "r",
+      "code": "# Salvar o ultimo grafico criado\nggsave(\"meu_grafico.png\", width = 8, height = 5, dpi = 300)\n\n# Salvar um grafico especifico\np <- ggplot(mtcars, aes(x = mpg)) + geom_histogram()\nggsave(\"histograma.png\", plot = p, width = 8, height = 5)\n\n# Diferentes formatos\nggsave(\"grafico.pdf\", width = 8, height = 5)    # PDF (vetorial)\nggsave(\"grafico.svg\", width = 8, height = 5)    # SVG (vetorial)"
+    },
+    {
+      "id": "r-intro-b106",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Dica final",
+      "markdown": "Para aprofundar seus conhecimentos em R, recomendamos fortemente o livro gratuito [R para Ciencia de Dados](https://pt.r4ds.hadley.nz/), disponivel online em portugues. Ele cobre com profundidade todos os topicos abordados neste apendice e muito mais."
+    }
+  ]
+}

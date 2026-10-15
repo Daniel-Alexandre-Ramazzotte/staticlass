@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Image,
   ScrollView,
   StyleSheet,
   TextInput,
@@ -17,6 +18,7 @@ import { AppButton, useLayout } from 'app/components/AppButton';
 import { palette, primaryFontA } from 'app/constants/style';
 import { useAuth } from 'app/context/AuthContext';
 import api from 'app/services/api';
+import { API_BASE_URL } from 'app/constants/apiBase';
 
 type ViewerMode = 'manage' | 'pick';
 
@@ -41,7 +43,8 @@ type Topico = {
 type Questao = {
   id: number;
   enunciado: string;
-  resposta_correta: string;
+  question_type?: string | null;
+  resposta_correta: string | null;
   solucao: string | null;
   dificuldade: number | null;
   capitulo: string | null;
@@ -50,6 +53,9 @@ type Questao = {
   source?: string | null;
   can_manage?: boolean;
   alternativas: Alternativa[];
+  imagem_q?: string | null;
+  imagem_s?: string | null;
+  imagem_q_position?: 'antes' | 'depois' | 'meio' | null;
 };
 
 type SharedQuestionViewerProps = {
@@ -112,8 +118,29 @@ function fonteLabel(source: string | null | undefined) {
   return source;
 }
 
+function BadgeTipo({ tipo }: { tipo?: string | null }) {
+  const rotulos: Record<string, string> = {
+    multiple_choice: 'M.C.',
+    true_false: 'V/F',
+    open_answer: 'Aberta',
+  };
+  const cores: Record<string, string> = {
+    multiple_choice: '#607d8b',
+    true_false: '#795548',
+    open_answer: '#9c27b0',
+  };
+  const key = tipo ?? 'multiple_choice';
+  return (
+    <View style={[styles.badge, { backgroundColor: cores[key] ?? '#607d8b' }]}>
+      <Text color="#fff" fontSize={11} fontWeight="700">
+        {rotulos[key] ?? 'M.C.'}
+      </Text>
+    </View>
+  );
+}
+
 function BadgeDificuldade({ dificuldade }: { dificuldade: number | null }) {
-  const cores: Record<number, string> = { 1: '#4caf50', 2: '#ff9800', 3: '#f44336' };
+  const cores: Record<number, string> = { 1: palette.primaryGreen, 2: palette.warn, 3: palette.red };
   const rotulos: Record<number, string> = { 1: 'Fácil', 2: 'Médio', 3: 'Difícil' };
   if (!dificuldade) return null;
   return (
@@ -157,7 +184,10 @@ function QuestionCard({
             #{question.id}
           </Text>
         </Text>
-        <BadgeDificuldade dificuldade={question.dificuldade} />
+        <XStack gap={4} ai="center">
+          <BadgeTipo tipo={question.question_type} />
+          <BadgeDificuldade dificuldade={question.dificuldade} />
+        </XStack>
       </XStack>
 
       <XStack gap={8} mb={10} flexWrap="wrap">
@@ -176,9 +206,25 @@ function QuestionCard({
         </Text>
       </XStack>
 
+      {question.imagem_q && question.imagem_q !== 'null' && question.imagem_q_position === 'antes' ? (
+        <Image
+          source={{ uri: `${API_BASE_URL}/questions/uploads/${question.imagem_q}` }}
+          style={{ width: '100%', height: 180, borderRadius: 8, marginBottom: 14 }}
+          resizeMode="contain"
+        />
+      ) : null}
+
       <Text fontSize={15} color={palette.offBlack} mb={14} lineHeight={22}>
         {question.enunciado}
       </Text>
+
+      {question.imagem_q && question.imagem_q !== 'null' && question.imagem_q_position !== 'antes' && question.imagem_q_position !== 'meio' ? (
+        <Image
+          source={{ uri: `${API_BASE_URL}/questions/uploads/${question.imagem_q}` }}
+          style={{ width: '100%', height: 180, borderRadius: 8, marginBottom: 14 }}
+          resizeMode="contain"
+        />
+      ) : null}
 
       {question.alternativas.map((alternativa) => (
         <View
@@ -205,6 +251,13 @@ function QuestionCard({
           <Text fontSize={12} color="#555" mt={4}>
             {question.solucao}
           </Text>
+          {question.imagem_s && question.imagem_s !== 'null' ? (
+            <Image
+              source={{ uri: `${API_BASE_URL}/questions/uploads/${question.imagem_s}` }}
+              style={{ width: '100%', height: 180, borderRadius: 8, marginTop: 8 }}
+              resizeMode="contain"
+            />
+          ) : null}
         </View>
       ) : null}
 
@@ -404,7 +457,7 @@ export function SharedQuestionViewer({
 
           <View style={styles.filtersBox}>
             <Text fontSize={fs(13)} color={palette.darkBlue} fontWeight="700" mb={6}>
-              Capítulo
+              Assunto
             </Text>
             <XStack gap={8} mb={12} flexWrap="wrap">
               {chapters.map((chapter) => (

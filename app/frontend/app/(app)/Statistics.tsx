@@ -215,7 +215,7 @@ export default function StatisticsScreen() {
             </View>
           </SectionCard>
 
-          <SectionCard title="Capítulos" subtitle="Precisão por capítulo respondido">
+          <SectionCard title="Assuntos" subtitle="Precisão por assunto respondido">
             {chapters.length === 0 ? (
               <Text style={styles.emptyText}>Nenhuma resposta registrada ainda.</Text>
             ) : (
@@ -234,7 +234,7 @@ export default function StatisticsScreen() {
             )}
           </SectionCard>
 
-          <SectionCard title="Tópicos" subtitle="Detalhamento por tópico dentro dos capítulos">
+          <SectionCard title="Tópicos" subtitle="Detalhamento por tópico dentro dos assuntos">
             {topics.length === 0 ? (
               <Text style={styles.emptyText}>Nenhuma resposta registrada ainda.</Text>
             ) : (

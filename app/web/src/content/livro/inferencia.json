@@ -1,0 +1,588 @@
+{
+  "slug": "inferencia",
+  "title": "Inferência Estatística",
+  "lang": "r",
+  "sourceFile": "03-inferencia.qmd",
+  "generatedAt": "2026-07-26T15:16:36.551Z",
+  "toc": [
+    {
+      "level": 1,
+      "text": "Inferência Estatística",
+      "blockId": "inferencia-b000"
+    },
+    {
+      "level": 2,
+      "text": "Introdução à Inferência Estatística",
+      "blockId": "inferencia-b001"
+    },
+    {
+      "level": 3,
+      "text": "Por que a inferência funciona?",
+      "blockId": "inferencia-b004"
+    },
+    {
+      "level": 2,
+      "text": "Parâmetros, Estimadores e Estimativas",
+      "blockId": "inferencia-b007"
+    },
+    {
+      "level": 3,
+      "text": "Notação: população vs. amostra",
+      "blockId": "inferencia-b010"
+    },
+    {
+      "level": 3,
+      "text": "Propriedades desejáveis de um estimador",
+      "blockId": "inferencia-b011"
+    },
+    {
+      "level": 2,
+      "text": "Distribuições Amostrais",
+      "blockId": "inferencia-b014"
+    },
+    {
+      "level": 3,
+      "text": "Distribuição amostral da média",
+      "blockId": "inferencia-b016"
+    },
+    {
+      "level": 3,
+      "text": "Distribuição amostral da proporção",
+      "blockId": "inferencia-b017"
+    },
+    {
+      "level": 2,
+      "text": "Teorema Central do Limite",
+      "blockId": "inferencia-b020"
+    },
+    {
+      "level": 3,
+      "text": "Condições e considerações",
+      "blockId": "inferencia-b022"
+    },
+    {
+      "level": 3,
+      "text": "Por que o TCL é tão importante?",
+      "blockId": "inferencia-b023"
+    },
+    {
+      "level": 3,
+      "text": "Simulação em R: visualizando o TCL",
+      "blockId": "inferencia-b024"
+    },
+    {
+      "level": 2,
+      "text": "Intervalos de Confiança",
+      "blockId": "inferencia-b029"
+    },
+    {
+      "level": 3,
+      "text": "Interpretação correta",
+      "blockId": "inferencia-b031"
+    },
+    {
+      "level": 3,
+      "text": "IC para a média com $\\sigma$ conhecido (distribuição Z)",
+      "blockId": "inferencia-b032"
+    },
+    {
+      "level": 3,
+      "text": "IC para a média com $\\sigma$ desconhecido (distribuição t)",
+      "blockId": "inferencia-b033"
+    },
+    {
+      "level": 3,
+      "text": "IC para a proporção",
+      "blockId": "inferencia-b035"
+    },
+    {
+      "level": 3,
+      "text": "Margem de erro e tamanho da amostra",
+      "blockId": "inferencia-b036"
+    },
+    {
+      "level": 3,
+      "text": "Aplicação em R",
+      "blockId": "inferencia-b037"
+    },
+    {
+      "level": 2,
+      "text": "Testes de Hipóteses",
+      "blockId": "inferencia-b046"
+    },
+    {
+      "level": 3,
+      "text": "Estrutura de um teste de hipóteses",
+      "blockId": "inferencia-b047"
+    },
+    {
+      "level": 3,
+      "text": "Nível de significância e valor-p",
+      "blockId": "inferencia-b050"
+    },
+    {
+      "level": 3,
+      "text": "Erros Tipo I e Tipo II",
+      "blockId": "inferencia-b053"
+    },
+    {
+      "level": 3,
+      "text": "Etapas de um teste de hipóteses",
+      "blockId": "inferencia-b054"
+    },
+    {
+      "level": 3,
+      "text": "Teste Z para a média ($\\sigma$ conhecido)",
+      "blockId": "inferencia-b055"
+    },
+    {
+      "level": 3,
+      "text": "Teste t para a média ($\\sigma$ desconhecido)",
+      "blockId": "inferencia-b056"
+    },
+    {
+      "level": 3,
+      "text": "Teste para a proporção",
+      "blockId": "inferencia-b057"
+    },
+    {
+      "level": 3,
+      "text": "Teste t para duas amostras independentes",
+      "blockId": "inferencia-b058"
+    },
+    {
+      "level": 3,
+      "text": "Aplicação em R",
+      "blockId": "inferencia-b060"
+    },
+    {
+      "level": 2,
+      "text": "Resumo",
+      "blockId": "inferencia-b070"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "inferencia-b000",
+      "type": "prose",
+      "markdown": "# Inferência Estatística\n\nNo capítulo anterior, estudamos as bases da **Teoria da Probabilidade**, que nos permite quantificar a incerteza. Agora, utilizaremos essas ferramentas para responder a uma das perguntas mais importantes da Estatística: **o que podemos afirmar sobre uma população inteira a partir de uma amostra?**\n\nEste capítulo aborda os fundamentos da **Inferência Estatística**, incluindo estimação pontual, intervalos de confiança e testes de hipóteses — os pilares da análise estatística moderna."
+    },
+    {
+      "id": "inferencia-b001",
+      "type": "prose",
+      "markdown": "## Introdução à Inferência Estatística\n\nNa prática, quase nunca temos acesso a toda a população de interesse. Um instituto de pesquisa não entrevista todos os eleitores do país; um controle de qualidade não inspeciona todas as peças produzidas; um pesquisador não mede a pressão arterial de todos os brasileiros. O que fazemos é coletar uma **amostra** — um subconjunto representativo da população — e, a partir dela, tirar conclusões sobre o todo."
+    },
+    {
+      "id": "inferencia-b002",
+      "type": "callout",
+      "calloutType": "note",
+      "title": "Definição",
+      "markdown": "**Inferência Estatística** é o conjunto de técnicas que permitem **generalizar** conclusões obtidas a partir de uma amostra para a população da qual ela foi extraída, quantificando o grau de incerteza dessas conclusões."
+    },
+    {
+      "id": "inferencia-b003",
+      "type": "prose",
+      "markdown": "A Inferência Estatística se divide em dois grandes ramos:\n\n1. **Estimação**: atribuir valores a parâmetros populacionais desconhecidos (pontual ou por intervalos).\n2. **Testes de Hipóteses**: avaliar se uma afirmação sobre a população é compatível com os dados observados na amostra.\n\nAmbos dependem fundamentalmente do conceito de **amostragem aleatória** — a amostra deve ser coletada de forma que cada elemento da população tenha uma chance conhecida de ser selecionado. Sem isso, os resultados da inferência podem ser gravemente enviesados."
+    },
+    {
+      "id": "inferencia-b004",
+      "type": "prose",
+      "markdown": "### Por que a inferência funciona?\n\nA inferência funciona porque a **aleatoriedade da amostragem** gera padrões previsíveis. Quando coletamos amostras repetidas de uma mesma população, as estatísticas amostrais (como a média) variam de amostra para amostra, mas essa variação segue uma **distribuição de probabilidade conhecida**. É isso que nos permite quantificar a incerteza."
+    },
+    {
+      "id": "inferencia-b005",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 3.1** ⭐\n\nClassifique cada situação como problema de **estimação** ou **teste de hipóteses**:\n\na) Determinar a renda média dos moradores de uma cidade a partir de uma pesquisa amostral.\nb) Verificar se um novo medicamento reduz a pressão arterial mais do que o medicamento atual.\nc) Calcular a proporção de eleitores que pretendem votar no candidato A.\nd) Avaliar se a taxa de defeitos de uma fábrica é inferior a 2%."
+    },
+    {
+      "id": "inferencia-b006",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 3.2** ⭐\n\nUm pesquisador deseja estimar a altura média dos alunos de uma universidade. Ele mede a altura dos 30 alunos que estão sentados na primeira fila de um auditório. Essa amostra é adequada para fazer inferência sobre todos os alunos da universidade? Justifique."
+    },
+    {
+      "id": "inferencia-b007",
+      "type": "prose",
+      "markdown": "## Parâmetros, Estimadores e Estimativas\n\nPara falar de inferência com precisão, precisamos distinguir três conceitos fundamentais."
+    },
+    {
+      "id": "inferencia-b008",
+      "type": "callout",
+      "calloutType": "note",
+      "title": "Definição",
+      "markdown": "- **Parâmetro**: valor fixo (geralmente desconhecido) que descreve uma característica da **população**. Notação: letras gregas ($\\mu$, $\\sigma$, $p$).\n- **Estimador**: fórmula (função dos dados amostrais) usada para calcular uma aproximação do parâmetro. É uma **variável aleatória**.\n- **Estimativa**: valor numérico obtido ao aplicar o estimador a uma amostra específica."
+    },
+    {
+      "id": "inferencia-b009",
+      "type": "prose",
+      "markdown": "**Exemplo**: se queremos estimar a renda média ($\\mu$) de uma população, o estimador natural é a média amostral $\\bar{X} = \\frac{1}{n}\\sum_{i=1}^{n} X_i$. Se aplicarmos essa fórmula a uma amostra e obtivermos $\\bar{x} = 2.450$, esse valor é a estimativa."
+    },
+    {
+      "id": "inferencia-b010",
+      "type": "prose",
+      "markdown": "### Notação: população vs. amostra\n\nA tabela abaixo resume a notação convencional:\n\n| Característica | Parâmetro (população) | Estimador/Estimativa (amostra) |\n|---|---|---|\n| Média | $\\mu$ | $\\bar{x}$ |\n| Variância | $\\sigma^2$ | $s^2$ |\n| Desvio padrão | $\\sigma$ | $s$ |\n| Proporção | $p$ | $\\hat{p}$ |\n| Tamanho | $N$ | $n$ |"
+    },
+    {
+      "id": "inferencia-b011",
+      "type": "prose",
+      "markdown": "### Propriedades desejáveis de um estimador\n\nNem todo estimador é igualmente bom. As três propriedades mais importantes são:\n\n**1. Não-Viés (ou Não-Tendenciosidade)**\n\nUm estimador $\\hat{\\theta}$ é **não-viesado** (ou não-tendencioso) para o parâmetro $\\theta$ se:\n\n$$\nE(\\hat{\\theta}) = \\theta\n$$\n\nIsso significa que, em média, o estimador acerta o valor do parâmetro. A média amostral $\\bar{X}$ é um estimador não-viesado de $\\mu$. Já a variância amostral calculada com divisor $n$ (em vez de $n-1$) é viesada — por isso usamos $s^2 = \\frac{1}{n-1}\\sum(X_i - \\bar{X})^2$.\n\n**2. Consistência**\n\nUm estimador é **consistente** se, à medida que o tamanho da amostra cresce ($n \\to \\infty$), ele converge em probabilidade para o verdadeiro valor do parâmetro:\n\n$$\n\\hat{\\theta}_n \\xrightarrow{P} \\theta \\quad \\text{quando } n \\to \\infty\n$$\n\nNa prática: amostras maiores produzem estimativas mais confiáveis.\n\n**3. Eficiência**\n\nEntre dois estimadores não-viesados de $\\theta$, o mais **eficiente** é aquele com menor variância:\n\n$$\n\\text{Se } E(\\hat{\\theta}_1) = E(\\hat{\\theta}_2) = \\theta, \\text{ preferimos aquele com menor } \\text{Var}(\\hat{\\theta}).\n$$\n\nA média amostral, por exemplo, é mais eficiente que a mediana amostral para estimar $\\mu$ em populações normais."
+    },
+    {
+      "id": "inferencia-b012",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 3.3** ⭐⭐\n\nConsidere duas fórmulas para estimar a média populacional $\\mu$ a partir de uma amostra de tamanho $n = 3$, com observações $X_1, X_2, X_3$:\n\n- Estimador A: $\\hat{\\mu}_A = \\frac{X_1 + X_2 + X_3}{3}$\n- Estimador B: $\\hat{\\mu}_B = \\frac{X_1 + 2X_2 + X_3}{4}$\n\na) Verifique se cada estimador é não-viesado.\nb) Supondo que $\\text{Var}(X_i) = \\sigma^2$ para todo $i$, calcule a variância de cada estimador.\nc) Qual dos dois é preferível? Justifique."
+    },
+    {
+      "id": "inferencia-b013",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 3.4** ⭐\n\nEm uma pesquisa, coletou-se uma amostra de $n = 100$ estudantes e obteve-se renda média amostral $\\bar{x} = 1.850$ reais. Identifique: (a) o parâmetro de interesse, (b) o estimador utilizado, (c) a estimativa obtida."
+    },
+    {
+      "id": "inferencia-b014",
+      "type": "prose",
+      "markdown": "## Distribuições Amostrais\n\nO conceito de **distribuição amostral** é a ponte que conecta a amostra à população. Ele responde à pergunta: \"se eu repetisse a amostragem muitas vezes, como as estatísticas amostrais se comportariam?\""
+    },
+    {
+      "id": "inferencia-b015",
+      "type": "callout",
+      "calloutType": "note",
+      "title": "Definição",
+      "markdown": "**Distribuição amostral** de uma estatística é a distribuição de probabilidade dessa estatística, considerando todas as possíveis amostras de tamanho $n$ extraídas da população."
+    },
+    {
+      "id": "inferencia-b016",
+      "type": "prose",
+      "markdown": "### Distribuição amostral da média\n\nSuponha que uma população tenha média $\\mu$ e variância $\\sigma^2$. Se extrairmos amostras aleatórias de tamanho $n$ e calcularmos a média $\\bar{X}$ de cada uma, então:\n\n$$\nE(\\bar{X}) = \\mu \\qquad \\text{e} \\qquad \\text{Var}(\\bar{X}) = \\frac{\\sigma^2}{n}\n$$\n\nO **erro padrão** da média é:\n\n$$\n\\text{EP}(\\bar{X}) = \\frac{\\sigma}{\\sqrt{n}}\n$$\n\nObservações fundamentais:\n\n- A média amostral é **não-viesada**: $E(\\bar{X}) = \\mu$.\n- A variabilidade de $\\bar{X}$ **diminui** com o aumento de $n$. Amostras maiores produzem estimativas mais precisas.\n- Se a população for **normal**, então $\\bar{X}$ também será **exatamente normal** para qualquer $n$.\n- Se a população **não for normal**, pelo Teorema Central do Limite, $\\bar{X}$ será **aproximadamente normal** para $n$ grande.\n\n**Caso normal com variância conhecida:**\n\n$$\n\\bar{X} \\sim N\\left(\\mu, \\frac{\\sigma^2}{n}\\right) \\quad \\Rightarrow \\quad Z = \\frac{\\bar{X} - \\mu}{\\sigma / \\sqrt{n}} \\sim N(0, 1)\n$$"
+    },
+    {
+      "id": "inferencia-b017",
+      "type": "prose",
+      "markdown": "### Distribuição amostral da proporção\n\nQuando a variável de interesse é categórica (sucesso/fracasso), o estimador natural da proporção populacional $p$ é a proporção amostral:\n\n$$\n\\hat{p} = \\frac{X}{n}\n$$\n\nonde $X$ é o número de \"sucessos\" na amostra. Como $X \\sim \\text{Binomial}(n, p)$, os seguintes resultados são **exatos para qualquer $n$** (não são aproximações):\n\n$$\nE(\\hat{p}) = p \\qquad \\text{e} \\qquad \\text{Var}(\\hat{p}) = \\frac{p(1-p)}{n}\n$$\n\nPelo Teorema Central do Limite, para $n$ suficientemente grande (regra prática: $np \\geq 5$ e $n(1-p) \\geq 5$):\n\n$$\n\\hat{p} \\approx N\\left(p, \\frac{p(1-p)}{n}\\right)\n$$"
+    },
+    {
+      "id": "inferencia-b018",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 3.5** ⭐⭐\n\nUma população tem média $\\mu = 50$ e desvio padrão $\\sigma = 10$. São retiradas amostras aleatórias de tamanho $n = 25$.\n\na) Qual é a média e o erro padrão da distribuição amostral de $\\bar{X}$?\nb) Qual é a probabilidade de obter uma média amostral superior a 54? (Assuma normalidade.)\nc) Se aumentarmos a amostra para $n = 100$, o que acontece com essa probabilidade? Calcule."
+    },
+    {
+      "id": "inferencia-b019",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 3.6** ⭐⭐\n\nEm uma cidade, 60% dos moradores são favoráveis a uma nova política pública. Uma pesquisa entrevista $n = 200$ moradores aleatoriamente.\n\na) Qual a média e o erro padrão da proporção amostral $\\hat{p}$?\nb) Qual a probabilidade de a pesquisa encontrar uma proporção amostral entre 55% e 65%?"
+    },
+    {
+      "id": "inferencia-b020",
+      "type": "prose",
+      "markdown": "## Teorema Central do Limite\n\nO **Teorema Central do Limite** (TCL) é, sem exagero, um dos resultados mais importantes de toda a Estatística. Ele explica por que a distribuição normal aparece com tanta frequência na prática."
+    },
+    {
+      "id": "inferencia-b021",
+      "type": "callout",
+      "calloutType": "note",
+      "title": "Definição",
+      "markdown": "**Teorema Central do Limite (TCL)**: Seja $X_1, X_2, \\ldots, X_n$ uma amostra aleatória de uma população com média $\\mu$ e variância finita $\\sigma^2$. Então, para $n$ suficientemente grande, a distribuição da média amostral padronizada converge para a normal padrão:\n\n$$\nZ_n = \\frac{\\bar{X}_n - \\mu}{\\sigma / \\sqrt{n}} \\xrightarrow{d} N(0, 1) \\quad \\text{quando } n \\to \\infty\n$$\n\nEquivalentemente, $\\bar{X}_n \\approx N\\left(\\mu, \\frac{\\sigma^2}{n}\\right)$ para $n$ grande."
+    },
+    {
+      "id": "inferencia-b022",
+      "type": "prose",
+      "markdown": "### Condições e considerações\n\n- **Independência**: as observações devem ser independentes (satisfeito em amostragem aleatória).\n- **Variância finita**: a população deve ter variância finita $\\sigma^2 < \\infty$.\n- **Tamanho da amostra**: em geral, $n \\geq 30$ é suficiente. Se a população for muito assimétrica, pode ser necessário $n$ maior. (Se a população já for normal, $\\bar{X}$ é exatamente normal para qualquer $n$ — mas isso é uma propriedade exata da distribuição normal, não uma aplicação do TCL. O TCL propriamente dito é o que garante a aproximação quando a população **não** é normal.)"
+    },
+    {
+      "id": "inferencia-b023",
+      "type": "prose",
+      "markdown": "### Por que o TCL é tão importante?\n\n1. **Permite usar a distribuição normal** mesmo quando a população original não é normal.\n2. **Fundamenta os intervalos de confiança e testes de hipóteses** que veremos adiante.\n3. **Explica** por que tantos fenômenos naturais seguem aproximadamente uma distribuição normal (eles são somas de muitos efeitos pequenos e independentes)."
+    },
+    {
+      "id": "inferencia-b024",
+      "type": "prose",
+      "markdown": "### Simulação em R: visualizando o TCL\n\nO código a seguir demonstra o TCL em ação. Geramos amostras de uma distribuição **Exponencial** (que é muito assimétrica) e observamos como a distribuição das médias amostrais se torna normal à medida que $n$ cresce."
+    },
+    {
+      "id": "inferencia-b025",
+      "type": "code",
+      "lang": "r",
+      "code": "set.seed(42)\nnum_amostras <- 10000\ntamanhos <- c(1, 5, 30, 100)\n\npar(mfrow = c(2, 2), mar = c(4, 4, 3, 1))\n\nfor (n in tamanhos) {\n  medias <- replicate(num_amostras, mean(rexp(n, rate = 1)))\n  hist(medias,\n       breaks = 50,\n       probability = TRUE,\n       main = paste(\"n =\", n),\n       xlab = \"Média amostral\",\n       ylab = \"Densidade\",\n       col = \"#448EE3\",\n       border = \"white\")\n\n  # Sobrepor a curva normal teórica\n  x_seq <- seq(min(medias), max(medias), length.out = 200)\n  lines(x_seq,\n        dnorm(x_seq, mean = 1, sd = 1/sqrt(n)),\n        col = \"#2D4188\",\n        lwd = 2)\n}"
+    },
+    {
+      "id": "inferencia-b026",
+      "type": "prose",
+      "markdown": "**Interpretação**: para $n = 1$, a distribuição é claramente exponencial (assimétrica à direita). Já para $n = 30$, a distribuição das médias é praticamente indistinguível de uma normal — exatamente como prevê o TCL."
+    },
+    {
+      "id": "inferencia-b027",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 3.7** ⭐⭐\n\nUma variável aleatória $X$ segue uma distribuição Uniforme no intervalo $[0, 12]$, com $\\mu = 6$ e $\\sigma^2 = 12$.\n\na) Amostras de tamanho $n = 36$ são coletadas. Qual é a distribuição aproximada de $\\bar{X}$? Justifique.\nb) Calcule $P(\\bar{X} > 6.5)$.\nc) Modifique o código R acima para simular essa situação (use `runif(n, 0, 12)` em vez de `rexp`)."
+    },
+    {
+      "id": "inferencia-b028",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 3.8** ⭐\n\nVerdadeiro ou Falso? Justifique.\n\na) O TCL garante que qualquer amostra grande terá distribuição normal.\nb) O TCL se aplica à distribuição da **média amostral**, não aos dados individuais.\nc) Se a população já é normal, o TCL é desnecessário para garantir que $\\bar{X}$ é normal.\nd) O TCL exige que a variância da população seja finita."
+    },
+    {
+      "id": "inferencia-b029",
+      "type": "prose",
+      "markdown": "## Intervalos de Confiança\n\nA estimação pontual fornece um único valor para o parâmetro, mas não informa o quanto essa estimativa pode estar errada. Os **intervalos de confiança** resolvem esse problema, fornecendo uma faixa de valores plausíveis para o parâmetro."
+    },
+    {
+      "id": "inferencia-b030",
+      "type": "callout",
+      "calloutType": "note",
+      "title": "Definição",
+      "markdown": "Um **Intervalo de Confiança (IC)** de nível $(1 - \\alpha) \\times 100\\%$ para um parâmetro $\\theta$ é um intervalo $[L, U]$ construído a partir da amostra tal que, em $(1 - \\alpha) \\times 100\\%$ das vezes que o procedimento for repetido, o intervalo conterá o verdadeiro valor de $\\theta$."
+    },
+    {
+      "id": "inferencia-b031",
+      "type": "prose",
+      "markdown": "### Interpretação correta\n\nA interpretação de um IC de 95% é frequentemente mal compreendida. Veja:\n\n- **Correto**: \"Se repetíssemos a amostragem e construíssemos o IC muitas vezes, 95% dos intervalos construídos conteriam o verdadeiro valor de $\\mu$.\"\n- **Incorreto**: \"Há 95% de probabilidade de $\\mu$ estar neste intervalo.\" (O parâmetro é fixo; o intervalo é que é aleatório.)"
+    },
+    {
+      "id": "inferencia-b032",
+      "type": "prose",
+      "markdown": "### IC para a média com $\\sigma$ conhecido (distribuição Z)\n\nQuando a variância populacional $\\sigma^2$ é conhecida (situação rara na prática, mas importante conceitualmente), o IC para $\\mu$ é:\n\n$$\n\\bar{x} \\pm z_{\\alpha/2} \\cdot \\frac{\\sigma}{\\sqrt{n}}\n$$\n\nonde $z_{\\alpha/2}$ é o quantil da distribuição normal padrão. Para os níveis de confiança mais comuns:\n\n| Nível de confiança | $\\alpha$ | $z_{\\alpha/2}$ |\n|---|---|---|\n| 90% | 0,10 | 1,645 |\n| 95% | 0,05 | 1,960 |\n| 99% | 0,01 | 2,576 |\n\n**Exemplo**: Uma amostra de $n = 64$ estudantes tem média de notas $\\bar{x} = 7{,}2$. Sabendo que $\\sigma = 1{,}6$, o IC de 95% para $\\mu$ é:\n\n$$\n7{,}2 \\pm 1{,}96 \\cdot \\frac{1{,}6}{\\sqrt{64}} = 7{,}2 \\pm 1{,}96 \\cdot 0{,}2 = 7{,}2 \\pm 0{,}392 = [6{,}808;\\; 7{,}592]\n$$"
+    },
+    {
+      "id": "inferencia-b033",
+      "type": "prose",
+      "markdown": "### IC para a média com $\\sigma$ desconhecido (distribuição t)\n\nNa maioria das aplicações reais, $\\sigma$ é desconhecido e deve ser estimado por $s$ (desvio padrão amostral). Nesse caso, usamos a **distribuição t de Student** com $n - 1$ graus de liberdade:\n\n$$\n\\bar{x} \\pm t_{\\alpha/2,\\; n-1} \\cdot \\frac{s}{\\sqrt{n}}\n$$\n\nA distribuição $t$ tem caudas mais pesadas que a normal, refletindo a incerteza adicional na estimação de $\\sigma$. À medida que $n$ cresce, a distribuição $t$ converge para a normal padrão."
+    },
+    {
+      "id": "inferencia-b034",
+      "type": "callout",
+      "calloutType": "important",
+      "title": null,
+      "markdown": "Esse IC é **exato** quando a população de origem é aproximadamente normal. Para populações não normais, ele continua **aproximadamente válido** para $n$ razoavelmente grande (o mesmo raciocínio do TCL discutido anteriormente), mas pode ser pouco confiável para amostras pequenas de populações muito assimétricas."
+    },
+    {
+      "id": "inferencia-b035",
+      "type": "prose",
+      "markdown": "### IC para a proporção\n\nPara proporções, com $n$ grande ($n\\hat{p} \\geq 5$ e $n(1-\\hat{p}) \\geq 5$):\n\n$$\n\\hat{p} \\pm z_{\\alpha/2} \\cdot \\sqrt{\\frac{\\hat{p}(1 - \\hat{p})}{n}}\n$$"
+    },
+    {
+      "id": "inferencia-b036",
+      "type": "prose",
+      "markdown": "### Margem de erro e tamanho da amostra\n\nA **margem de erro** $E$ é a metade da amplitude do IC:\n\n$$\nE = z_{\\alpha/2} \\cdot \\frac{\\sigma}{\\sqrt{n}}\n$$\n\nResolvendo para $n$, obtemos o **tamanho de amostra necessário** para uma margem de erro desejada:\n\n$$\nn = \\left(\\frac{z_{\\alpha/2} \\cdot \\sigma}{E}\\right)^2\n$$\n\nO mesmo raciocínio aplicado à margem de erro da proporção ($E = z_{\\alpha/2}\\sqrt{p(1-p)/n}$) dá o tamanho de amostra necessário para proporções:\n\n$$\nn = \\frac{z_{\\alpha/2}^2 \\cdot p(1-p)}{E^2}\n$$\n\nComo $p$ ainda não é conhecido antes de coletar a amostra, usa-se uma estimativa prévia de $p$ (de um estudo piloto, por exemplo) ou, na ausência de qualquer estimativa, o valor mais conservador $p = 0{,}5$ (que maximiza $p(1-p)$ e garante um $n$ suficiente para qualquer valor real de $p$)."
+    },
+    {
+      "id": "inferencia-b037",
+      "type": "prose",
+      "markdown": "### Aplicação em R\n\nVamos usar o conjunto de dados `pesquisa_exemplo.csv` para construir intervalos de confiança."
+    },
+    {
+      "id": "inferencia-b038",
+      "type": "code",
+      "lang": "r",
+      "code": "# Carregar dados\ndados <- read.csv(\"dados/pesquisa_exemplo.csv\")\n\n# IC para a média de nota_final usando t.test()\nresultado <- t.test(dados$nota_final, conf.level = 0.95)\ncat(\"Média amostral:\", round(resultado$estimate, 3), \"\\n\")\ncat(\"IC 95% para a média:\", round(resultado$conf.int, 3), \"\\n\")"
+    },
+    {
+      "id": "inferencia-b039",
+      "type": "code",
+      "lang": "r",
+      "code": "# IC manual para a média (demonstração passo a passo)\nx <- dados$nota_final\nn <- length(x)\nmedia <- mean(x)\ns <- sd(x)\nerro_padrao <- s / sqrt(n)\nt_crit <- qt(0.975, df = n - 1)  # quantil t para 95%\nmargem <- t_crit * erro_padrao\n\ncat(\"n =\", n, \"\\n\")\ncat(\"Média =\", round(media, 3), \"\\n\")\ncat(\"Desvio padrão =\", round(s, 3), \"\\n\")\ncat(\"Erro padrão =\", round(erro_padrao, 3), \"\\n\")\ncat(\"t crítico =\", round(t_crit, 3), \"\\n\")\ncat(\"Margem de erro =\", round(margem, 3), \"\\n\")\ncat(\"IC 95%: [\", round(media - margem, 3), \";\", round(media + margem, 3), \"]\\n\")"
+    },
+    {
+      "id": "inferencia-b040",
+      "type": "code",
+      "lang": "r",
+      "code": "# IC para a proporção de \"Satisfeito\" na variável satisfacao\nsatisfeitos <- sum(dados$satisfacao == \"Satisfeito\")\nn <- nrow(dados)\np_chapeu <- satisfeitos / n\n\ncat(\"Proporção amostral (Satisfeito):\", round(p_chapeu, 3), \"\\n\")\n\n# IC manual, usando exatamente a fórmula de Wald ensinada acima\nz_crit <- qnorm(0.975)\nmargem_p <- z_crit * sqrt(p_chapeu * (1 - p_chapeu) / n)\ncat(\"IC 95% (Wald, manual): [\", round(p_chapeu - margem_p, 3), \";\", round(p_chapeu + margem_p, 3), \"]\\n\")\n\n# Teste de proporção do R (inclui IC)\nprop.test(satisfeitos, n, conf.level = 0.95)"
+    },
+    {
+      "id": "inferencia-b041",
+      "type": "callout",
+      "calloutType": "important",
+      "title": null,
+      "markdown": "O IC retornado por `prop.test()` **não é** o IC de Wald ensinado acima — por padrão, `prop.test()` usa o método de Wilson com correção de continuidade, que tende a ter melhor cobertura para $n$ pequeno ou $\\hat p$ próximo de 0 ou 1. Os dois métodos costumam dar resultados parecidos, mas não idênticos: se você calcular o IC manualmente com a fórmula de Wald e comparar com `prop.test()`, **não espere o mesmo intervalo exato**. Para reproduzir o IC de Wald diretamente no R, use `prop.test(..., correct = FALSE)` combinado com o cálculo manual acima, não o resultado padrão da função."
+    },
+    {
+      "id": "inferencia-b042",
+      "type": "code",
+      "lang": "r",
+      "code": "# Efeito do tamanho da amostra na largura do IC\nset.seed(123)\npopulacao <- rnorm(10000, mean = 50, sd = 10)\n\ntamanhos_n <- c(10, 30, 50, 100, 500)\nresultados <- data.frame(n = integer(), LI = numeric(), LS = numeric())\n\nfor (n in tamanhos_n) {\n  amostra <- sample(populacao, n)\n  ic <- t.test(amostra, conf.level = 0.95)$conf.int\n  resultados <- rbind(resultados, data.frame(n = n, LI = ic[1], LS = ic[2]))\n}\n\nresultados$Amplitude <- resultados$LS - resultados$LI\nprint(resultados)"
+    },
+    {
+      "id": "inferencia-b043",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 3.9** ⭐⭐\n\nUma amostra de $n = 40$ peças fabricadas por uma máquina tem peso médio $\\bar{x} = 52{,}3$ g e desvio padrão $s = 3{,}1$ g.\n\na) Construa um IC de 95% para o peso médio populacional.\nb) Construa um IC de 99% para o peso médio populacional.\nc) Compare as amplitudes dos dois intervalos. Qual é mais largo e por quê?"
+    },
+    {
+      "id": "inferencia-b044",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 3.10** ⭐⭐\n\nEm uma pesquisa eleitoral, 540 de 1.000 entrevistados declararam intenção de voto no candidato A.\n\na) Calcule o IC de 95% para a proporção populacional que pretende votar no candidato A.\nb) Com base nesse intervalo, é possível afirmar que o candidato A venceria a eleição (i.e., que $p > 0{,}50$)?\nc) Qual seria o tamanho de amostra necessário para que a margem de erro fosse de no máximo 2 pontos percentuais (0,02)?"
+    },
+    {
+      "id": "inferencia-b045",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 3.11** ⭐\n\nUsando o R e o conjunto de dados `pesquisa_exemplo.csv`, construa:\n\na) Um IC de 90% para a média de `idade`.\nb) Um IC de 99% para a média de `renda`.\nc) Interprete cada intervalo no contexto do problema."
+    },
+    {
+      "id": "inferencia-b046",
+      "type": "prose",
+      "markdown": "## Testes de Hipóteses\n\nOs **testes de hipóteses** são o segundo pilar da inferência estatística. Enquanto os intervalos de confiança estimam o valor de um parâmetro, os testes avaliam se uma afirmação específica sobre o parâmetro é sustentada pelos dados."
+    },
+    {
+      "id": "inferencia-b047",
+      "type": "prose",
+      "markdown": "### Estrutura de um teste de hipóteses\n\nTodo teste de hipóteses envolve duas hipóteses complementares:"
+    },
+    {
+      "id": "inferencia-b048",
+      "type": "callout",
+      "calloutType": "note",
+      "title": "Definição",
+      "markdown": "- **Hipótese nula ($H_0$)**: afirmação conservadora, que representa o *status quo* ou a ausência de efeito. É a hipótese que se assume verdadeira até que haja evidência suficiente contra ela.\n- **Hipótese alternativa ($H_1$ ou $H_a$)**: afirmação que o pesquisador deseja testar; representa o efeito, diferença ou mudança."
+    },
+    {
+      "id": "inferencia-b049",
+      "type": "prose",
+      "markdown": "**Exemplos:**\n\n| Situação | $H_0$ | $H_1$ |\n|---|---|---|\n| Novo medicamento | $\\mu_{\\text{novo}} = \\mu_{\\text{atual}}$ | $\\mu_{\\text{novo}} \\neq \\mu_{\\text{atual}}$ |\n| Defeitos na fábrica | $p = 0{,}02$ | $p > 0{,}02$ |\n| Programa de treinamento | $\\mu_{\\text{depois}} - \\mu_{\\text{antes}} = 0$ | $\\mu_{\\text{depois}} - \\mu_{\\text{antes}} > 0$ |\n\nOs testes podem ser:\n\n- **Bilateral** (bicaudal): $H_1: \\theta \\neq \\theta_0$\n- **Unilateral à direita**: $H_1: \\theta > \\theta_0$\n- **Unilateral à esquerda**: $H_1: \\theta < \\theta_0$"
+    },
+    {
+      "id": "inferencia-b050",
+      "type": "prose",
+      "markdown": "### Nível de significância e valor-p"
+    },
+    {
+      "id": "inferencia-b051",
+      "type": "callout",
+      "calloutType": "note",
+      "title": "Definição",
+      "markdown": "- **Nível de significância ($\\alpha$)**: probabilidade máxima de rejeitar $H_0$ quando ela é verdadeira. Valores comuns: 0,05 (5%) e 0,01 (1%).\n- **Valor-p (p-value)**: probabilidade de obter um resultado tão ou mais extremo que o observado, supondo que $H_0$ é verdadeira. Quanto menor o valor-p, mais forte a evidência contra $H_0$."
+    },
+    {
+      "id": "inferencia-b052",
+      "type": "prose",
+      "markdown": "**Regra de decisão**: rejeitar $H_0$ se valor-p $< \\alpha$."
+    },
+    {
+      "id": "inferencia-b053",
+      "type": "prose",
+      "markdown": "### Erros Tipo I e Tipo II\n\nAo tomar uma decisão com base em dados amostrais, estamos sujeitos a erros:\n\n|  | $H_0$ é verdadeira | $H_0$ é falsa |\n|---|---|---|\n| **Não rejeitar $H_0$** | Decisão correta | **Erro Tipo II** ($\\beta$) |\n| **Rejeitar $H_0$** | **Erro Tipo I** ($\\alpha$) | Decisão correta (**Poder**) |\n\n- **Erro Tipo I**: rejeitar $H_0$ quando ela é verdadeira (falso positivo). Probabilidade = $\\alpha$.\n- **Erro Tipo II**: não rejeitar $H_0$ quando ela é falsa (falso negativo). Probabilidade = $\\beta$.\n- **Poder do teste**: $1 - \\beta$ = probabilidade de rejeitar $H_0$ quando ela é realmente falsa.\n\nNa prática, controlamos $\\alpha$ diretamente (ao fixar o nível de significância). Para um $\\alpha$ fixo, podemos reduzir $\\beta$ (aumentar o poder) aumentando o tamanho da amostra."
+    },
+    {
+      "id": "inferencia-b054",
+      "type": "prose",
+      "markdown": "### Etapas de um teste de hipóteses\n\n1. Definir $H_0$ e $H_1$.\n2. Fixar o nível de significância $\\alpha$.\n3. Coletar a amostra e calcular a estatística de teste.\n4. Calcular o valor-p.\n5. Tomar a decisão: rejeitar ou não rejeitar $H_0$.\n6. Interpretar o resultado no contexto do problema."
+    },
+    {
+      "id": "inferencia-b055",
+      "type": "prose",
+      "markdown": "### Teste Z para a média ($\\sigma$ conhecido)\n\nQuando $\\sigma$ é conhecido e a amostra é grande (ou a população é normal):\n\n$$\nZ = \\frac{\\bar{X} - \\mu_0}{\\sigma / \\sqrt{n}}\n$$\n\n**Exemplo**: Uma fábrica afirma que suas barras de chocolate pesam em média $\\mu_0 = 200$ g. Uma amostra de $n = 49$ barras tem média $\\bar{x} = 197$ g. O desvio padrão populacional é $\\sigma = 7$ g. Ao nível de 5%, há evidência de que o peso médio é diferente de 200 g?\n\n- $H_0: \\mu = 200$ vs. $H_1: \\mu \\neq 200$\n- $Z = \\frac{197 - 200}{7/\\sqrt{49}} = \\frac{-3}{1} = -3{,}0$\n- Valor-p $= 2 \\times P(Z < -3) = 2 \\times 0{,}0013 = 0{,}0027$\n- Como $0{,}0027 < 0{,}05$, rejeitamos $H_0$. Há evidência significativa de que o peso médio difere de 200 g."
+    },
+    {
+      "id": "inferencia-b056",
+      "type": "prose",
+      "markdown": "### Teste t para a média ($\\sigma$ desconhecido)\n\nQuando $\\sigma$ é desconhecido (caso mais comum), usamos a estatística $t$:\n\n$$\nt = \\frac{\\bar{X} - \\mu_0}{s / \\sqrt{n}} \\sim t_{n-1}\n$$\n\nEste é o teste implementado pela função `t.test()` do R."
+    },
+    {
+      "id": "inferencia-b057",
+      "type": "prose",
+      "markdown": "### Teste para a proporção\n\nPara testar $H_0: p = p_0$ com $n$ grande:\n\n$$\nZ = \\frac{\\hat{p} - p_0}{\\sqrt{p_0(1 - p_0)/n}}\n$$"
+    },
+    {
+      "id": "inferencia-b058",
+      "type": "prose",
+      "markdown": "### Teste t para duas amostras independentes\n\nAlém de comparar uma média com um valor de referência $\\mu_0$, é comum querer comparar as médias de **dois grupos independentes** (ex.: notas de homens vs. mulheres). As hipóteses são:\n\n$$\nH_0: \\mu_1 = \\mu_2 \\qquad \\text{vs.} \\qquad H_1: \\mu_1 \\neq \\mu_2\n$$\n\nA estatística de teste, na versão que **não assume variâncias iguais** entre os grupos (teste de Welch — é o padrão da função `t.test()` no R), é:\n\n$$\nt = \\frac{\\bar{X}_1 - \\bar{X}_2}{\\sqrt{\\dfrac{s_1^2}{n_1} + \\dfrac{s_2^2}{n_2}}}\n$$\n\nOs graus de liberdade são calculados por uma fórmula (Welch-Satterthwaite) que geralmente não é um número inteiro — o R calcula isso automaticamente. Existe também a versão que **assume variâncias iguais** (teste t pooled/agrupado), obtida com `t.test(..., var.equal = TRUE)`; na dúvida, a versão de Welch (padrão) é mais segura, pois não exige a suposição de variâncias iguais entre os grupos."
+    },
+    {
+      "id": "inferencia-b059",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Dica",
+      "markdown": "Antes de comparar duas médias, vale visualizar as distribuições (boxplot, histograma) para verificar se a suposição de variâncias parecidas é razoável — embora, com o teste de Welch, essa verificação seja menos crítica do que seria com o teste pooled."
+    },
+    {
+      "id": "inferencia-b060",
+      "type": "prose",
+      "markdown": "### Aplicação em R"
+    },
+    {
+      "id": "inferencia-b061",
+      "type": "code",
+      "lang": "r",
+      "code": "# Carregar dados\ndados <- read.csv(\"dados/pesquisa_exemplo.csv\")\n\n# Teste t: a nota final média é diferente de 7.0?\n# H0: mu = 7.0   vs   H1: mu != 7.0\nt.test(dados$nota_final, mu = 7.0)"
+    },
+    {
+      "id": "inferencia-b062",
+      "type": "code",
+      "lang": "r",
+      "code": "# Interpretando o resultado\nresultado <- t.test(dados$nota_final, mu = 7.0)\n\ncat(\"Estatística t:\", round(resultado$statistic, 3), \"\\n\")\ncat(\"Graus de liberdade:\", resultado$parameter, \"\\n\")\ncat(\"Valor-p:\", round(resultado$p.value, 4), \"\\n\")\ncat(\"IC 95%:\", round(resultado$conf.int, 3), \"\\n\")\ncat(\"Média amostral:\", round(resultado$estimate, 3), \"\\n\")\n\nif (resultado$p.value < 0.05) {\n  cat(\"\\nConclusão: Rejeitamos H0 ao nível de 5%.\\n\")\n  cat(\"Há evidência de que a média de nota_final difere de 7.0.\\n\")\n} else {\n  cat(\"\\nConclusão: Não rejeitamos H0 ao nível de 5%.\\n\")\n  cat(\"Não há evidência suficiente de que a média de nota_final difere de 7.0.\\n\")\n}"
+    },
+    {
+      "id": "inferencia-b063",
+      "type": "code",
+      "lang": "r",
+      "code": "# Teste unilateral: a média de horas_estudo é maior que 7?\n# H0: mu = 7   vs   H1: mu > 7\nt.test(dados$horas_estudo, mu = 7, alternative = \"greater\")"
+    },
+    {
+      "id": "inferencia-b064",
+      "type": "code",
+      "lang": "r",
+      "code": "# Teste de proporção: a proporção de mulheres difere de 50%?\nn_feminino <- sum(dados$genero == \"Feminino\")\nn_total <- nrow(dados)\n\ncat(\"Proporção amostral (Feminino):\", round(n_feminino/n_total, 3), \"\\n\\n\")\n\n# H0: p = 0.5   vs   H1: p != 0.5\nprop.test(n_feminino, n_total, p = 0.5)"
+    },
+    {
+      "id": "inferencia-b065",
+      "type": "code",
+      "lang": "r",
+      "code": "# Comparando médias de nota_final entre gêneros\n# Teste t para duas amostras independentes\nnotas_fem <- dados$nota_final[dados$genero == \"Feminino\"]\nnotas_masc <- dados$nota_final[dados$genero == \"Masculino\"]\n\ncat(\"Média Feminino:\", round(mean(notas_fem), 3), \"\\n\")\ncat(\"Média Masculino:\", round(mean(notas_masc), 3), \"\\n\\n\")\n\n# H0: mu_F = mu_M   vs   H1: mu_F != mu_M\nt.test(notas_fem, notas_masc)"
+    },
+    {
+      "id": "inferencia-b066",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 3.12** ⭐⭐\n\nUma empresa afirma que seus pacotes de café contêm, em média, 500 g. Um fiscal coleta uma amostra de $n = 36$ pacotes e obtém $\\bar{x} = 496$ g e $s = 12$ g.\n\na) Formule as hipóteses $H_0$ e $H_1$ (bilateral).\nb) Calcule a estatística $t$ e o valor-p.\nc) Ao nível de 5%, o que você conclui?\nd) Refaça o teste como unilateral ($H_1: \\mu < 500$). O resultado muda?"
+    },
+    {
+      "id": "inferencia-b067",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 3.13** ⭐⭐\n\nEm uma pesquisa com 400 eleitores, 224 afirmaram aprovar o governo.\n\na) Teste se a proporção de aprovação é diferente de 50% ($\\alpha = 0{,}05$).\nb) Teste se a proporção de aprovação é maior que 50% ($\\alpha = 0{,}05$).\nc) Compare os dois resultados e explique a diferença."
+    },
+    {
+      "id": "inferencia-b068",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 3.14** ⭐\n\nClassifique cada situação como Erro Tipo I ou Erro Tipo II:\n\na) Um réu inocente é condenado.\nb) Um medicamento eficaz não é aprovado nos testes clínicos.\nc) Um alarme de incêndio dispara sem haver fogo.\nd) Um teste de COVID-19 dá negativo para uma pessoa infectada."
+    },
+    {
+      "id": "inferencia-b069",
+      "type": "callout",
+      "calloutType": "tip",
+      "title": "Exercício de Fixação",
+      "markdown": "**Exercício 3.15** ⭐⭐⭐\n\nUsando o R e o conjunto de dados `pesquisa_exemplo.csv`:\n\na) Teste se a renda média é significativamente diferente de R$ 2.500 ($\\alpha = 0{,}05$).\nb) Teste se a proporção de pessoas da região Sudeste é diferente de 30%.\nc) Compare a nota final média entre pessoas com escolaridade \"Ensino Médio\" e \"Superior Completo\". Há diferença significativa?\n\nPara cada teste, apresente: hipóteses, estatística de teste, valor-p e conclusão."
+    },
+    {
+      "id": "inferencia-b070",
+      "type": "prose",
+      "markdown": "## Resumo\n\nNeste capítulo, estudamos os fundamentos da **Inferência Estatística**, que permite generalizar conclusões de uma amostra para a população.\n\n**Conceitos-chave:**\n\n- **Parâmetros** ($\\mu$, $\\sigma$, $p$) são valores fixos da população; **estimadores** ($\\bar{X}$, $s$, $\\hat{p}$) são funções da amostra usadas para aproximá-los.\n- Um bom estimador deve ser **não-viesado**, **consistente** e **eficiente**.\n- A **distribuição amostral** descreve o comportamento de uma estatística ao longo de todas as possíveis amostras.\n- O **Teorema Central do Limite** garante que a distribuição da média amostral se aproxima de uma normal para $n$ grande, independentemente da distribuição original.\n- **Intervalos de Confiança** fornecem uma faixa de valores plausíveis para o parâmetro, com nível de confiança especificado.\n  - Média com $\\sigma$ conhecido: $\\bar{x} \\pm z_{\\alpha/2} \\cdot \\sigma/\\sqrt{n}$\n  - Média com $\\sigma$ desconhecido: $\\bar{x} \\pm t_{\\alpha/2, n-1} \\cdot s/\\sqrt{n}$\n  - Proporção: $\\hat{p} \\pm z_{\\alpha/2} \\cdot \\sqrt{\\hat{p}(1-\\hat{p})/n}$\n- **Testes de Hipóteses** avaliam se os dados são compatíveis com uma afirmação sobre o parâmetro.\n  - Estrutura: $H_0$ (nula) vs. $H_1$ (alternativa).\n  - Decisão baseada no **valor-p**: rejeitar $H_0$ se valor-p $< \\alpha$.\n  - **Erro Tipo I** ($\\alpha$): rejeitar $H_0$ verdadeira. **Erro Tipo II** ($\\beta$): não rejeitar $H_0$ falsa.\n\n**Funções R essenciais:**\n\n| Função | Finalidade |\n|---|---|\n| `t.test()` | Teste t e IC para a média |\n| `prop.test()` | Teste e IC para proporção |\n| `qt()`, `qnorm()` | Quantis das distribuições t e normal |\n| `pt()`, `pnorm()` | Probabilidades acumuladas |\n\nNo próximo capítulo, aplicaremos os conceitos de inferência para estudar a relação entre variáveis por meio da **Regressão Linear Simples**."
+    },
+    {
+      "id": "inferencia-b071",
+      "type": "callout",
+      "calloutType": "note",
+      "title": "Leitura complementar",
+      "markdown": "Para aprofundamento, consulte:\n\n- BUSSAB, W. O.; MORETTIN, P. A. **Estatística Básica**, Caps. 10–13.\n- MOORE, D. S.; McCABE, G. P. **Introduction to the Practice of Statistics**, Caps. 6–7."
+    }
+  ]
+}

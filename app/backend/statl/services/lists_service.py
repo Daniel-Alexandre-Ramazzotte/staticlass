@@ -1,4 +1,4 @@
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timezone
 from decimal import Decimal
 
 from .. import db
@@ -22,6 +22,18 @@ from ..repositories.lists_repository import (
 )
 from ..repositories.answer_history_repository import replace_list_answer_history_rows
 from ..repositories.questions_repository import buscar_questoes_por_ids_ordenados
+from ..repositories.turmas_repository import get_turma_by_id
+
+
+def _resolve_turma_id(professor_id: int, turma_id_raw) -> int | None:
+    """Valida que a turma existe e pertence ao professor. Lança ValueError caso contrário."""
+    if turma_id_raw is None:
+        return None
+    turma_id = int(turma_id_raw)
+    turma = get_turma_by_id(turma_id)
+    if not turma or turma["professor_id"] != professor_id:
+        raise ValueError("turma não encontrada ou não pertence a este professor")
+    return turma_id
 
 
 def _serialize_datetime(value):
@@ -43,7 +55,7 @@ def _serialize_number(value):
 
 
 def _agora() -> datetime:
-    return datetime.utcnow()
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 def _coerce_datetime(value) -> datetime:
@@ -114,7 +126,7 @@ def _normalize_question_ids(question_ids, professor_id: int) -> list[int]:
 
     validos = set(list_professor_question_ids(professor_id, normalizados))
     if len(validos) != len(normalizados):
-        raise ValueError("question_ids inválidos para este professor")
+        raise ValueError("question_ids inválidos")
     return normalizados
 
 
@@ -193,7 +205,8 @@ def create_list_service(professor_id, dados):
             raise ValueError("title é obrigatório")
         deadline = _parse_deadline(dados.get("deadline"))
         question_ids = _normalize_question_ids(dados.get("question_ids") or [], professor_id_int)
-        list_id = create_list(professor_id_int, title, deadline)
+        turma_id = _resolve_turma_id(professor_id_int, dados.get("turma_id"))
+        list_id = create_list(professor_id_int, title, deadline, turma_id=turma_id)
         replace_list_questions(list_id, question_ids)
         add_change_log(
             list_id,
@@ -258,7 +271,7 @@ def update_list_service(professor_id, list_id, dados):
 
         turma_id_raw = dados.get("turma_id", "UNSET")
         update_turma = turma_id_raw != "UNSET"
-        turma_id = int(turma_id_raw) if turma_id_raw not in ("UNSET", None) else None
+        turma_id = _resolve_turma_id(professor_id_int, turma_id_raw) if update_turma else None
 
         mudancas: list[str] = []
         if title != atual["title"]:

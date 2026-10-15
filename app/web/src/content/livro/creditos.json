@@ -1,0 +1,103 @@
+{
+  "slug": "creditos",
+  "title": "Créditos e Agradecimentos",
+  "lang": null,
+  "sourceFile": "E-creditos.qmd",
+  "generatedAt": "2026-07-26T15:16:36.647Z",
+  "toc": [
+    {
+      "level": 1,
+      "text": "Créditos e Agradecimentos",
+      "blockId": "creditos-b000"
+    },
+    {
+      "level": 2,
+      "text": "Autor",
+      "blockId": "creditos-b001"
+    },
+    {
+      "level": 2,
+      "text": "Programa",
+      "blockId": "creditos-b002"
+    },
+    {
+      "level": 2,
+      "text": "Agradecimentos",
+      "blockId": "creditos-b003"
+    },
+    {
+      "level": 2,
+      "text": "Referências Bibliográficas",
+      "blockId": "creditos-b004"
+    },
+    {
+      "level": 2,
+      "text": "Ferramentas Utilizadas",
+      "blockId": "creditos-b005"
+    },
+    {
+      "level": 2,
+      "text": "Currículo Base",
+      "blockId": "creditos-b006"
+    },
+    {
+      "level": 2,
+      "text": "Licença",
+      "blockId": "creditos-b007"
+    }
+  ],
+  "blocks": [
+    {
+      "id": "creditos-b000",
+      "type": "prose",
+      "markdown": "# Créditos e Agradecimentos"
+    },
+    {
+      "id": "creditos-b001",
+      "type": "prose",
+      "markdown": "## Autor\n\n- **Daniel Alexandre Ramazzotte**"
+    },
+    {
+      "id": "creditos-b002",
+      "type": "prose",
+      "markdown": "## Programa\n\n- **PROPET DataSci — Ação 11: Ensino de Estatística**\n- Universidade Estadual de Maringá (UEM)\n- Departamento de Estatística (DES)"
+    },
+    {
+      "id": "creditos-b003",
+      "type": "prose",
+      "markdown": "## Agradecimentos\n\n- **Prof. Diego** — pelos slides e material de apoio que serviram de base para diversas seções deste livro.\n- **Equipe PROPET DataSci** — pelo trabalho colaborativo, revisões e sugestões ao longo do projeto.\n- **Universidade Estadual de Maringá** — pelo suporte institucional e pela oportunidade de desenvolver este material didático."
+    },
+    {
+      "id": "creditos-b004",
+      "type": "prose",
+      "markdown": "## Referências Bibliográficas\n\n- BUSSAB, W. O.; MORETTIN, P. A. **Estatística Básica**. 9ª ed. São Paulo: Saraiva, 2017.\n- ROSS, S. **Probabilidade: Um Curso Moderno com Aplicações**. 8ª ed. Porto Alegre: Bookman, 2010.\n- DANTAS, C. A. B. **Probabilidade: Um Curso Introdutório**. 3ª ed. São Paulo: Edusp, 2004.\n- MOORE, D. S.; McCABE, G. P.; CRAIG, B. A. **Introduction to the Practice of Statistics**. 9ª ed. W.H. Freeman, 2017.\n- WICKHAM, H.; GROLEMUND, G. **R para Ciência de Dados**. O'Reilly, 2017."
+    },
+    {
+      "id": "creditos-b005",
+      "type": "prose",
+      "markdown": "## Ferramentas Utilizadas\n\n- **R** e **RStudio** — análise estatística e visualização de dados.\n- **Python** — análise complementar e automação.\n- **Quarto** — sistema de publicação científica e técnica.\n- **Git/GitHub** — controle de versão e colaboração.\n- **Claude Code** — assistente de programação com inteligência artificial."
+    },
+    {
+      "id": "creditos-b006",
+      "type": "prose",
+      "markdown": "## Currículo Base\n\nEste livro foi elaborado com base na ementa da disciplina de Estatística Básica do Departamento de Estatística da UEM:\n\n<https://des.uem.br/grad/pastademaiscursos/9755.pdf>"
+    },
+    {
+      "id": "creditos-b007",
+      "type": "prose",
+      "markdown": "## Licença\n\nEste material é disponibilizado sob a licença **Creative Commons BY-NC-SA 4.0** — você pode compartilhar e adaptar, desde que atribua crédito, não use para fins comerciais, e compartilhe sob a mesma licença."
+    },
+    {
+      "id": "creditos-b008",
+      "type": "callout",
+      "calloutType": "note",
+      "title": null,
+      "markdown": "Para mais informações sobre a licença, acesse: <https://creativecommons.org/licenses/by-nc-sa/4.0/deed.pt-br>"
+    },
+    {
+      "id": "creditos-b009",
+      "type": "prose",
+      "markdown": "---\n\n![](/livro/logo-acao-11.png)"
+    }
+  ]
+}

@@ -14,6 +14,7 @@ type QuizResultItem = {
   solution: string | null;
   image_q: string | null;
   image_s: string | null;
+  image_q_position: 'antes' | 'depois' | 'meio' | null;
 };
 
 type ListSubmissionSummary = {
@@ -53,6 +54,7 @@ const ResultScreen = () => {
   const [streak, setStreak] = useState<number | null>(null);
   const [multiplier, setMultiplier] = useState<number | null>(null);
   const [xpLoading, setXpLoading] = useState(!submissionView);
+  const [xpError, setXpError] = useState(false);
   const [listSummary, setListSummary] = useState<ListSubmissionSummary | null>(null);
   const enviado = useRef(false);
 
@@ -98,9 +100,7 @@ const ResultScreen = () => {
           setStreak(xpResponse.data?.streak ?? null);
           setMultiplier(xpResponse.data?.multiplier ?? null);
         } catch {
-          setXpGanho(acertos * 10 + 20);
-          setStreak(null);
-          setMultiplier(null);
+          setXpError(true);
         } finally {
           setXpLoading(false);
         }
@@ -125,9 +125,7 @@ const ResultScreen = () => {
           setStreak(response.data?.streak ?? null);
           setMultiplier(response.data?.multiplier ?? null);
         } catch {
-          setXpGanho(acertos * 10 + 20);
-          setStreak(null);
-          setMultiplier(null);
+          setXpError(true);
         } finally {
           setXpLoading(false);
         }
@@ -214,6 +212,11 @@ const ResultScreen = () => {
           ) : xpLoading ? (
             <Text fontSize={15} color="rgba(255,255,255,0.6)" mb="$4">
               Calculando XP...
+            </Text>
+          ) : xpError ? (
+            <Text fontSize={13} color={palette.red} mb="$4" textAlign="center">
+              Não foi possível registrar o XP desta sessão. Sua resposta foi salva, mas tente
+              novamente mais tarde para garantir os pontos.
             </Text>
           ) : (
             <YStack ai="center" mb="$4" gap="$1">

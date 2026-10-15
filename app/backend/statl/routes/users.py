@@ -20,7 +20,7 @@ from ..services.student_analytics_service import (
     student_dashboard_service,
     student_calendar_service,
 )
-from ..repositories.user_repository import listar_alunos
+from ..repositories.user_repository import listar_alunos as repo_listar_alunos
 
 bp = Blueprint('users', __name__, url_prefix='/users')
 
@@ -176,8 +176,11 @@ def analytics_calendar():
 # ── Turmas — professor picks alunos for enrollment ─────────────────────────
 
 @bp.route('/alunos', methods=['GET'])
-@require_role(['professor'])
+@require_role(['professor', 'admin'])
 def listar_alunos_para_professor():
     """Returns all registered aluno accounts for turma enrollment picker."""
-    alunos = listar_alunos()
-    return jsonify([{"id": a["id"], "name": a["name"], "email": a["email"]} for a in alunos]), 200
+    alunos = repo_listar_alunos()
+    return jsonify([
+        {"id": a["id"], "name": a["name"], "email": a["email"], "ano_ingresso": a["ano_ingresso"]}
+        for a in alunos
+    ]), 200

@@ -77,7 +77,7 @@ function chipLabel(status: AssignedList['student_status'] | AssignedList['status
 
 function chipStyle(status: AssignedList['student_status'] | AssignedList['status']) {
   if (status === 'entregue_fora_do_prazo' || status === 'encerrada') {
-    return { backgroundColor: '#f57c00' };
+    return { backgroundColor: paletaEstatica.warn };
   }
   if (status === 'entregue') {
     return { backgroundColor: paletaEstatica.primaryGreen };
@@ -263,6 +263,18 @@ export default function HomeScreen() {
           >
             Gerenciar alunos
           </AppButton>
+          <AppButton
+            backgroundColor={palette.lightBlue}
+            onPress={() => router.push('/(admin)/AdminTurmaManager')}
+          >
+            Turmas
+          </AppButton>
+          <AppButton
+            backgroundColor={palette.primaryBlue}
+            onPress={() => router.push('/(admin)/AdminCreateList')}
+          >
+            Criar Lista
+          </AppButton>
         </YStack>
       </YStack>
     );
@@ -335,6 +347,6 @@ const styles = StyleSheet.create({
     borderRadius: 999,
   },
   warningCta: {
-    backgroundColor: '#f57c00',
+    backgroundColor: paletaEstatica.warn,
   },
 });

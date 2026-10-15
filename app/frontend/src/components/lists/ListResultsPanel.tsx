@@ -64,9 +64,9 @@ const RISK_LABELS: Record<RiskBand, string> = {
 };
 
 const RISK_COLORS: Record<RiskBand, string> = {
-  critico: '#d9534f',
-  atencao: '#f0ad4e',
-  ok: '#4caf50',
+  critico: palette.red,
+  atencao: palette.warn,
+  ok: palette.primaryGreen,
 };
 
 function formatDate(value: string | null) {
@@ -169,12 +169,12 @@ export function ListResultsPanel({ listId }: { listId: number }) {
         <MetricCard
           label="Alunos em risco"
           value={String(data.summary.at_risk_students)}
-          tone="#f57c00"
+          tone={palette.warn}
         />
         <MetricCard
           label="Atrasados"
           value={String(data.summary.late_students)}
-          tone="#d9534f"
+          tone={palette.red}
         />
         <MetricCard
           label="Média da turma"
@@ -184,7 +184,7 @@ export function ListResultsPanel({ listId }: { listId: number }) {
         <MetricCard
           label="Maior taxa de erro"
           value={`${data.summary.highest_error_rate_pct.toFixed(0)}%`}
-          tone="#f57c00"
+          tone={palette.warn}
         />
       </XStack>
 
@@ -275,9 +275,9 @@ export function ListResultsPanel({ listId }: { listId: number }) {
                         width: widthPct === 0 ? 0 : `${widthPct}%`,
                         backgroundColor:
                           bucket.bucket === '0-49'
-                            ? '#d9534f'
+                            ? palette.red
                             : bucket.bucket === '50-69'
-                              ? '#f0ad4e'
+                              ? palette.warn
                               : palette.primaryGreen,
                       },
                     ]}
@@ -299,7 +299,7 @@ export function ListResultsPanel({ listId }: { listId: number }) {
                   Questão {question.order_index}
                 </Text>
                 <YStack ai="flex-end" gap="$1">
-                  <Text color="#f57c00" fontSize={13} fontWeight="700">
+                  <Text color={palette.warn} fontSize={13} fontWeight="700">
                     {question.error_rate_pct.toFixed(0)}%
                   </Text>
                   <Text color="#6c7b8a" fontSize={11} fontFamily={primaryFontC}>

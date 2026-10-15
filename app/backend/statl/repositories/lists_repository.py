@@ -13,17 +13,18 @@ def _placeholder_clause(prefixo: str, valores: Iterable[int]) -> tuple[str, dict
     return placeholders, params
 
 
-def create_list(professor_id: int, title: str, deadline: datetime) -> int:
+def create_list(professor_id: int, title: str, deadline: datetime, turma_id: int | None = None) -> int:
     return db.session.execute(
         text("""
-            INSERT INTO lists (professor_id, title, deadline, published, created_at, updated_at)
-            VALUES (:professor_id, :title, :deadline, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+            INSERT INTO lists (professor_id, title, deadline, turma_id, published, created_at, updated_at)
+            VALUES (:professor_id, :title, :deadline, :turma_id, FALSE, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             RETURNING id
         """),
         {
             "professor_id": professor_id,
             "title": title,
             "deadline": deadline,
+            "turma_id": turma_id,
         },
     ).scalar_one()
 
@@ -191,18 +192,13 @@ def get_list_question_ids(list_id: int) -> list[int]:
 
 
 def list_professor_question_ids(professor_id: int, question_ids: list[int]) -> list[int]:
+    """Returns which of the given IDs exist in the questions table (no ownership check)."""
     if not question_ids:
         return []
 
     placeholders, params = _placeholder_clause("qid", question_ids)
-    params["professor_id"] = professor_id
     rows = db.session.execute(
-        text(f"""
-            SELECT id
-            FROM questions
-            WHERE professor_id = :professor_id
-              AND id IN ({placeholders})
-        """),
+        text(f"SELECT id FROM questions WHERE id IN ({placeholders})"),
         params,
     ).mappings().all()
     return [int(row["id"]) for row in rows]

@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Modal,
   ScrollView,
   StyleSheet,
   TextInput,
@@ -10,14 +11,13 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { Check, ChevronLeft } from '@tamagui/lucide-icons';
-import { Button, Text, XStack, YStack } from 'tamagui';
+import { ChevronLeft } from '@tamagui/lucide-icons';
+import { Button, Text, XStack } from 'tamagui';
 
 import { AppButton } from 'app/components/AppButton';
-import { palette, primaryFontA, primaryFontC } from 'app/constants/style';
+import { palette, primaryFontA } from 'app/constants/style';
 import api from 'app/services/api';
-
-type Aluno = { id: number; name: string; email: string };
+import { StudentPickerList, type Aluno } from 'app/components/turmas/StudentPickerList';
 
 export default function TurmaEditor() {
   const router = useRouter();
@@ -30,6 +30,10 @@ export default function TurmaEditor() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savingName, setSavingName] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importText, setImportText] = useState('');
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResult, setImportResult] = useState<{ enrolled: number; invited: number; skipped: number } | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -76,6 +80,21 @@ export default function TurmaEditor() {
       Alert.alert('Erro', 'Não foi possível salvar o nome.');
     } finally {
       setSavingName(false);
+    }
+  };
+
+  const handleImport = async () => {
+    if (!importText.trim()) return;
+    setImportLoading(true);
+    setImportResult(null);
+    try {
+      const res = await api.post(`/turmas/${turmaId}/invite`, { raw_list: importText });
+      setImportResult(res.data);
+      await load();
+    } catch {
+      Alert.alert('Erro', 'Não foi possível importar a lista.');
+    } finally {
+      setImportLoading(false);
     }
   };
 
@@ -138,38 +157,7 @@ export default function TurmaEditor() {
             <Text style={styles.cardTitle}>
               Alunos matriculados ({enrolledIds.size} / {allAlunos.length})
             </Text>
-            <YStack gap="$1" mt="$2">
-              {allAlunos.map((a) => {
-                const enrolled = enrolledIds.has(a.id);
-                return (
-                  <TouchableOpacity
-                    key={a.id}
-                    style={[styles.alunoRow, enrolled ? styles.alunoRowEnrolled : null]}
-                    onPress={() => toggleAluno(a.id)}
-                    activeOpacity={0.7}
-                  >
-                    <YStack f={1}>
-                      <Text
-                        color={palette.darkBlue}
-                        fontSize={14}
-                        fontWeight={enrolled ? '700' : '400'}
-                      >
-                        {a.name}
-                      </Text>
-                      <Text color="#6c7b8a" fontSize={12} fontFamily={primaryFontC}>
-                        {a.email}
-                      </Text>
-                    </YStack>
-                    {enrolled ? <Check color={palette.primaryGreen} size={20} /> : null}
-                  </TouchableOpacity>
-                );
-              })}
-              {allAlunos.length === 0 ? (
-                <Text color="#6c7b8a" fontSize={13} fontFamily={primaryFontC}>
-                  Nenhum aluno cadastrado no sistema.
-                </Text>
-              ) : null}
-            </YStack>
+            <StudentPickerList alunos={allAlunos} enrolledIds={enrolledIds} onToggle={toggleAluno} />
           </View>
 
           <View style={styles.saveSection}>
@@ -180,9 +168,62 @@ export default function TurmaEditor() {
             >
               Salvar matrículas
             </AppButton>
+            <View style={{ marginTop: 12 }}>
+              <AppButton
+                backgroundColor={palette.darkBlue}
+                onPress={() => { setImportResult(null); setShowImportModal(true); }}
+              >
+                Importar lista
+              </AppButton>
+            </View>
           </View>
         </ScrollView>
       )}
+
+      <Modal visible={showImportModal} animationType="slide" transparent>
+        <View style={importStyles.overlay}>
+          <View style={importStyles.sheet}>
+            <Text style={importStyles.title}>Importar alunos por lista</Text>
+            <Text style={importStyles.hint}>
+              Cole um email por linha, ou no formato:{'\n'}
+              <Text style={{ fontWeight: '700' }}>Nome Completo {'<email@exemplo.com>'}</Text>
+            </Text>
+            <TextInput
+              style={importStyles.textarea}
+              multiline
+              numberOfLines={8}
+              value={importText}
+              onChangeText={setImportText}
+              placeholder={'João Silva <joao@uem.br>\nMaria <maria@exemplo.com>'}
+              textAlignVertical="top"
+            />
+            {importResult && (
+              <View style={importStyles.result}>
+                <Text style={importStyles.resultText}>
+                  ✓ {importResult.enrolled} matriculados · {importResult.invited} convites enviados · {importResult.skipped} ignorados
+                </Text>
+              </View>
+            )}
+            <View style={importStyles.actions}>
+              <TouchableOpacity
+                style={[importStyles.btn, importStyles.btnSecondary]}
+                onPress={() => { setShowImportModal(false); setImportText(''); setImportResult(null); }}
+              >
+                <Text style={importStyles.btnSecondaryText}>Fechar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[importStyles.btn, importStyles.btnPrimary, (!importText.trim() || importLoading) && { opacity: 0.5 }]}
+                onPress={handleImport}
+                disabled={!importText.trim() || importLoading}
+              >
+                {importLoading
+                  ? <ActivityIndicator color="#fff" size="small" />
+                  : <Text style={importStyles.btnPrimaryText}>Importar</Text>}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -215,13 +256,65 @@ const styles = StyleSheet.create({
     fontSize: 15,
     backgroundColor: '#fff',
   },
-  alunoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    borderRadius: 10,
-  },
-  alunoRowEnrolled: { backgroundColor: 'rgba(85,191,68,0.12)' },
   saveSection: { marginTop: 24 },
+});
+
+const importStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'flex-end',
+  },
+  sheet: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingBottom: 36,
+    gap: 12,
+  },
+  title: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: palette.darkBlue,
+  },
+  hint: {
+    fontSize: 13,
+    color: '#555',
+    lineHeight: 20,
+  },
+  textarea: {
+    borderWidth: 1,
+    borderColor: '#dbe4ee',
+    borderRadius: 10,
+    padding: 10,
+    fontSize: 13,
+    minHeight: 140,
+    backgroundColor: '#f9fafb',
+  },
+  result: {
+    backgroundColor: '#e8f5e9',
+    borderRadius: 8,
+    padding: 10,
+  },
+  resultText: {
+    color: '#2e7d32',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 4,
+  },
+  btn: {
+    flex: 1,
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  btnPrimary: { backgroundColor: palette.primaryGreen },
+  btnSecondary: { backgroundColor: '#eef0f3' },
+  btnPrimaryText: { color: '#fff', fontWeight: '700', fontSize: 15 },
+  btnSecondaryText: { color: palette.darkBlue, fontWeight: '600', fontSize: 15 },
 });

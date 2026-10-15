@@ -14,3 +14,7 @@ class User(db.Model):
     last_practice_date = db.Column(db.Date, nullable=True)
     active             = db.Column(db.Boolean, nullable=False, server_default='true')
     email_verified     = db.Column(db.Boolean, nullable=False, server_default='true')
+    ra                 = db.Column(db.String(30), nullable=True)
+    otp_code           = db.Column(db.String(6), nullable=True)
+    otp_expires_at     = db.Column(db.DateTime, nullable=True)
+    ano_ingresso       = db.Column(db.Integer, nullable=True)
