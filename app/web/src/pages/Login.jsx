@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import api from '../services/api.js';
+import { appUrl } from '../utils/paths.js';
 
 const ROLE_HOME = { admin: '/dashboard', professor: '/listas', aluno: '/minhas-listas' };
 
@@ -35,12 +36,12 @@ export default function Login() {
 
       {/* Logo Staticlass — canto superior direito */}
       <div className="login-topright">
-        <img src="/logo.png" alt="Staticlass" />
+        <img src={appUrl('/logo.png')} alt="Staticlass" />
       </div>
 
       <div className="login-card">
         <div className="login-logo">
-          <img src="/logo.png" alt="Staticlass" className="login-logo__img" />
+          <img src={appUrl('/logo.png')} alt="Staticlass" className="login-logo__img" />
         </div>
 
         <form onSubmit={handleSubmit}>
@@ -101,8 +102,8 @@ export default function Login() {
 
       {/* Rodapé institucional: UEM + Ação 11 */}
       <div className="login-footer">
-        <img src="/uem-logo.png" alt="UEM" />
-        <img src="/acao11-logo.webp" alt="DataSci PROPET — Ação 11" />
+        <img src={appUrl('/uem-logo.png')} alt="UEM" />
+        <img src={appUrl('/acao11-logo.webp')} alt="DataSci PROPET — Ação 11" />
       </div>
 
     </div>

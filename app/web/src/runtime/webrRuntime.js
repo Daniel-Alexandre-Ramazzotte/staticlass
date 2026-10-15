@@ -21,7 +21,7 @@ async function preloadDatasets(webR) {
   // Book chunks in 01/03/04 do `read.csv("dados/pesquisa_exemplo.csv")` with
   // a relative path — write it into webR's default working directory
   // (homedir) so that call resolves without touching the book's source code.
-  const res = await fetch('/livro/pesquisa_exemplo.csv');
+  const res = await fetch(`${import.meta.env.BASE_URL}livro/pesquisa_exemplo.csv`);
   const bytes = new Uint8Array(await res.arrayBuffer());
   await webR.FS.mkdir('/home/web_user/dados');
   await webR.FS.writeFile('/home/web_user/dados/pesquisa_exemplo.csv', bytes);

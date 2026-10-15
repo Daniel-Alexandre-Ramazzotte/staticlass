@@ -4,6 +4,7 @@ import {
   ClipboardList, Building2, Star, LogOut, Dices, GitPullRequest, Trophy, Library,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext.jsx';
+import { appUrl } from '../utils/paths.js';
 
 const NAV_ADMIN = [
   { label: 'Início', to: '/dashboard', Icon: LayoutDashboard },
@@ -49,7 +50,7 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar__brand">
-        <img src="/logo.png" alt="Staticlass" className="sidebar__logo-img" />
+        <img src={appUrl('/logo.png')} alt="Staticlass" className="sidebar__logo-img" />
         <div className="sidebar__name">Staticlass</div>
       </div>
 
@@ -67,8 +68,8 @@ export default function Sidebar() {
       </nav>
 
       <div className="sidebar__institutions">
-        <img src="/uem-logo.png" alt="UEM" />
-        <img src="/acao11-logo.webp" alt="DataSci PROPET" />
+        <img src={appUrl('/uem-logo.png')} alt="UEM" />
+        <img src={appUrl('/acao11-logo.webp')} alt="DataSci PROPET" />
       </div>
 
       <div className="sidebar__user">

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import api from '../services/api.js';
+import { appUrl } from '../utils/paths.js';
 
 export default function CompleteInvitePage() {
   const navigate = useNavigate();
@@ -59,7 +60,7 @@ export default function CompleteInvitePage() {
   if (done) {
     return (
       <div className="login-shell">
-        <div className="login-topright"><img src="/logo.png" alt="Staticlass" /></div>
+        <div className="login-topright"><img src={appUrl('/logo.png')} alt="Staticlass" /></div>
         <div className="login-card" style={{ textAlign: 'center', gap: 16 }}>
           <div style={{ fontSize: 56, color: 'var(--green, #55bf44)' }}>✓</div>
           <h2 style={{ fontFamily: 'var(--font-display)', margin: 0 }}>Cadastro concluído!</h2>
@@ -71,8 +72,8 @@ export default function CompleteInvitePage() {
           </button>
         </div>
         <div className="login-footer">
-          <img src="/uem-logo.png" alt="UEM" />
-          <img src="/acao11-logo.webp" alt="DataSci PROPET — Ação 11" />
+          <img src={appUrl('/uem-logo.png')} alt="UEM" />
+          <img src={appUrl('/acao11-logo.webp')} alt="DataSci PROPET — Ação 11" />
         </div>
       </div>
     );
@@ -81,7 +82,7 @@ export default function CompleteInvitePage() {
   if (metaError) {
     return (
       <div className="login-shell">
-        <div className="login-topright"><img src="/logo.png" alt="Staticlass" /></div>
+        <div className="login-topright"><img src={appUrl('/logo.png')} alt="Staticlass" /></div>
         <div className="login-card" style={{ textAlign: 'center' }}>
           <p className="field__error" style={{ fontSize: 15 }}>{metaError}</p>
           <button className="btn btn--ghost" style={{ marginTop: 12 }} onClick={() => navigate('/login')}>Ir para o login</button>
@@ -93,7 +94,7 @@ export default function CompleteInvitePage() {
   if (!meta) {
     return (
       <div className="login-shell">
-        <div className="login-topright"><img src="/logo.png" alt="Staticlass" /></div>
+        <div className="login-topright"><img src={appUrl('/logo.png')} alt="Staticlass" /></div>
         <div className="login-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="loader" />
         </div>
@@ -103,10 +104,10 @@ export default function CompleteInvitePage() {
 
   return (
     <div className="login-shell">
-      <div className="login-topright"><img src="/logo.png" alt="Staticlass" /></div>
+      <div className="login-topright"><img src={appUrl('/logo.png')} alt="Staticlass" /></div>
       <div className="login-card">
         <div className="login-logo">
-          <img src="/logo.png" alt="Staticlass" className="login-logo__img" />
+          <img src={appUrl('/logo.png')} alt="Staticlass" className="login-logo__img" />
         </div>
         <h2 style={{ fontFamily: 'var(--font-display)', marginTop: 0, marginBottom: 4 }}>Completar cadastro</h2>
         <p style={{ color: 'var(--text-muted)', marginTop: 0, marginBottom: 16, fontSize: 13 }}>
@@ -151,8 +152,8 @@ export default function CompleteInvitePage() {
         </form>
       </div>
       <div className="login-footer">
-        <img src="/uem-logo.png" alt="UEM" />
-        <img src="/acao11-logo.webp" alt="DataSci PROPET — Ação 11" />
+        <img src={appUrl('/uem-logo.png')} alt="UEM" />
+        <img src={appUrl('/acao11-logo.webp')} alt="DataSci PROPET — Ação 11" />
       </div>
     </div>
   );

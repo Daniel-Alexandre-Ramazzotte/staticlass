@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api.js';
 import { useAuth } from '../context/AuthContext.jsx';
+import { appUrl } from '../utils/paths.js';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -73,7 +74,7 @@ export default function Register() {
     return (
       <div className="login-shell">
         <div className="login-topright">
-          <img src="/logo.png" alt="Staticlass" />
+          <img src={appUrl('/logo.png')} alt="Staticlass" />
         </div>
         <div className="login-card" style={{ textAlign: 'center', gap: 16 }}>
           <div style={{ fontSize: 56, color: 'var(--green, #55bf44)' }}>✓</div>
@@ -84,8 +85,8 @@ export default function Register() {
           </button>
         </div>
         <div className="login-footer">
-          <img src="/uem-logo.png" alt="UEM" />
-          <img src="/acao11-logo.webp" alt="DataSci PROPET — Ação 11" />
+          <img src={appUrl('/uem-logo.png')} alt="UEM" />
+          <img src={appUrl('/acao11-logo.webp')} alt="DataSci PROPET — Ação 11" />
         </div>
       </div>
     );
@@ -95,7 +96,7 @@ export default function Register() {
     return (
       <div className="login-shell">
         <div className="login-topright">
-          <img src="/logo.png" alt="Staticlass" />
+          <img src={appUrl('/logo.png')} alt="Staticlass" />
         </div>
         <div className="login-card">
           <h2 style={{ fontFamily: 'var(--font-display)', marginTop: 0, marginBottom: 8 }}>Verifique seu email</h2>
@@ -134,8 +135,8 @@ export default function Register() {
           </div>
         </div>
         <div className="login-footer">
-          <img src="/uem-logo.png" alt="UEM" />
-          <img src="/acao11-logo.webp" alt="DataSci PROPET — Ação 11" />
+          <img src={appUrl('/uem-logo.png')} alt="UEM" />
+          <img src={appUrl('/acao11-logo.webp')} alt="DataSci PROPET — Ação 11" />
         </div>
       </div>
     );
@@ -144,11 +145,11 @@ export default function Register() {
   return (
     <div className="login-shell">
       <div className="login-topright">
-        <img src="/logo.png" alt="Staticlass" />
+        <img src={appUrl('/logo.png')} alt="Staticlass" />
       </div>
       <div className="login-card">
         <div className="login-logo">
-          <img src="/logo.png" alt="Staticlass" className="login-logo__img" />
+          <img src={appUrl('/logo.png')} alt="Staticlass" className="login-logo__img" />
         </div>
 
         <form onSubmit={handleRegister} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -208,8 +209,8 @@ export default function Register() {
       </div>
 
       <div className="login-footer">
-        <img src="/uem-logo.png" alt="UEM" />
-        <img src="/acao11-logo.webp" alt="DataSci PROPET — Ação 11" />
+        <img src={appUrl('/uem-logo.png')} alt="UEM" />
+        <img src={appUrl('/acao11-logo.webp')} alt="DataSci PROPET — Ação 11" />
       </div>
     </div>
   );

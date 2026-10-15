@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
+import { appUrl } from '../utils/paths.js';
 
 const AuthContext = createContext(null);
 
@@ -61,7 +62,7 @@ export function AuthProvider({ children }) {
     setEmailVerified(true);
     localStorage.removeItem('auth_token');
     localStorage.removeItem('@email_verified_override');
-    window.location.href = '/login';
+    window.location.href = appUrl('/login');
   }
 
   return (
